@@ -10,8 +10,8 @@
         <record id="group_user" model="res.groups">
             <field name="name">Пользователь системы</field>
             <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
-            <field name="users" eval="[(4, ref('base.user_root'))]"/>
             <field name="category_id" ref="gpodem.gpodem_management"/>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
         </record>
 
         <record id="group_manager" model="res.groups">
@@ -24,6 +24,7 @@
             <field name="name">Администратор системы</field>
             <field name="implied_ids" eval="[(4, ref('gpodem.group_manager'))]"/>
             <field name="category_id" ref="gpodem.gpodem_management"/>
+            <field name="users" eval="[(4, ref('base.user_admin'))]"/>
         </record>
     </data>
 </odoo>
