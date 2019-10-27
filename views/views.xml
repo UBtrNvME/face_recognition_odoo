@@ -18,9 +18,10 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem name="gpodem" id="gpodem.menu_root" web_icon="gpodem,static/description/icon.png"/>
-        <menuitem name="Menu 1" id="gpodem.menu_1" parent="gpodem.menu_root"/>
+        <menuitem name="gpodem" id="gpodem.menu_root" web_icon="gpodem,static/description/icon.png"
+                  groups="group_user"/>
+        <menuitem name="Menu 1" id="gpodem.menu_1" parent="gpodem.menu_root" groups="group_user"/>
         <menuitem name="List" id="gpodem.menu_1_list" parent="gpodem.menu_1"
-                  action="gpodem.action_window"/>
+                  action="gpodem.action_window" groups="group_user"/>
     </data>
 </odoo>

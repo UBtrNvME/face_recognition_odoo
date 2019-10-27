@@ -20,7 +20,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'odoo_web_login', 'orange_theme_odoo12'],
+    'depends': ['base', 'orange_theme_odoo12', 'odoo_web_login'],
 
     # always loaded
     'data': [
