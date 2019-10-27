@@ -27,7 +27,7 @@
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
-        # 'views/templates.xml',
+        'views/templates.xml',
         'views/project_project_views.xml',
     ],
     'sequence': -1,
