@@ -27,5 +27,8 @@
         'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
-    ]
+    ],
+    'sequence': -1,
+    'application': True,
+    'installable': True
 }
