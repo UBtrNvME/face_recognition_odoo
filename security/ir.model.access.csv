@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_gpodem_gpodem,gpodem.gpodem,model_gpodem_gpodem,,1,0,0,0
+access_admin, Gpodem admin access,model_gpodem_gpodem,gpodem.group_admin,1,1,1,1
+access_manager, Gpodem manager access,model_gpodem_gpodem,gpodem.group_manager,1,1,1,0
+access_user, Gpodem user access,model_gpodem_gpodem,gpodem.group_user,1,0,0,0
