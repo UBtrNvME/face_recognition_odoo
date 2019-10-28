@@ -71,5 +71,19 @@
                 </xpath>
             </field>
         </record>
+
+        <record id="view_project_project_filter_inherit" model="ir.ui.view">
+            <field name="name">project.project.select.inherit</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.view_project_project_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='user_id']" position="after">
+                    <field name="stage_id" string="Стадия"/>
+                </xpath>
+                <xpath expr="//filter[@name='Manager']" position="before">
+                    <filter string="Стадия" name="stage_filter" context="{'group_by': 'partner_id'}"/>
+                </xpath>
+            </field>
+        </record>
     </data>
 </odoo>
