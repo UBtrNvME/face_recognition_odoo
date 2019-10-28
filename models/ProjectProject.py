@@ -13,6 +13,8 @@ class ProjectProject(models.Model):
 
     @api.one
     def send_approval(self):
+        if self.stage_id.name == "На рассмотрении":
+            self.stage_id = self.env["project.task.type"].search([("name", "=", "Новые")], limit=1)
         template = self.env.ref('gpodem.approval_email_template')
         self.env['mail.template'].browse(template.id).send_mail(self.id)
 
