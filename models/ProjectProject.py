@@ -17,6 +17,10 @@ class ProjectProject(models.Model):
         self.env['mail.template'].browse(template.id).send_mail(self.id)
 
     @api.model
+    def get_default_company(self):
+        return self.env['res.company'].browse(1)
+
+    @api.model
     def get_default_partner(self):
         return self.env['res.users'].browse(self.env.uid).partner_id
 
@@ -24,5 +28,6 @@ class ProjectProject(models.Model):
     manager_id = fields.Many2one(comodel_name="res.partner", string="Менеджер", default=get_default_partner)
     description = fields.Text(string='Описание проекта')
     creator_email = fields.Char(string='Email создателя', compute="_get_creator_email")
-    partner_id = fields.Many2one(comodel_name="res.partner",
-                                 default=get_default_partner)
+    partner_id = fields.Many2one(comodel_name="res.partner", default=get_default_partner)
+    company_id = fields.Many2one(comodel_name="res.company", string="Ответственная компания",
+                                 default=get_default_company)

@@ -11,7 +11,7 @@
             <field name="auto_delete" eval="True"/>
             <field name="body_html">
                 <![CDATA[
-	                <p>Уважаемый(ая) ${object.partner_id.name},<br/><br/>
+	                <p>Уважаемый(ая) ${(object.partner_id.name)},<br/><br/>
 	                    Good job, you've just created your first e-mail template!<br/></p>
                             Regards,<br/>
                     ${(object.company_id.name)}

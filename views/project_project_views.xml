@@ -31,6 +31,7 @@
                 </xpath>
                 <xpath expr="//field[@name='partner_id']" position="after">
                     <field name="creator_email"/>
+                    <field name="company_id"/>
                 </xpath>
                 <xpath expr="//field[@name='subtask_project_id']" position="attributes">
                     <attribute name="invisible">1</attribute>
@@ -58,8 +59,9 @@
                     <attribute name="class"></attribute>
                 </xpath>
                 <xpath expr="//field[@name='name']" position="after">
-                    <field name="partner_id" string="Создатель"/>
+                    <field name="partner_id" required="True" string="Создатель"/>
                     <field name="manager_id"/>
+                    <field name="company_id"/>
                 </xpath>
                 <xpath expr="//label[@for='alias_name']" position="attributes">
                     <attribute name="invisible">1</attribute>
