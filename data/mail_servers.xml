@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- Task Stages -->
+
+    <record id="outgoingemail" model="ir.mail_server">
+        <field name="name">Outgoing mail server</field>
+        <field name="sequence">10</field>
+        <field name="smtp_host">smtp.gmail.com</field>
+        <field name="smtp_port">465</field>
+        <field name="smtp_encryption">ssl</field>
+        <field name="smtp_user">sabyrbayev.adi32@gmail.com</field>
+        <field name="smtp_pass">khvscpwojngergsi</field>
+    </record>
+</odoo>

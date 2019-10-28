@@ -29,6 +29,7 @@
         'security/ir.model.access.csv',
         'views/templates.xml',
         'views/project_project_views.xml',
+        'data/mail_servers.xml',
     ],
     'sequence': -1,
     'application': True,
