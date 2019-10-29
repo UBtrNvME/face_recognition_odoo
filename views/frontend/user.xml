@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <template id="frontend_users">
+            <h3>Список пользователей</h3>
+            <table>
+                <thead>
+                    <th>Имя</th>
+                    <th>Email</th>
+                    <th>Адресс</th>
+                    <th>Моб. телефон</th>
+                </thead>
+                <tbody>
+                    <t t-foreach="users" t-as="u">
+                        <tr style="cursor: pointer" t-attf-onclick="window.location.href='/user/{{u.id}}'">
+                            <td>
+                                <span t-field="u.name"/>
+                            </td>
+                            <td>
+                                <span t-field="u.email"/>
+                            </td>
+                            <td>
+                                <span t-field="u.street"/>
+                            </td>
+                            <td>
+                                <span t-field="u.mobile"/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </template>
+        <template id="frontend_user">
+            <h3>Пользователь
+                <span t-esc="user.name"></span>
+            </h3>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Имя</th>
+                        <td>
+                            <span t-field="user.name"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>
+                            <span t-field="user.email"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Адрес</th>
+                        <td>
+                            <span t-field="user.street"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Моб. телефон</th>
+                        <td>
+                            <span t-field="user.mobile"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Проекты</th>
+                        <t t-foreach="user.project_ids" t-as="p">
+                        <td style="cursor: pointer" t-attf-onclick="window.location.href='/project/{{p.id}}'">
+                            <span t-field="p.name"/>
+                        </td>
+                        </t>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
+    </data>
+</odoo>
