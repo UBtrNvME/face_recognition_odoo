@@ -9,6 +9,7 @@
                     <th>Email</th>
                     <th>Адресс</th>
                     <th>Моб. телефон</th>
+                    <th>Заметка</th>
                 </thead>
                 <tbody>
                     <t t-foreach="users" t-as="u">
@@ -24,6 +25,9 @@
                             </td>
                             <td>
                                 <span t-field="u.mobile"/>
+                            </td>
+                            <td>
+                                <span t-field="u.comment"/>
                             </td>
                         </tr>
                     </t>
@@ -58,6 +62,12 @@
                         <th>Моб. телефон</th>
                         <td>
                             <span t-field="user.mobile"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Заметка</th>
+                        <td>
+                            <span t-field="user.comment"/>
                         </td>
                     </tr>
                     <tr>
