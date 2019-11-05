@@ -33,6 +33,7 @@
         'views/frontend/project.xml',
         'views/frontend/user.xml',
         'data/mail_servers.xml',
+        'data/project_type_data.xml',
     ],
     'sequence': -1,
     'application': True,

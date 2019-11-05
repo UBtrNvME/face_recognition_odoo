@@ -9,6 +9,8 @@
                 <xpath expr="//header/button" position="replace">
                     <button name="send_approval" string="Подтвердить проект" type="object"
                             class="oe_highlight oe_read_only"/>
+                    <button name="send_reject" string="Отменить проект" type="object"
+                            class="oe_highlight oe_read_only"/>
                 </xpath>
                 <xpath expr="//div[@name='options_active']" position="replace">
                     <group>
