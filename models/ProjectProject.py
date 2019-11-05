@@ -37,6 +37,14 @@ class ProjectProject(models.Model):
     def get_default_stage_id(self):
         return self.env["project.type"].search([("name", "=", "На рассмотрении")], limit=1)
 
+    @api.one
+    @api.depends("stage_id")
+    def _compute_editable_by_user(self):
+        if self.stage_id.name in ["Отменено", "Одобрено"]:
+            self.editable_by_user = "no"
+        else:
+            self.editable_by_user = "yes"
+
     stage_id = fields.Many2one(comodel_name="project.type", string='Стадия', default=get_default_stage_id)
     manager_id = fields.Many2one(comodel_name="res.partner", string="Менеджер", default=get_default_partner)
     description = fields.Text(string='Описание проекта')
@@ -44,3 +52,5 @@ class ProjectProject(models.Model):
     partner_id = fields.Many2one(comodel_name="res.partner", default=get_default_partner)
     company_id = fields.Many2one(comodel_name="res.company", string="Ответственная компания",
                                  default=get_default_company)
+    editable_by_user = fields.Selection(selection=[('yes', 'Возможно'), ('no', 'Невозможно')], default='yes',
+                                        string="Внесение правок", readonly=True, compute="_compute_editable_by_user")

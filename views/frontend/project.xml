@@ -37,6 +37,9 @@
                             <td>
                                 <span t-field="p.description"/>
                             </td>
+                            <td>
+                                <span t-field="p.editable_by_user"/>
+                            </td>
                         </tr>
                     </t>
                 </tbody>
@@ -50,31 +53,51 @@
                 <tbody>
                     <tr>
                         <th>Название</th>
-                        <td><span t-field="project.name"/></td>
+                        <td>
+                            <span t-field="project.name"/>
+                        </td>
                     </tr>
                     <tr>
                         <th>Стадия</th>
-                        <td><span t-field="project.stage_id"/></td>
+                        <td>
+                            <span t-field="project.stage_id"/>
+                        </td>
                     </tr>
                     <tr style="cursor: pointer" t-attf-onclick="window.location.href='/user/{{project.manager_id.id}}'">
                         <th>Менеджер</th>
-                        <td><span t-field="project.manager_id"/></td>
+                        <td>
+                            <span t-field="project.manager_id"/>
+                        </td>
                     </tr>
                     <tr style="cursor: pointer" t-attf-onclick="window.location.href='/user/{{project.partner_id.id}}'">
                         <th>Создатель</th>
-                        <td><span t-field="project.partner_id"/></td>
+                        <td>
+                            <span t-field="project.partner_id"/>
+                        </td>
                     </tr>
                     <tr>
                         <th>Email создателя</th>
-                        <td><span t-field="project.creator_email"/></td>
+                        <td>
+                            <span t-field="project.creator_email"/>
+                        </td>
                     </tr>
                     <tr>
                         <th>Ответственная компания</th>
-                        <td><span t-field="project.company_id"/></td>
+                        <td>
+                            <span t-field="project.company_id"/>
+                        </td>
                     </tr>
                     <tr>
                         <th>Описание</th>
-                        <td><span t-field="project.description"/></td>
+                        <td>
+                            <span t-field="project.description"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Внесение правок</th>
+                        <td>
+                            <span t-field="p.editable_by_user"/>
+                        </td>
                     </tr>
                 </tbody>
             </table>

@@ -7,9 +7,11 @@
             <field name="inherit_id" ref="project.edit_project"/>
             <field name="arch" type="xml">
                 <xpath expr="//header/button" position="replace">
-                    <button name="send_approval" string="Подтвердить проект" type="object"
+                    <button name="send_approval" string="Подтвердить проект"
+                            attrs="{'invisible': [('editable_by_user','=','no')]}" type="object"
                             class="oe_highlight oe_read_only"/>
-                    <button name="send_reject" string="Отменить проект" type="object"
+                    <button name="send_reject" string="Отменить проект"
+                            attrs="{'invisible': [('editable_by_user','=','no')]}" type="object"
                             class="oe_highlight oe_read_only"/>
                 </xpath>
                 <xpath expr="//div[@name='options_active']" position="replace">
@@ -17,6 +19,7 @@
                         <field name="label_tasks" string="Наименование для задач этого проекта"/>
                         <field name="stage_id"/>
                         <field name="description"/>
+                        <field name="editable_by_user"/>
                     </group>
                 </xpath>
                 <xpath expr="//field[@name='user_id']" position="after">
