@@ -6,6 +6,12 @@
             <field name="model">project.project</field>
             <field name="inherit_id" ref="project.edit_project"/>
             <field name="arch" type="xml">
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <field name="url_name" invisible="1"/>
+                    <button class="oe_stat_button" name="website_button" icon="fa-globe">
+                        <field name="url_field" widget="url" text_field="url_name" readonly="True"/>
+                    </button>
+                </xpath>
                 <xpath expr="//header/button" position="replace">
                     <button name="send_approval" string="Подтвердить проект"
                             attrs="{'invisible': [('editable_by_user','=','no')]}" type="object"

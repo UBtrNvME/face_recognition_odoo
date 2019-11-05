@@ -96,7 +96,7 @@
                     <tr>
                         <th>Внесение правок</th>
                         <td>
-                            <span t-field="p.editable_by_user"/>
+                            <span t-field="project.editable_by_user"/>
                         </td>
                     </tr>
                 </tbody>

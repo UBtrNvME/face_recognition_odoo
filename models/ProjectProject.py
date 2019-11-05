@@ -54,3 +54,11 @@ class ProjectProject(models.Model):
                                  default=get_default_company)
     editable_by_user = fields.Selection(selection=[('yes', 'Возможно'), ('no', 'Невозможно')], default='yes',
                                         string="Внесение правок", readonly=True, compute="_compute_editable_by_user")
+    url_name = fields.Char(string="Название URL", default="Вебсайт")
+    url_field = fields.Char(string="URL на вебсайте")
+
+    @api.model
+    def create(self, values):
+        project = super(ProjectProject, self).create(values)
+        project.url_field = "/project/" + str(project.id)
+        return project
