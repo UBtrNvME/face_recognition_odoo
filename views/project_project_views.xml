@@ -26,6 +26,9 @@
                         <field name="stage_id"/>
                         <field name="description"/>
                         <field name="editable_by_user"/>
+                        <field name="category"/>
+                        <field name="events_description"/>
+                        <field name="invested_money"/>
                     </group>
                 </xpath>
                 <xpath expr="//field[@name='user_id']" position="after">
@@ -52,6 +55,27 @@
                 </xpath>
                 <xpath expr="//page[@name='settings']" position="attributes">
                     <attribute name="string">Настройки</attribute>
+                </xpath>
+                <xpath expr="//page[@name='settings']" position="after">
+                    <page name="dates" string="Сроки реализации">
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="duration" widget="time_delta"/>
+                        </group>
+                    </page>
+                    <page name="result" string="Результат проекта">
+                        <group>
+                            <field name="energy_type"/>
+                            <field name="energy_efficiency"/>
+                            <field name="result_description"/>
+                            <field name="saved_money"/>
+                            <field name="payback_period"/>
+                        </group>
+                    </page>
+                </xpath>
+                <xpath expr="//page[@name='project_stages']" position="attributes">
+                    <attribute name="invisible">1</attribute>
                 </xpath>
                 <xpath expr="//page[@name='emails']" position="attributes">
                     <attribute name="invisible">1</attribute>
