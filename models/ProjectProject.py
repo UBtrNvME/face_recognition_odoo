@@ -68,8 +68,8 @@ class ProjectProject(models.Model):
     duration = fields.Integer(string="Длительность", compute="_compute_duration", readonly=True)
     invested_money = fields.Monetary(string="Инвестиции (₸)")
     energy_type = fields.Selection(string="Тип энергии",
-                                   selection=[("0", "Электричество"), ("1", "Тепло"),
-                                              ("2", "Топливо")])
+                                   selection=[(0, "Электричество"), (1, "Тепло"),
+                                              (2, "Топливо")])
     energy_efficiency = fields.Float(string="Энергоэффективность (%)")
     result_description = fields.Text(string="Как был установлен результат?")
     saved_money = fields.Monetary(string="Сэкомонлено денег (₸)")
