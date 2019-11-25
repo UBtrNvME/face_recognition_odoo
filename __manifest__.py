@@ -20,7 +20,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'orange_theme_odoo12', 'odoo_web_login', 'disable_odoo_online', 'project',
+    'depends': ['base', 'disable_odoo_online', 'project',
                 'project_task_default_stage', 'contacts', 'web_widget_url_advanced'],
 
     # always loaded
