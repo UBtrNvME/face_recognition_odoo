@@ -58,10 +58,10 @@ class ProjectProject(models.Model):
     url_name = fields.Char(string="Название URL", default="Вебсайт")
     url_field = fields.Char(string="URL на вебсайте")
     category = fields.Selection(string="Категория проекта",
-                                selection=[("0", "Здания"), ("1", "Уличное освещение"), ("2", "Центральное теплоснабжение"),
-                                           ("3", "Водоснабжение / Канализация"), ("4", "Транспорт"),
-                                           ("5", "Энергоменеджмент"),
-                                           ("6", "Другое")])
+                                selection=[(0, "Здания"), (1, "Уличное освещение"), (2, "Центральное теплоснабжение"),
+                                           (3, "Водоснабжение / Канализация"), (4, "Транспорт"),
+                                           (5, "Энергоменеджмент"),
+                                           (6, "Другое")])
     events_description = fields.Text(string="Описание мероприятии")
     date_start = fields.Datetime(string='Дата начала', index=True)
     date_end = fields.Datetime(string='Дата завершения', index=True)
