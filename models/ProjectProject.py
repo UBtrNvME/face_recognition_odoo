@@ -7,10 +7,12 @@ from datetime import datetime
 class ProjectProject(models.Model):
     _inherit = 'project.project'
 
+    @api.one
     @api.depends("partner_id")
     def _get_creator_email(self):
         self.creator_email = self.partner_id.email
 
+    @api.one
     def send_approval(self):
         if self.stage_id.name == "На рассмотрении":
             self.stage_id = self.env["project.type"].search([("name", "=", "Одобрено")], limit=1)
@@ -18,15 +20,18 @@ class ProjectProject(models.Model):
         template = self.env.ref('gpodem.approval_email_template')
         self.env['mail.template'].browse(template.id).send_mail(self.id)
 
+    @api.one
     def send_reject(self):
         if self.stage_id.name == "На рассмотрении":
             self.stage_id = self.env["project.type"].search([("name", "=", "Отменено")], limit=1)
         template = self.env.ref('gpodem.reject_email_template')
         self.env['mail.template'].browse(template.id).send_mail(self.id)
 
+    @api.model
     def get_default_company(self):
         return self.env['res.company'].browse(1)
 
+    @api.model
     def get_default_partner(self):
         return self.env['res.users'].browse(self.env.uid).partner_id
 
@@ -34,6 +39,7 @@ class ProjectProject(models.Model):
     def get_default_stage_id(self):
         return self.env["project.type"].search([("name", "=", "На рассмотрении")], limit=1)
 
+    @api.one
     @api.depends("stage_id")
     def _compute_editable_by_user(self):
         if self.stage_id.name in ["Отменено", "Одобрено"]:
@@ -41,6 +47,7 @@ class ProjectProject(models.Model):
         else:
             self.editable_by_user = "yes"
 
+    @api.one
     @api.depends("date_start", "date_end")
     def _compute_duration(self):
         if self.date_end and self.date_start:
