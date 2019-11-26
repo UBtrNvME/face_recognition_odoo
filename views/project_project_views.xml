@@ -24,9 +24,11 @@
                     <group>
                         <field name="label_tasks" string="Наименование для задач этого проекта"/>
                         <field name="stage_id"/>
+                        <field name="realisation_stage"/>
                         <field name="description"/>
                         <field name="editable_by_user"/>
                         <field name="category"/>
+                        <field name="region_id"/>
                         <field name="events_description"/>
                         <field name="invested_money"/>
                     </group>
@@ -116,7 +118,28 @@
                     <field name="stage_id" string="Стадия"/>
                 </xpath>
                 <xpath expr="//filter[@name='Manager']" position="before">
-                    <filter string="Стадия" name="stage_filter" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Стадия" name="stage_filter" context="{'group_by': 'stage_id'}"/>
+                    <filter string="Регион" name="region_filter" context="{'group_by': 'region_id'}"/>
+                    <filter string="Категория" name="category_filter" context="{'group_by': 'category'}"/>
+                    <filter string="Инвестиции" name="invested_filter" context="{'group_by': 'invested_money', 'order':'invested_money desc'}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_project_kanban_inherit" model="ir.ui.view">
+            <field name="name">project.project.kanban.inherit</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.view_project_kanban"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="invested_money"/>
+                </xpath>
+                <xpath expr="//div[@class='o_primary']" position="inside">
+                    <span t-if="record.invested_money != False">
+                        <br/>
+                        Инвестиции:
+                        <strong><t t-esc="record.invested_money.value"/> тг. </strong>
+                    </span>
                 </xpath>
             </field>
         </record>
