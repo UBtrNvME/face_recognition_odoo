@@ -42,7 +42,7 @@ class ProjectProject(models.Model):
     @api.one
     @api.depends("stage_id")
     def _compute_editable_by_user(self):
-        if self.stage_id.name in ["Отменено", "Одобрено"]:
+        if self.stage_id.name == "Одобрено":
             self.editable_by_user = "no"
         else:
             self.editable_by_user = "yes"
@@ -53,7 +53,8 @@ class ProjectProject(models.Model):
         if self.date_end and self.date_start:
             self.duration = (self.date_end - self.date_start).total_seconds()
 
-    stage_id = fields.Many2one(comodel_name="project.type", string='Стадия', default=get_default_stage_id)
+    stage_id = fields.Many2one(comodel_name="project.type", string='Стадия', default=get_default_stage_id,
+                               group_expand='_expand_stage_id')
     manager_id = fields.Many2one(comodel_name="res.partner", string="Менеджер", default=get_default_partner)
     description = fields.Text(string='Описание проекта')
     creator_email = fields.Char(string='Email создателя', compute="_get_creator_email")
@@ -81,10 +82,16 @@ class ProjectProject(models.Model):
     result_description = fields.Text(string="Как был установлен результат?")
     saved_money = fields.Monetary(string="Сэкомонлено денег (₸)")
     payback_period = fields.Float(string="Простой срок окупаемости (лет)")
-
+    realisation_stage = fields.Selection(string="Стадия реализации",
+                                         selection=[(0, "Не реализовано"), (1, "Реализовано")])
+    region_id = fields.Many2one(string="Регион", comodel_name='project.region')
 
     @api.model
     def create(self, values):
         project = super(ProjectProject, self).create(values)
         project.url_field = "/project/" + str(project.id)
         return project
+
+    def _expand_stage_id(self, states, domain, order):
+        stage_ids = self.env['project.type'].search([])
+        return stage_ids
