@@ -1,13 +1,1 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_admin_project, Gpodem admin access project,model_project_project,gpodem.group_admin,1,1,1,1
-access_manager_project, Gpodem manager access project,model_project_project,gpodem.group_manager,1,1,1,0
-access_user_project, Gpodem user access project,model_project_project,gpodem.group_user,1,0,0,0
-access_admin_partner, Gpodem admin access partner,model_res_partner,gpodem.group_admin,1,1,1,1
-access_manager_partner, Gpodem manager access partner,model_res_partner,gpodem.group_manager,1,1,1,0
-access_user_partner, Gpodem user access partner,model_res_partner,gpodem.group_user,1,0,0,0
-access_admin_project_type, Gpodem admin access project type,model_project_type,gpodem.group_admin,1,1,1,1
-access_manager_project_type, Gpodem manager access project type,model_project_type,gpodem.group_manager,1,1,1,0
-access_user_project_type, Gpodem user access project type,model_project_type,gpodem.group_user,1,0,0,0
-access_admin_project_region, Gpodem admin access project region,model_project_region,gpodem.group_admin,1,1,1,1
-access_manager_project_region, Gpodem manager access project region,model_project_region,gpodem.group_manager,1,1,1,0
-access_user_project_region, Gpodem user access project region,model_project_region,gpodem.group_user,1,0,0,0

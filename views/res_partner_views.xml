@@ -8,99 +8,16 @@
             <field name="inherit_id" ref="base.view_partner_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//page[@name='sales_purchases']" position="after">
-                    <page name="projects" string="Проекты">
-                        <field name="project_ids" mode="kanban">
-                            <kanban class="oe_background_grey o_kanban_dashboard o_project_kanban o_emphasize_colors">
-                                <field name="name"/>
-                                <field name="partner_id"/>
-                                <field name="color"/>
-                                <field name="task_count"/>
-                                <field name="label_tasks"/>
-                                <field name="alias_id"/>
-                                <field name="alias_name"/>
-                                <field name="alias_domain"/>
-                                <field name="is_favorite"/>
-                                <field name="percentage_satisfaction_project"/>
-                                <field name="rating_status"/>
+                    <page name="photos" string="Photos">
+                        <field name="attachment_ids">
+                            <kanban>
+                                <field name="datas"/>
+                                <field name="id"/>
                                 <templates>
                                     <t t-name="kanban-box">
-                                        <div t-attf-class="#{kanban_color(record.color.raw_value)} oe_kanban_global_click o_has_icon">
-                                            <div class="o_project_kanban_main">
-                                                <div class="o_kanban_card_content">
-                                                    <div class="o_kanban_primary_left">
-                                                        <div class="o_primary">
-                                                            <span>
-                                                                <t t-esc="record.name.value"/>
-                                                            </span>
-                                                            <span t-if="record.partner_id.value">
-                                                                <strong>
-                                                                    <t t-esc="record.partner_id.value"/>
-                                                                </strong>
-                                                            </span>
-                                                        </div>
-                                                        <div t-if="record.alias_name.value and record.alias_domain.value">
-                                                            <span>
-                                                                <i class="fa fa-envelope" role="img"
-                                                                   aria-label="Domain Alias" title="Domain Alias"></i>
-                                                                <t t-esc="record.alias_id.value"/>
-                                                            </span>
-                                                        </div>
-                                                        <div t-if="record.rating_status.raw_value != 'no'"
-                                                             class="mt8 text-primary"
-                                                             title="Percentage of happy ratings over the past 30 days. Get rating details from the More menu."
-                                                             groups="project.group_project_rating">
-                                                            <b>
-                                                                <t t-if="record.percentage_satisfaction_project.value == -1">
-                                                                    <i class="fa fa-smile-o"/>
-                                                                    No rating yet
-                                                                </t>
-                                                                <t t-if="record.percentage_satisfaction_project.value != -1">
-                                                                    <a name="action_view_all_rating" type="object"
-                                                                       context="{'search_default_rating_last_30_days':1}">
-                                                                        <i class="fa fa-smile-o" role="img"
-                                                                           aria-label="Percentage of satisfaction"
-                                                                           title="Percentage of satisfaction"/>
-                                                                        <t t-esc="record.percentage_satisfaction_project.value"/>
-                                                                        %
-                                                                    </a>
-                                                                </t>
-                                                            </b>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="o_kanban_card_manage_pane dropdown-menu"
-                                                     groups="project.group_project_manager" role="menu">
-                                                    <div class="o_kanban_card_manage_section o_kanban_manage_reports">
-                                                        <div role="menuitem">
-                                                            <a name="%(portal.portal_share_action)d" type="action">
-                                                                Share
-                                                            </a>
-                                                        </div>
-                                                        <div role="menuitem">
-                                                            <a type="edit">Edit</a>
-                                                        </div>
-                                                        <div role="menuitem"
-                                                             t-if="record.rating_status.raw_value != 'no'">
-                                                            <a name="action_view_all_rating" type="object">Customer
-                                                                Ratings
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                    <div role="menuitem" aria-haspopup="true"
-                                                         class="o_no_padding_kanban_colorpicker">
-                                                        <ul class="oe_kanban_colorpicker" data-field="color"
-                                                            role="popup"/>
-                                                    </div>
-                                                </div>
-                                                <a class="o_kanban_manage_toggle_button o_left" href="#"
-                                                   groups="project.group_project_manager">
-                                                    <i class="fa fa-ellipsis-v" role="img" aria-label="Manage"
-                                                       title="Manage"/>
-                                                </a>
-                                                <span class="o_right">
-                                                    <field name="is_favorite" widget="boolean_favorite" nolabel="1"
-                                                           force_save="1"/>
-                                                </span>
+                                        <div t-attf-class="oe_kanban_global_click">
+                                            <div>
+                                                <img t-att-src="kanban_image('ir.attachment','datas', record.id.raw_value)"/>
                                             </div>
                                         </div>
                                     </t>
@@ -108,15 +25,6 @@
                             </kanban>
                         </field>
                     </page>
-                </xpath>
-                <xpath expr="//page[@name='sales_purchases']" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath>
-                <xpath expr="//page[@name='internal_notes']" position="attributes">
-                    <attribute name="string">Заметки о пользователе</attribute>
-                </xpath>
-                <xpath expr="//page[1]" position="attributes">
-                    <attribute name="invisible">1</attribute>
                 </xpath>
             </field>
         </record>
