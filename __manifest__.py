@@ -23,8 +23,11 @@
 
     # always loaded
     'data': [
+        'security/ir.model.access.csv',
         'views/res_partner_views.xml',
         'views/frontend/user.xml',
+        'views/face_recognition_views.xml',
+        'views/face_recognition_message_wizard.xml',
     ],
     'sequence': -1,
     'application': True,
