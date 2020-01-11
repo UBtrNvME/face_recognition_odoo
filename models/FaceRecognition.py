@@ -13,7 +13,7 @@ class FaceRecognition(models.Model):
 
     loaded_image = fields.Binary(string='Loaded image', attachment=True)
     loaded_image_name = fields.Char(string="Loaded image name")
-    partner_id = fields.Many2one(comodel_name="res.partner", string="Person", readonly=True)
+    employee_id = fields.Many2one(comodel_name="hr.employee", string="Employee", readonly=True)
     result = fields.Boolean(string="Result")
 
     def compare(self):
@@ -27,7 +27,7 @@ class FaceRecognition(models.Model):
             raise ValidationError("This picture has more than 1 face")
             return
         known_encodings = []
-        for attachment in self.partner_id.attachment_ids:
+        for attachment in self.employee_id.attachment_ids:
             known_encodings.append(face_recognition.face_encodings(
                 face_recognition.load_image_file(attachment._full_path(attachment.store_fname)))[0])
         results = face_recognition.compare_faces(known_encodings, unknown_encoding[0])
@@ -35,11 +35,11 @@ class FaceRecognition(models.Model):
         view = self.env.ref('face_recognition.face_recognition_message_wizard')
         view_id = view and view.id or False
         context = dict(self._context or {})
-        context["default_name"] = self.partner_id.name
+        context["default_name"] = self.employee_id.user_id.name
         context["default_percentage"] = percentage
-        context["default_message"] = "This person is %s by %d percent probability" % (self.partner_id.name, percentage)
+        context["default_message"] = "This employee is %s by %d percent probability" % (self.employee_id.user_id.name, percentage)
         context["default_image"] = self.loaded_image
-        context["default_partner_id"] = self.partner_id.id
+        context["default_employee_id"] = self.employee_id.id
         context["default_mimetype"] = magic.Magic(mime=True).from_file(self.loaded_image_name)
         context["default_image_name"] = self.loaded_image_name
 

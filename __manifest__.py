@@ -19,13 +19,12 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'contacts'],
+    'depends': ['base', 'contacts', 'hr'],
 
     # always loaded
     'data': [
         'security/ir.model.access.csv',
         'views/res_partner_views.xml',
-        'views/frontend/user.xml',
         'views/face_recognition_views.xml',
         'views/face_recognition_message_wizard.xml',
     ],
