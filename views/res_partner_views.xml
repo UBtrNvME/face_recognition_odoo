@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <record id="view_partner_form_inherit" model="ir.ui.view">
-            <field name="name">res.partner.form.inherit</field>
-            <field name="model">res.partner</field>
+        <record id="view_employee_form_inherit" model="ir.ui.view">
+            <field name="name">hr.employee.form.inherit</field>
+            <field name="model">hr.employee</field>
             <field name="priority" eval="1"/>
-            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//page[@name='sales_purchases']" position="after">
+                <xpath expr="//page[@name='hr_settings']" position="after">
                     <page name="photos" string="Photos">
                         <field name="attachment_ids">
                             <kanban>
