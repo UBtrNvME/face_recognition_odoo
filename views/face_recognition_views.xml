@@ -14,7 +14,7 @@
                         </group>
                     </sheet>
                     <footer>
-                        <button string="Compare" class="oe_highlight" type="object" name="compare"/>
+                        <button string="Compare" class="oe_highlight" name="compare" type="object"/>
                         <button string="Cancel" special="cancel"/>
                     </footer>
                 </form>
