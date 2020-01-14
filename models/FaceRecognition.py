@@ -13,7 +13,7 @@ class FaceRecognition(models.Model):
 
     path = ""
     if os.getenv("IS_DOCKER"):
-        path = "/var/lib/odoo"
+        path = "/var/lib/odoo/"
     loaded_image = fields.Binary(string='Loaded image', attachment=True)
     loaded_image_name = fields.Char(string="Loaded image name")
     employee_id = fields.Many2one(comodel_name="hr.employee", string="Employee", readonly=True)
