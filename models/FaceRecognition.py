@@ -11,6 +11,9 @@ import os
 class FaceRecognition(models.Model):
     _name = 'face.recognition'
 
+    path = ""
+    if os.getenv("IS_DOCKER"):
+        path = "/var/lib/odoo"
     loaded_image = fields.Binary(string='Loaded image', attachment=True)
     loaded_image_name = fields.Char(string="Loaded image name")
     employee_id = fields.Many2one(comodel_name="hr.employee", string="Employee", readonly=True)
@@ -25,9 +28,11 @@ class FaceRecognition(models.Model):
         return fr
 
     def calculate_percentage(self, vals):
-        with open(vals["loaded_image_name"], "wb") as unknown_image_file:
+        image_path = self.path + vals["loaded_image_name"]
+        with open(image_path, "wb") as unknown_image_file:
             unknown_image_file.write(base64.b64decode(vals["loaded_image"]))
-        unknown_encoding = face_recognition.face_encodings(face_recognition.load_image_file(vals["loaded_image_name"]))
+        unknown_encoding = face_recognition.face_encodings(
+            face_recognition.load_image_file(image_path))
         if not unknown_encoding:
             print("This picture has no faces")
             return
@@ -42,22 +47,21 @@ class FaceRecognition(models.Model):
         vals["percentage"] = len(list(filter(lambda x: x, results))) / len(results) * 100
 
         unknown_image_file.close()
-        os.remove(vals["loaded_image_name"])
+        os.remove(image_path)
 
         return vals
 
     def compare(self):
-        with open(self.loaded_image_name, "wb") as unknown_image_file:
+        image_path = self.path + self.loaded_image_name
+        with open(image_path, "wb") as unknown_image_file:
             unknown_image_file.write(base64.b64decode(self.loaded_image))
-        unknown_encoding = face_recognition.face_encodings(face_recognition.load_image_file(self.loaded_image_name))
+        unknown_encoding = face_recognition.face_encodings(face_recognition.load_image_file(image_path))
         if not unknown_encoding:
             print("This picture has no faces")
             raise ValidationError("This picture has no faces")
-            return
         if len(unknown_encoding) > 1:
             print("This picture has more than 1 face")
             raise ValidationError("This picture has more than 1 face")
-            return
         known_encodings = []
         for attachment in self.employee_id.attachment_ids:
             known_encodings.append(face_recognition.face_encodings(
@@ -72,11 +76,11 @@ class FaceRecognition(models.Model):
             self.employee_id.user_id.name, percentage)
         context["default_image"] = self.loaded_image
         context["default_employee_id"] = self.employee_id.id
-        context["default_mimetype"] = magic.Magic(mime=True).from_file(self.loaded_image_name)
-        context["default_image_name"] = self.loaded_image_name
+        context["default_mimetype"] = magic.Magic(mime=True).from_file(image_path)
+        context["default_image_name"] = image_path
 
         unknown_image_file.close()
-        os.remove(self.loaded_image_name)
+        os.remove(image_path)
 
         return {
             "name": "Result",
