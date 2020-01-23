@@ -43,7 +43,7 @@ class FaceRecognition(models.Model):
         for attachment in self.env["hr.employee"].browse(vals["employee_id"]).attachment_ids:
             known_encodings.append(face_recognition.face_encodings(
                 face_recognition.load_image_file(attachment._full_path(attachment.store_fname)))[0])
-        results = face_recognition.compare_faces(known_encodings, unknown_encoding[0])
+        results = face_recognition.compare_faces(known_encodings, unknown_encoding[0], 0.4)
         vals["percentage"] = len(list(filter(lambda x: x, results))) / len(results) * 100
 
         unknown_image_file.close()
@@ -66,7 +66,7 @@ class FaceRecognition(models.Model):
         for attachment in self.employee_id.attachment_ids:
             known_encodings.append(face_recognition.face_encodings(
                 face_recognition.load_image_file(attachment._full_path(attachment.store_fname)))[0])
-        results = face_recognition.compare_faces(known_encodings, unknown_encoding[0])
+        results = face_recognition.compare_faces(known_encodings, unknown_encoding[0], 0.4)
         percentage = len(list(filter(lambda x: x, results))) / len(results) * 100
         view = self.env.ref('face_recognition.face_recognition_message_wizard')
         context = dict(self._context or {})
