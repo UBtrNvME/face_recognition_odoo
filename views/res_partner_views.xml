@@ -9,7 +9,8 @@
             <field name="arch" type="xml">
                 <xpath expr="//page[@name='hr_settings']" position="after">
                     <page name="photos" string="Photos">
-                        <field name="attachment_ids" context="{'default_res_id': active_id, 'default_res_model': 'hr.employee'}">
+                        <field name="attachment_ids"
+                               context="{'default_res_id': active_id, 'default_res_model': 'hr.employee'}">
                             <kanban>
                                 <field name="datas"/>
                                 <field name="id"/>
@@ -38,6 +39,7 @@
                                 class="oe_highlight"
                                 icon="fa-camera"
                                 confirm="You will have to load image to check if it is the same person"/>
+                        <button name="method_webcam_trigger" type="object" string="Camera"/>
                     </header>
                 </xpath>
             </field>
@@ -51,7 +53,7 @@
                     <sheet>
                         <group>
                             <field name="id"/>
-                            <field name="image"/>
+                            <field name="image_512"/>
                         </group>
                     </sheet>
                 </form>

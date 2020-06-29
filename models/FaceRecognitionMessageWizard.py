@@ -29,7 +29,7 @@ class FaceRecognitionMessageWizard(models.TransientModel):
             "INSERT INTO face_recognition_hr_employee_ir_attachments_rel (employee_id, attachment_id) VALUES (%d, %d)" %
             (self.employee_id.id, attachment.id))
 
-    @api.one
     @api.depends("percentage", "name")
     def _get_message(self):
-        self.message = "This person is %s by %d percent probability" % (self.name, self.percentage)
+        for wizard in self:
+            wizard.message = "This person is %s by %d percent probability" % (wizard.name, wizard.percentage)
