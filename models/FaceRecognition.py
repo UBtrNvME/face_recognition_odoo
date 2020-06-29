@@ -73,7 +73,7 @@ class FaceRecognition(models.Model):
         context["default_name"] = self.employee_id.user_id.name
         context["default_percentage"] = percentage
         context["default_message"] = "This employee is %s by %d percent probability" % (
-            self.employee_id.user_id.name, percentage)
+            self.employee_id.name, percentage)
         context["default_image"] = self.loaded_image
         context["default_employee_id"] = self.employee_id.id
         context["default_mimetype"] = magic.Magic(mime=True).from_file(image_path)
@@ -85,11 +85,10 @@ class FaceRecognition(models.Model):
         return {
             "name": "Result",
             "type": "ir.actions.act_window",
-            "view_type": "form",
             "view_mode": "form",
             "res_model": "face.recognition.message.wizard",
             "views": [(view.id, "form")],
-            "view_id": view.id,
+            # "view_id": view.id,
             "target": "new",
             "context": context
         }
