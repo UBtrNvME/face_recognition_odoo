@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api, exceptions
-from odoo.exceptions import ValidationError
-import face_recognition
 import base64
-import magic
 import os
 
+import cv2
+import face_recognition
+import magic
+from vidgear.gears import VideoGear
 
-class FaceRecognition(models.Model):
+from odoo import api, fields, models
+from odoo.exceptions import ValidationError
+
+
+class FaceRecognition(models.TransientModel):
     _name = 'face.recognition'
 
     path = ""
@@ -19,6 +23,39 @@ class FaceRecognition(models.Model):
     employee_id = fields.Many2one(comodel_name="hr.employee", string="Employee", readonly=True)
     run_from_rn = fields.Boolean(string="Run from React Native")
     percentage = fields.Float(string="Percentage")
+
+    def camera_capture(self):
+        # enable enablePiCamera boolean flag to access PiGear API backend
+        stream = VideoGear().start()
+        # loop over
+        while True:
+            # read frames from stream
+            frame = stream.read()
+            # check for frame if Nonetype
+            if frame is None:
+                break
+            # {do something with the frame here}
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord("s"):
+                is_success, im_buff_file = cv2.imencode('.jpg', frame)
+                image = im_buff_file
+                # close output window
+                cv2.destroyAllWindows()
+                # safely close video stream
+                stream.stop()
+                print(image, type(image), sep="\n")
+                return ("image_eid%d_%d.jpg" % (
+                    self.employee_id.id, len(self.employee_id.attachment_ids) + 1), base64.b64encode(image))
+
+            # Show output window
+            cv2.imshow("Output Frame", frame)
+            # check for 'q' key if pressed
+            if key == ord("q"):
+                break
+        # close output window
+        cv2.destroyAllWindows()
+        # safely close video stream
+        stream.stop()
 
     @api.model
     def create(self, vals):
@@ -83,12 +120,12 @@ class FaceRecognition(models.Model):
         os.remove(image_path)
 
         return {
-            "name": "Result",
-            "type": "ir.actions.act_window",
+            "name"     : "Result",
+            "type"     : "ir.actions.act_window",
             "view_mode": "form",
             "res_model": "face.recognition.message.wizard",
-            "views": [(view.id, "form")],
+            "views"    : [(view.id, "form")],
             # "view_id": view.id,
-            "target": "new",
-            "context": context
+            "target"   : "new",
+            "context"  : context
         }
