@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from odoo import fields, models
-
+from ..scripts import gui
+import tkinter
 
 class HR(models.Model):
     _inherit = 'hr.employee'
@@ -21,3 +22,8 @@ class HR(models.Model):
             # 'view_id': self.env.ref("face_recognition.face_recognition_compare_form").id,
             'target'   : 'new'
         }
+
+    def take_employee_photos(self):
+        photobooth = gui.App(tkinter.Tk(), "Take Pictures of Employee")
+        images = photobooth.snapshotes_in64base
+        print(images)

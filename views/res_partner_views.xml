@@ -39,7 +39,7 @@
                                 class="oe_highlight"
                                 icon="fa-camera"
                                 confirm="You will have to load image to check if it is the same person"/>
-<!--                        <button name="camera_capture" type="object" string="Camera"/>-->
+                        <button name="take_employee_photos" type="object" string="Camera"/>
                     </header>
                 </xpath>
             </field>
