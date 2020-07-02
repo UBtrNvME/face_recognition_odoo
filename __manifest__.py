@@ -27,6 +27,10 @@
         'views/res_partner_views.xml',
         'views/face_recognition_views.xml',
         'views/face_recognition_message_wizard.xml',
+        'views/employee_photobooth.xml'
+    ],
+    'qweb': [
+        'static/src/xml/photobooth_template.xml'
     ],
     'sequence': -1,
     'application': True,
