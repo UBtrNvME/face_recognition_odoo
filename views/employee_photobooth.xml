@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="qzhub_dashboard_view">
+            <field name="name">employee.photobooth</field>
+            <field name="model">employee.photobooth</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <field name="employee_id"/>
+                </kanban>
+            </field>
+        </record>
+
+
+        <record id="face_recognition_photobooth_action" model="ir.actions.client">
+            <field name="name">Photoboth</field>
+            <field name="tag">face_recognition.photobooth</field>
+        </record>
+
+        <menuitem id="photobooth_face_rec"
+                  name="Bongacam"
+                  parent="hr.menu_hr_root"
+                  groups="hr.group_hr_manager,hr.group_hr_user"
+                  action="face_recognition_photobooth_action"
+                  sequence="10"/>
+
+
+        <template id="assets_backend" name="Photobooth Assets" inherit_id="web.assets_backend">
+            <xpath expr="." position="inside">
+                <script type="text/javascript" src="/face_recognition/static/src/js/photobooth.js"/>
+            </xpath>
+        </template>
+    </data>
+</odoo>
