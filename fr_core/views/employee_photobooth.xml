@@ -4,7 +4,7 @@
 
         <record id="face_recognition_photobooth_action" model="ir.actions.client">
             <field name="name">Photoboth</field>
-            <field name="tag">face_recognition.photobooth</field>
+            <field name="tag">fr_core.photobooth</field>
             <field name="target">current</field>
         </record>
 

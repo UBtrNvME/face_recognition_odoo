@@ -1,4 +1,4 @@
-odoo.define('face_recognition.field_many2one_form_preview', function (require) {
+odoo.define('fr_core.field_many2one_form_preview', function (require) {
     "use strict";
 
     let core = require('web.core'),

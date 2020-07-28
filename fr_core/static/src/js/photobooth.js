@@ -1,4 +1,4 @@
-odoo.define('face_recognition.photobooth', function (require) {
+odoo.define('fr_core.photobooth', function (require) {
     "use strict";
 
     var AbstractAction = require('web.AbstractAction');
@@ -26,7 +26,7 @@ odoo.define('face_recognition.photobooth', function (require) {
         willStart: function () {
             let self = this;
             return this._super.apply(this, arguments).then(function () {
-                if (self.Action.xml_id === "face_recognition.face_recognition_create_face_model_action") {
+                if (self.Action.xml_id === "fr_core.face_recognition_create_face_model_action") {
                     self.Mode = "Create";
                 } else {
                     self.Mode = "Recognise";
@@ -266,7 +266,7 @@ odoo.define('face_recognition.photobooth', function (require) {
             }
         }
     });
-    core.action_registry.add('face_recognition.photobooth', Photobooth);
+    core.action_registry.add('fr_core.photobooth', Photobooth);
 
     return Photobooth;
 

@@ -22,7 +22,7 @@
                                     <field name="is_encodings_hidden" invisible="True"/>
                             </button>
 
-                            <button name="face_recognition.face_recognition_create_face_model_action" type="action" string="Make Face Model"
+                            <button name="fr_core.face_recognition_create_face_model_action" type="action" string="Make Face Model"
                                     icon="fa-smile-o" class="oe_stat_button"/>
 
                         </div>
@@ -66,7 +66,7 @@
         </record>
         <record id="face_recognition_create_face_model_action" model="ir.actions.client">
             <field name="name">Photoboth</field>
-            <field name="tag">face_recognition.photobooth</field>
+            <field name="tag">fr_core.photobooth</field>
             <field name="target">current</field>
         </record>
 
