@@ -8,9 +8,9 @@
                 <form>
                     <sheet>
                         <group>
-                            <field name="loaded_image_name"/>
                             <field name="loaded_image" widget="image" filename="loaded_image_name"/>
-                            <field name="employee_id"/>
+                            <field name="loaded_image_name" invisible="1"/>
+                            <field name="partner_id"/>
                         </group>
                     </sheet>
                     <footer>
