@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="assets_backend" inherit_id="web.assets_backend">
+        <xpath expr="." position="inside">
+            <link href="/face_recognition/static/src/css/field_many2one_form.css" rel="stylesheet" type="text/css"/>
+            <link href="/face_recognition/static/src/scss/face_recognition_attendance.scss" rel="stylesheet"
+                  type="text/scss"/>
+            <script src="/face_recognition/static/src/js/face_encoding_form_widget.js" type="text/javascript"/>
+            <script type="text/javascript" src="/face_recognition/static/src/js/photobooth.js"/>
+            <script type="text/javascript" src="/face_recognition/static/src/js/kiosk_mode_extended.js"/>
+        </xpath>
+    </template>
+
+    <template id="assets_frontend" inherit_id="web.assets_frontend" name="Auth Assets">
+        <xpath expr="." position="inside">
+            <script type="text/javascript" src="/face_recognition/static/src/js/face_recognition_page.js"/>
+            <script type="text/javascript" src="/face_recognition/static/lib/forTheWatch.js"/>
+            <link href="/face_recognition/static/src/scss/face_recognition_page.scss" rel="stylesheet"
+                  type="text/scss"/>
+
+        </xpath>
+    </template>
+
+    <template id="face_recognition.login" name="Web Login Layout" inherit_id="web.login">
+
+        <xpath expr="//form[@class='oe_login_form']" position="replace">
+            <t t-set="widget" t-value="request.params"/>
+            <t t-if="'login' in widget">
+                <t t-set="login" t-value="widget['login']"/>
+            </t>
+            <t t-if="'hasPassword' in widget">
+                <t t-set="hasPassword" t-value="widget['hasPassword']"/>
+            </t>
+            <t t-if="'name' in widget">
+                <t t-set="name" t-value="widget['name']"/>
+            </t>
+            <t t-if="'isRecognised' in widget">
+                <t t-set="isRecognised" t-value="widget['isRecognised']"/>
+            </t>
+
+            <form class="oe_login_form" role="form" method="post" onsubmit="this.action = this.action + location.hash"
+                  action="/web/login">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                <div class="form-group field-db" t-if="databases and len(databases) &gt; 1">
+                    <label for="db" class="col-form-label">Database</label>
+                    <div t-attf-class="input-group {{'input-group-sm' if form_small else ''}}">
+                        <input type="text" name="db" t-att-value="request.db" id="db"
+                               t-attf-class="form-control #{'form-control-sm' if form_small else ''}"
+                               required="required" readonly="readonly"/>
+                        <span class="input-group-append">
+                            <a role="button" href="/web/database/selector" class="btn btn-secondary">Select
+                                <i class="fa fa-database" role="img" aria-label="Database" title="Database"/>
+                            </a>
+                        </span>
+                    </div>
+                </div>
+                <t t-if="isRecognised=='true'">
+                    <t t-if="login=='false'">
+                        <div class="form-group field-login">
+                            <label for="login">Email</label>
+                            <input type="text" placeholder="Email" name="login" id="login" required="required"
+                                   autofocus="autofocus"
+                                   autocapitalize="off" t-att-value="login"
+                                   t-attf-class="form-control #{'form-control-sm' if form_small else ''}"/>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <input type="text" placeholder="Email" name="login" id="login" required="required"
+                               autofocus="autofocus"
+                               autocapitalize="off" t-att-value="login"
+                               t-attf-class="form-control #{'form-control-sm' if form_small else ''}" style="opacity: 0; height: 0; margin: 0; padding: 0;"/>
+                        <h2>Hello,
+                            <span>
+                                <t t-esc="name"/>
+                            </span>
+                            !
+                        </h2>
+                    </t>
+
+                    <t t-if="hasPassword=='true'">
+
+                        <h4>Please enter your password to continue</h4>
+                        <br/>
+                        <div class="form-group field-password">
+                            <!--<label for="password">Password</label>-->
+                            <input type="password" placeholder="Password" name="password" id="password"
+                                   required="required"
+                                   autocomplete="current-password" maxlength="4096"
+                                   t-attf-class="form-control #{'form-control-sm' if form_small else ''}"
+                                   t-att-autofocus="'autofocus' if login else None"/>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <h4>Sorry, but your account has no password!</h4>
+                        <h4>Click here to notify us!</h4>
+                    </t>
+
+                    <p class="alert alert-danger" t-if="error" role="alert">
+                        <t t-esc="error"/>
+                    </p>
+                    <p class="alert alert-success" t-if="message" role="status">
+                        <t t-esc="message"/>
+                    </p>
+
+                    <t t-if="hasPassword=='true'">
+                        <div t-attf-class="clearfix oe_login_buttons text-center mb-1 {{'pt-2' if form_small else 'pt-3'}}">
+                            <button type="submit" class="btn btn-primary btn-block">Log in</button>
+                            <div class="justify-content-between mt-2 d-flex small">
+                                <a t-if="reset_password_enabled" t-attf-href="/web/reset_password?{{ keep_query() }}">
+                                    Reset
+                                    Password
+                                </a>
+                            </div>
+                            <t t-if="debug">
+                                <button type="submit" name="redirect" value="/web/become"
+                                        class="btn btn-link btn-sm btn-block">Log in as superuser
+                                </button>
+
+                            </t>
+                            <div class="o_login_auth"/>
+                        </div>
+                    </t>
+                </t>
+                <t t-else="">
+                    <div class="card">
+                        <h3>Sorry, but we cannot find user with your face encoding in the database</h3>
+                        <h4>Contact Administrator, to add face encoding to your profile</h4>
+                    </div>
+
+                </t>
+
+
+                <input type="hidden" name="redirect"/>
+            </form>
+        </xpath>
+    </template>
+
+    <template id="face_recognition_page" name="Example page">
+        <t t-call="website.layout">
+            <div class="qzhub_signup_form_face_recognition">
+                <div class="qzhub_container" id="photobooth-container-with-all-things">
+
+                    <video autoplay="1" muted="1" playsinline="1" id="photobooth" class="video_rec">
+
+                    </video>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                             aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 20%"
+                             id="progress-bar"></div>
+                    </div>
+
+                </div>
+            </div>
+        </t>
+
+    </template>
+
+</odoo>
