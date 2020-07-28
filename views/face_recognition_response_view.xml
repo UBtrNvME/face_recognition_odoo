@@ -11,7 +11,8 @@
                     <field name="image" widget="image"/>
                     <footer>
                         <button string="Close" class="oe_highlight" special="cancel"/>
-                        <button string="Add to this person's photos" class="btn-primary" type="object" name="add_photo"/>
+                        <button string="Add to this person's photos" class="btn-primary" type="object"
+                                name="add_photo"/>
                     </footer>
                 </form>
             </field>

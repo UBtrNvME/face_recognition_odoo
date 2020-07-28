@@ -1,3 +1,2 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_admin_face_recognition, FR admin access,model_face_recognition,base.user_root,1,1,1,1
-access_admin_face_recognition_message_wizard, FR Message Wizard admin access,model_face_recognition_message_wizard,base.user_root,1,1,1,1
+access_face_encoding_manager,access.face.encoding.manager,face_recognition.model_res_partner_face_model,base.group_system,1,1,1,1
