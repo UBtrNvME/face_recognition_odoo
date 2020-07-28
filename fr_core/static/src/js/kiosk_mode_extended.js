@@ -1,4 +1,4 @@
-odoo.define('face_recognition.kiosk_mode_extended', function (require) {
+odoo.define('fr_core.kiosk_mode_extended', function (require) {
     "use strict";
 
     let MyAttendances = require('hr_attendance.my_attendances')
@@ -8,7 +8,7 @@ odoo.define('face_recognition.kiosk_mode_extended', function (require) {
         update_attendance: function () {
             console.log("Hello")
             let self = this;
-            this.do_action("face_recognition.face_recognition_photobooth_action", {
+            this.do_action("fr_core.face_recognition_photobooth_action", {
                 additional_context: {
                     employee_id: self.employee.id,
                 }

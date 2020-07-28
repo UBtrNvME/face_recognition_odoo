@@ -1,4 +1,4 @@
-odoo.define('face_recognition.face_recognise_sign_up', function (require) {
+odoo.define('fr_core.face_recognise_sign_up', function (require) {
 'use strict';
 
 var publicWidget = require('web.public.widget');

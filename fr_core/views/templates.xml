@@ -2,26 +2,26 @@
 <odoo>
     <template id="assets_backend" inherit_id="web.assets_backend">
         <xpath expr="." position="inside">
-            <link href="/face_recognition/static/src/css/field_many2one_form.css" rel="stylesheet" type="text/css"/>
-            <link href="/face_recognition/static/src/scss/face_recognition_attendance.scss" rel="stylesheet"
+            <link href="/fr_core/static/src/css/field_many2one_form.css" rel="stylesheet" type="text/css"/>
+            <link href="/fr_core/static/src/scss/face_recognition_attendance.scss" rel="stylesheet"
                   type="text/scss"/>
-            <script src="/face_recognition/static/src/js/face_encoding_form_widget.js" type="text/javascript"/>
-            <script type="text/javascript" src="/face_recognition/static/src/js/photobooth.js"/>
-            <script type="text/javascript" src="/face_recognition/static/src/js/kiosk_mode_extended.js"/>
+            <script src="/fr_core/static/src/js/face_encoding_form_widget.js" type="text/javascript"/>
+            <script type="text/javascript" src="/fr_core/static/src/js/photobooth.js"/>
+            <script type="text/javascript" src="/fr_core/static/src/js/kiosk_mode_extended.js"/>
         </xpath>
     </template>
 
     <template id="assets_frontend" inherit_id="web.assets_frontend" name="Auth Assets">
         <xpath expr="." position="inside">
-            <script type="text/javascript" src="/face_recognition/static/src/js/face_recognition_page.js"/>
-            <script type="text/javascript" src="/face_recognition/static/lib/forTheWatch.js"/>
-            <link href="/face_recognition/static/src/scss/face_recognition_page.scss" rel="stylesheet"
+            <script type="text/javascript" src="/fr_core/static/src/js/face_recognition_page.js"/>
+            <script type="text/javascript" src="/fr_core/static/lib/forTheWatch.js"/>
+            <link href="/fr_core/static/src/scss/face_recognition_page.scss" rel="stylesheet"
                   type="text/scss"/>
 
         </xpath>
     </template>
 
-    <template id="face_recognition.login" name="Web Login Layout" inherit_id="web.login">
+    <template id="fr_core.login" name="Web Login Layout" inherit_id="web.login">
 
         <xpath expr="//form[@class='oe_login_form']" position="replace">
             <t t-set="widget" t-value="request.params"/>
