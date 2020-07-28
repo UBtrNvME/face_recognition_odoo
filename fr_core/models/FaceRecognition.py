@@ -88,7 +88,6 @@ class FaceRecognition(models.TransientModel):
     @api.model
     def find_id_of_the_user_on_the_image(self, face_image: str):
         encoding, result = self._check_image_for_face_and_return_if_only_one_encoding(face_image)
-        print(f"{result}")
         if not result:
             return -1
         if result == -2:
@@ -109,7 +108,6 @@ class FaceRecognition(models.TransientModel):
 
     def _check_image_for_faces_and_return_encodings(self, image):
         encoding = face_recognition.face_encodings(self.load_image_base64(image), None, 20, "large")
-        print(f"{encoding=}")
         if not self._is_face_on_encoding(encoding):
             return [], False
         return encoding, True

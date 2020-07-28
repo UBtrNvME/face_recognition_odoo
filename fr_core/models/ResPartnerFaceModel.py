@@ -216,7 +216,6 @@ class ResPartnerFaceModel(models.Model):
                     encoding_batch.append(face_model[list(face_model.keys())[0]])
                 results = face_recognition.compare_faces(encoding_batch, unknown_encoding[0], 0.4)
                 deleted = 0
-                print(f"{results=}")
                 for i in range(len(results)):
                     if not results[i]:
                         similar_partners.pop(i - deleted)

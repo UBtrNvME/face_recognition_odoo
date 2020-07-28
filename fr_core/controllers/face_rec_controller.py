@@ -76,7 +76,6 @@ class FaceRecognitionController(http.Controller):
         unknown_user_image = self.process_image_datas_to_base64(image_datas)
         user = request.env['face.recognition'].find_id_of_the_user_on_the_image(unknown_user_image)
         if not user or user == -1 or user == -2:
-            print(f"controller: {user=}")
             if user == 0:
                 return ["NoUser"]
             elif user == -1:
