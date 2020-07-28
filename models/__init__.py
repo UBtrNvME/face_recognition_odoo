@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+from . import ResUsers
+from . import ResPartner
 from . import FaceRecognition
-from . import FaceRecognitionMessageWizard
-from . import HR
-from . import IrAttachment
-from . import EmployeePhotoBooth
+from . import FaceRecognitionResponse
+from . import ResPartnerFaceModel
