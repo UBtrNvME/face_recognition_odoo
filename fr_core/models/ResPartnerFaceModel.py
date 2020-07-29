@@ -232,7 +232,7 @@ class ResPartnerFaceModel(models.Model):
     def _organize_model_objects_in_dictionary(self):
         face_models = []
         partners = []
-        gotten_face_models_records = self.search_read([["type", "=", "perm"]], fields=['partner_id', 'face_encodings'])
+        gotten_face_models_records = self.search_read([["type", "=", "perm"],["face_encodings", "!=", ""]], fields=['partner_id', 'face_encodings'])
         for record in gotten_face_models_records:
             face_models.append(json.loads(record['face_encodings']))
             partners.append(record['partner_id'][0])
