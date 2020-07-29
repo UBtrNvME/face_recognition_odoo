@@ -110,7 +110,7 @@ class HomeInheritedController(Home):
             return super(HomeInheritedController, self).web_login(redirect=redirect, **kw)
         else:
             return http.redirect_with_hash('/web/login/face_recognition')
-    #TODO make more galant  solution
+    #TODO make more galant solution
     @http.route("/web/login/admin", type="http", auth="none")
     def web_login_admin(self, redirect=None, **kw):
         qcontext = "?login=admin&hasPassword=true&name=Administrator&isRecognised=true"
