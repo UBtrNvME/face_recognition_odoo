@@ -65,7 +65,7 @@ class FaceRecognitionController(http.Controller):
     @http.route('/web/login/face_recognition', type='http', auth="public", website=True)
     def login_face_recognition(self, **kw):
         # from here you can call
-        return request.render('face_recognition.face_recognition_page')
+        return request.render('fr_core.face_recognition_page')
 
     @http.route(['/api/v1/processImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
@@ -101,10 +101,17 @@ class HomeInheritedController(Home):
     @http.route()
     def web_login(self, redirect=None, **kw):
         if request.httprequest.method == 'POST':
-            print("POST")
             return super(HomeInheritedController, self).web_login(redirect=redirect, **kw)
-        print("GET")
+
+        if 'login' in request.params:
+            return super(HomeInheritedController, self).web_login(redirect=redirect, **kw)
+
         if 'isRecognised' in request.params:
             return super(HomeInheritedController, self).web_login(redirect=redirect, **kw)
         else:
             return http.redirect_with_hash('/web/login/face_recognition')
+    #TODO make more galant  solution
+    @http.route("/web/login/admin", type="http", auth="none")
+    def web_login_admin(self, redirect=None, **kw):
+        qcontext = "?login=admin&hasPassword=true&name=Administrator&isRecognised=true"
+        return http.redirect_with_hash('/web/login%s' % qcontext)
