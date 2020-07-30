@@ -24,6 +24,7 @@ class ResPartnerFaceModel(models.Model):
     type = fields.Selection(selection=[("temp", "Temporary"), ("perm", "Permanent")],
                             string="Permanent/Temporary Encoding",
                             default="temp")
+    number_of_encodings = fields.Integer(string="Number of Encodings", default=0)
     attachment_ids = fields.Many2many(comodel_name="ir.attachment",
                                       relation="res_partner_face_model_ir_attachment_rel",
                                       column1="face_model_id",
@@ -145,10 +146,10 @@ class ResPartnerFaceModel(models.Model):
 
         if vals.get("type"):
             if vals["type"] == 'temp':
-                vals["name"] = self.env['ir.sequence'].next_by_code('seq.face.model.temporary')
+                vals["name"] = self.env['ir.sequence'].sudo().next_by_code('seq.face.model.temporary')
             else:
                 print(vals["partner_id"])
-                vals["name"] = self.env['ir.sequence'].next_by_code('seq.face.model.permanent') + "-" + \
+                vals["name"] = self.env['ir.sequence'].sudo().next_by_code('seq.face.model.permanent') + "-" + \
                                self.env["res.partner"].browse(vals["partner_id"])[0].name
 
         if vals.get("attachment_ids") != [[6, 0, []]]:
@@ -187,12 +188,14 @@ class ResPartnerFaceModel(models.Model):
         elif attachment_tuple and attachment_tuple[0][0] == 6:
             attachment_ids = attachment_tuple[0][2]
             json_data = json.loads(self.face_encodings) if self.face_encodings != False else {}
+            number_of_encodings = 0
             for attachment_id in attachment_ids:
-                print(attachment_id)
+                number_of_encodings += 1
                 if attachment_id not in json_data:
                     json_data[str(attachment_id)] = list(
                         self._compute_face_encoding(self.env["ir.attachment"].browse(attachment_id)[0].datas))
             vals["face_encodings"] = json.dumps(json_data)
+            vals["number_of_encodings"] = number_of_encodings
 
         return super(ResPartnerFaceModel, self).write(vals)
 
