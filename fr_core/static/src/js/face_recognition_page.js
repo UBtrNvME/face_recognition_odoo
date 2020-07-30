@@ -61,8 +61,8 @@ publicWidget.registry.SignUpFaceRecognition = publicWidget.Widget.extend({
                 window.location.href = `${window.location.origin}/web/login?isRecognised=${true}&login=${result[0]}&hasPassword=${result[1]}&name=${result[2]}`
             }
             else {
-                if (result[0] === "TooManyFaces") {
-                    let tryAgain = window.confirm("Sorry, too many faces on the image, try again!")
+                if (result[0] === "TooManyFaces") { // Too Many Faces
+                    let tryAgain = window.confirm("Sorry, more than one face in the frame, try again.")
                     self.$("#progress-bar").css('width', '20%');
                     self.$("#progress-bar").hide();
                     if (tryAgain) {
@@ -74,7 +74,7 @@ publicWidget.registry.SignUpFaceRecognition = publicWidget.Widget.extend({
                         window.location.href = `${window.location.origin}/`
                     }
                 } else if (result[0] === "NoFace") {
-                    let tryAgain = window.confirm("Sorry, but we cannot find any face on the image, try again!")
+                    let tryAgain = window.confirm("Sorry, camera didn't detect any face, try again.")
                     self.$("#progress-bar").css('width', '20%');
                     self.$("#progress-bar").hide();
                     if (tryAgain) {
