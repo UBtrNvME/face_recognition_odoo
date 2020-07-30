@@ -64,11 +64,43 @@
                 </form>
             </field>
         </record>
+
+        <record id="res_partner_face_model_tree_view" model="ir.ui.view">
+            <field name="name">res.partner.face.model.view.tree</field>
+            <field name="model">res.partner.face.model</field>
+            <field name="arch"  type="xml">
+                <tree string="Face Models">
+                    <field name="name"/>
+                    <field name="type"/>
+                    <field name="partner_id"/>
+                    <field name="number_of_encodings"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="res_partner_face_model_action" model="ir.actions.act_window">
+            <field name="name">Show Face Models</field>
+            <field name="res_model">res.partner.face.model</field>
+            <field name="view_mode">tree,form</field>
+<!--            <field name="search_view_id" ref="crm_reveal_rule_view_search"/>-->
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a Face Model
+                </p><p>
+                Create a face model which will be used to recognition.
+            </p>
+            </field>
+        </record>
+
         <record id="face_recognition_create_face_model_action" model="ir.actions.client">
             <field name="name">Photoboth</field>
             <field name="tag">fr_core.photobooth</field>
             <field name="target">current</field>
         </record>
 
+        <menuitem id="menu_face_recognition_face_model"
+            name="Face Models"
+            sequence="10"
+            action="res_partner_face_model_action"/>
     </data>
 </odoo>
