@@ -162,7 +162,7 @@ class ResPartnerFaceModel(models.Model):
     def create_temporary_face_model(self, vals):
         if vals.get('image_in_base64') and vals.get('face_encoding'):
             image_in_base64, face_encoding = vals["image_in_base64"], vals["face_encoding"]
-            face_model = self.create({
+            face_model = self.sudo().create({
                 "type": "temp"
             })
             attachment, _ = face_model.add_new_face_image_attachment(image_in_base64, "temp")
