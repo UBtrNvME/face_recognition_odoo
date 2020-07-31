@@ -146,9 +146,7 @@
         <t t-call="website.layout">
             <div class="qzhub_signup_form_face_recognition">
                 <div class="qzhub_container" id="photobooth-container-with-all-things">
-
                     <video autoplay="1" muted="1" playsinline="1" id="photobooth" class="video_rec">
-
                     </video>
                     <div class="progress">
                         <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
@@ -159,7 +157,6 @@
                 </div>
             </div>
         </t>
-
     </template>
 
 </odoo>
