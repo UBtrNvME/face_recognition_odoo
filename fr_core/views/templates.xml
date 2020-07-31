@@ -2,7 +2,7 @@
 <odoo>
     <template id="assets_backend" inherit_id="web.assets_backend">
         <xpath expr="." position="inside">
-            <link href="/fr_core/static/src/css/field_many2one_form.css" rel="stylesheet" type="text/css"/>
+            <link href="/fr_core/static/src/scss/photobooth.scss" rel="stylesheet" type="text/scss"/>
             <link href="/fr_core/static/src/scss/face_recognition_attendance.scss" rel="stylesheet"
                   type="text/scss"/>
             <script src="/fr_core/static/src/js/face_encoding_form_widget.js" type="text/javascript"/>
@@ -80,7 +80,7 @@
 
                     <t t-if="hasPassword=='true'">
 
-                        <h4>Please enter your password to continue</h4>
+                        <h4 class="text-justify">Enter your password</h4>
                         <br/>
                         <div class="form-group field-password">
                             <!--<label for="password">Password</label>-->
@@ -92,8 +92,13 @@
                         </div>
                     </t>
                     <t t-else="">
-                        <h4>Sorry, but your account has no password!</h4>
-                        <h4>Click here to notify us!</h4>
+                        <div class="card text-justify" style="font-size: 18px;">
+                            <div class="card-header">System Notification</div>
+                            <div class="card-body">
+                                <p class="card-text">Sorry, but your account has no password!
+                                                     Click here to notify us!</p>
+                            </div>
+                        </div>
                     </t>
 
                     <p class="alert alert-danger" t-if="error" role="alert">
@@ -123,11 +128,12 @@
                     </t>
                 </t>
                 <t t-else="">
-                    <div class="card">
-                        <h3>Sorry, but we cannot find user with your face encoding in the database</h3>
-                        <h4>Contact Administrator, to add face encoding to your profile</h4>
+                    <div class="card text-justify" style="font-size: 18px;">
+                        <div class="card-header">System Notification</div>
+                        <div class="card-body">
+                            <p class="card-text">System couldn't recognize your face, please try again or contact administrator</p>
+                        </div>
                     </div>
-
                 </t>
 
 
@@ -140,20 +146,17 @@
         <t t-call="website.layout">
             <div class="qzhub_signup_form_face_recognition">
                 <div class="qzhub_container" id="photobooth-container-with-all-things">
-
                     <video autoplay="1" muted="1" playsinline="1" id="photobooth" class="video_rec">
-
                     </video>
                     <div class="progress">
                         <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
                              aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 20%"
-                             id="progress-bar"></div>
+                             id="progress-bar">
+                        </div>
                     </div>
-
                 </div>
             </div>
         </t>
-
     </template>
 
 </odoo>

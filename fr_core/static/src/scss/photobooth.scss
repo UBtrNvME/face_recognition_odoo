@@ -1,0 +1,25 @@
+.qzhub_action_photobooth_face_recognition {
+
+  width: 400px;
+  margin:auto;
+  .qzhub_container {
+    width: 400px;
+    text-align: center;
+    align-content: center;
+    margin: 0;
+    border: 0;
+    .progress {
+      margin-top: 0;
+    }
+
+    #progress-bar{
+      display: none;
+
+    }
+    .video_rec{
+      width: 400px;
+      height: 300px;
+      margin-bottom: 0;
+    }
+  }
+}

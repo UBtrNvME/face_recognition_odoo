@@ -24,6 +24,7 @@ class ResPartnerFaceModel(models.Model):
     type = fields.Selection(selection=[("temp", "Temporary"), ("perm", "Permanent")],
                             string="Permanent/Temporary Encoding",
                             default="temp")
+    number_of_encodings = fields.Integer(string="Number of Encodings", default=0)
     attachment_ids = fields.Many2many(comodel_name="ir.attachment",
                                       relation="res_partner_face_model_ir_attachment_rel",
                                       column1="face_model_id",
@@ -118,7 +119,7 @@ class ResPartnerFaceModel(models.Model):
                 jsondata[str(attachment.id)] = list(new_encoding)
                 fm.face_encodings = json.dumps(jsondata)
                 response = "Created Encoding"
-            print(attachment)
+            fm.number_of_encodings += 1
             return attachment, response
 
     def show_face_encodings(self):
@@ -137,37 +138,39 @@ class ResPartnerFaceModel(models.Model):
 
     @api.model
     def create(self, vals):
-        print(vals)
+        partner_id = 0
         if vals.get("partner_id"):
+            partner_id = vals["partner_id"]
             if vals["type"] == 'temp':
                 vals["type"] = 'perm'
                 # raise Warning(_("Error!"), _("We are going to make this as a permanent Face Model"))
 
         if vals.get("type"):
             if vals["type"] == 'temp':
-                vals["name"] = self.env['ir.sequence'].next_by_code('seq.face.model.temporary')
+                vals["name"] = self.env['ir.sequence'].sudo().next_by_code('seq.face.model.temporary')
             else:
-                print(vals["partner_id"])
-                vals["name"] = self.env['ir.sequence'].next_by_code('seq.face.model.permanent') + "-" + \
+                vals["name"] = self.env['ir.sequence'].sudo().next_by_code('seq.face.model.permanent') + "-" + \
                                self.env["res.partner"].browse(vals["partner_id"])[0].name
 
         if vals.get("attachment_ids") != [[6, 0, []]]:
             pass
+        fm = super(ResPartnerFaceModel, self).create(vals)
+        print(fm)
+        if partner_id:
+            fm._attach_face_model_id_to_referenced_res_partner(partner_id)
 
-        return super(ResPartnerFaceModel, self).create(vals)
+        return fm
 
-    #TODO Add mechanics of removing uneccessary temp face models
+    #TODO Add mechanics of removing unnecessary temp face models
     @api.model
     def create_temporary_face_model(self, vals):
         if vals.get('image_in_base64') and vals.get('face_encoding'):
             image_in_base64, face_encoding = vals["image_in_base64"], vals["face_encoding"]
-            face_model = self.create({
+            face_model = self.sudo().create({
                 "type": "temp"
             })
             attachment, _ = face_model.add_new_face_image_attachment(image_in_base64, "temp")
             #TODO move this block of code into separate function
-            print(face_encoding)
-            print(list(face_encoding[0]))
             face_model.face_encodings = face_model.face_encodings or "{}"
             jsondata = json.loads(face_model.face_encodings)
             jsondata[str(attachment.id)] = list(face_encoding[0])
@@ -175,24 +178,39 @@ class ResPartnerFaceModel(models.Model):
 
     def write(self, vals):
         attachment_tuple = vals.get("attachment_ids")
+        print(attachment_tuple)
         if attachment_tuple and attachment_tuple[0][0] == 6 and attachment_tuple[0][2] == []:
             self.face_encodings = ""
-
-        if vals.get("partner_id"):
-            if self.type == 'temp':
-                vals["type"] = "perm"
-                vals["name"] = self.env['ir.sequence'].next_by_code('seq.face.model.permanent') + "-" + \
-                               self.env["res.partner"].browse(vals["partner_id"])[0].name
-
         elif attachment_tuple and attachment_tuple[0][0] == 6:
             attachment_ids = attachment_tuple[0][2]
             json_data = json.loads(self.face_encodings) if self.face_encodings != False else {}
+            keys = list(json_data.keys())
+            for key in keys:
+                if key not in attachment_ids:
+                    json_data.pop(key)
+            number_of_encodings = 0
             for attachment_id in attachment_ids:
-                print(attachment_id)
+                number_of_encodings += 1
                 if attachment_id not in json_data:
                     json_data[str(attachment_id)] = list(
                         self._compute_face_encoding(self.env["ir.attachment"].browse(attachment_id)[0].datas))
             vals["face_encodings"] = json.dumps(json_data)
+            vals["number_of_encodings"] = number_of_encodings
+
+        if vals.get("partner_id"):
+            partner_id = vals["partner_id"]
+            if self.type == 'temp':
+                vals["type"] = "perm"
+                vals["name"] = self.env['ir.sequence'].next_by_code('seq.face.model.permanent') + "-" + \
+                               self.env["res.partner"].browse(vals["partner_id"])[0].name
+            if vals["partner_id"]:
+                self._attach_face_model_id_to_referenced_res_partner(partner_id)
+            elif "is_deleting" not in vals:
+                self._detach_face_model_id_from_referenced_res_partner()
+            else:
+                vals.pop("is_deleting")
+
+
 
         return super(ResPartnerFaceModel, self).write(vals)
 
@@ -237,3 +255,28 @@ class ResPartnerFaceModel(models.Model):
             face_models.append(json.loads(record['face_encodings']))
             partners.append(record['partner_id'][0])
         return partners, face_models
+
+    # TODO make better one2one mechanis
+    def _detach_face_model_id_from_referenced_res_partner(self):
+        """ Unlinks face model id from linked partner id.
+            In case there is no linked partner id raises AssertionError.
+
+        :return: None
+        """
+        assert self.partner_id, "Face model has no partner id!"
+        if self.partner_id.face_model_id != False:
+            self.partner_id.write({
+                "face_model_id": False,
+                "is_deleting": True,
+            })
+
+    def _attach_face_model_id_to_referenced_res_partner(self, partner_id: int):
+        """ Links values of partner_id given in the arguments and face model id.
+            In case there has not been given parameter raises AssertionError
+
+        :param partner_id: id of the partner to be linked with
+        :return:
+        """
+        assert partner_id, "No value has been given!"
+        partner = self.env["res.partner.face.model"].browse(partner_id)[0]
+        partner.face_model_id = self.id
