@@ -11,7 +11,8 @@ odoo.define('fr_core.photobooth', function (require) {
         events: {
             'click .qzhub_start_process': '_onStartProcess',
             'click .qzhub_take_shot': '_onTakeAShot',
-            'click .qzhub_finish_session': '_onFinishSession'
+            'click .qzhub_finish_session': '_onFinishSession',
+            'click .qzhub_btn_go_back': '_onGoBack'
         },
 
         init: function (parent, action, context) {
@@ -62,31 +63,39 @@ odoo.define('fr_core.photobooth', function (require) {
         },
         _onTakeAShot: function (event) {
             let self = this;
+            self.$("#progress-bar").show()
+            self.$("#progress-bar").css('width', '0%');
             let image = self._takeAPhoto();
             let url = `/api/v1/faceModel/${self.Action.context.active_id}/makeAttachment`;
             self.$(".qzhub_take_shot").hide();
             self.$(".qzhub_finish_session").hide();
             self._sendToController(url, image).then(function (result) {
+                self.$("#progress-bar").css('width', '100%');
                 self.$(".qzhub_take_shot").show();
                 console.log(result)
                 self.$(".qzhub_create_response_message_box").text("Ok, Now Take A New Angle");
                 self.$(".qzhub_finish_session").show();
+                self.$("#progress-bar").hide();
             });
+        },
 
+        _onGoBack: function (event) {
+            window.history.back()
 
         },
         _onFinishSession: function (event) {
             let self = this;
             let mediaStream = self.VideoObj.srcObject;
             mediaStream.getTracks()[0].stop()
-            this.do_action({
-                type: 'ir.actions.act_window',
-                target: 'current',
-                res_id: self.PartnerId,
-                res_model: 'res.partner',
-                views: [[false, 'form']],
-                context: {},
-            });
+            // this.do_action({
+            //     type: 'ir.actions.act_window',
+            //     target: 'current',
+            //     res_id: self.PartnerId,
+            //     res_model: 'res.partner',
+            //     views: [[false, 'form']],
+            //     context: {},
+            // });
+            window.history.back()
         },
 
         _startVideoStream: function () {
@@ -143,6 +152,7 @@ odoo.define('fr_core.photobooth', function (require) {
             canvas.height = video.offsetHeight;
             canvas.width = video.offsetWidth;
             canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            self.$("#progress-bar").css('width', '20%');
             return canvas.toDataURL("image/jpeg");
         },
         _sendToController: async function (apiPath, image) {
@@ -150,6 +160,7 @@ odoo.define('fr_core.photobooth', function (require) {
             const data = {
                 image_in_64encodeDataURL: image,
             };
+            self.$("#progress-bar").css('width', '40%');
             const othePram = {
                 headers: {
                     "Content-Type": "application/json",
@@ -162,6 +173,7 @@ odoo.define('fr_core.photobooth', function (require) {
             return fetch(url, othePram)
                 .then(data => {
                     console.log(data)
+                    self.$("#progress-bar").css('width', '80%');
                     return data.json()
                 })
                 .then(res => {
