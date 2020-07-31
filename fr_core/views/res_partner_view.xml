@@ -10,8 +10,11 @@
             <field name="arch" type="xml">
                 <xpath expr="//page[@name='internal_notes']" position="after">
                     <page name="photos_encodings" string="Photo Encodings">
-                        <field name="face_model_id"
+                        <group>
+                            <field name="face_model_id"
                                    context="{'default_partner_id': active_id}"/>
+                        </group>
+
 <!--                        <kanban>-->
 <!--                            <templates>-->
 <!--                                <t t-name="kanban-box">-->

@@ -2,7 +2,7 @@
 <odoo>
     <template id="assets_backend" inherit_id="web.assets_backend">
         <xpath expr="." position="inside">
-            <link href="/fr_core/static/src/css/field_many2one_form.css" rel="stylesheet" type="text/css"/>
+            <link href="/fr_core/static/src/scss/photobooth.scss" rel="stylesheet" type="text/scss"/>
             <link href="/fr_core/static/src/scss/face_recognition_attendance.scss" rel="stylesheet"
                   type="text/scss"/>
             <script src="/fr_core/static/src/js/face_encoding_form_widget.js" type="text/javascript"/>
@@ -98,7 +98,7 @@
                                 <p class="card-text">Sorry, but your account has no password!
                                                      Click here to notify us!</p>
                             </div>
-                    </div>
+                        </div>
                     </t>
 
                     <p class="alert alert-danger" t-if="error" role="alert">
