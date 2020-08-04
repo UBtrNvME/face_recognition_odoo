@@ -31,7 +31,8 @@ class ResPartnerFaceModel(models.Model):
     partner_id = fields.Many2one(comodel_name='res.partner',
                                  string="Partner",
                                  compute='compute_partner',
-                                 inverse='partner_inverse')
+                                 inverse='partner_inverse',
+                                 store=True)
     # Buffer for One2one field
     partner_ids = fields.One2many(comodel_name='res.partner',
                                   inverse_name='face_model_id')
@@ -180,6 +181,13 @@ class ResPartnerFaceModel(models.Model):
         attachment_tuple = vals.get("attachment_ids")
         if attachment_tuple and attachment_tuple[0][0] == 6 and attachment_tuple[0][2] == []:
             self.face_encodings = ""
+
+        if vals.get("partner_id"):
+            if self.type == 'temp':
+                vals["type"] = "perm"
+                vals["name"] = self.env['ir.sequence'].next_by_code('seq.face.model.permanent') + "-" + \
+                               self.env["res.partner"].browse(vals["partner_id"])[0].name
+
         elif attachment_tuple and attachment_tuple[0][0] == 6:
             attachment_ids = attachment_tuple[0][2]
             json_data = json.loads(self.face_encodings) if self.face_encodings != False else {}
@@ -195,12 +203,6 @@ class ResPartnerFaceModel(models.Model):
                         self._compute_face_encoding(self.env["ir.attachment"].browse(attachment_id)[0].datas))
             vals["face_encodings"] = json.dumps(json_data)
             vals["number_of_encodings"] = number_of_encodings
-
-        if vals.get("partner_id"):
-            if self.type == 'temp':
-                vals["type"] = "perm"
-                vals["name"] = self.env['ir.sequence'].next_by_code('seq.face.model.permanent') + "-" + \
-                               self.env["res.partner"].browse(vals["partner_id"])[0].name
 
         return super(ResPartnerFaceModel, self).write(vals)
 
@@ -256,7 +258,7 @@ class ResPartnerFaceModel(models.Model):
 
     def partner_inverse(self):
         for fm in self:
-            if len(fm.asset_ids) > 0:
+            if len(fm.partner_ids) > 0:
                 # delete previous reference
                 partner = self.env['res.partner'].browse(fm.partner_ids[0].id)
                 partner.face_model_id = False
