@@ -75,6 +75,7 @@ class FaceRecognitionController(http.Controller):
             return http.Response("No Terms Found", status=412)
         unknown_user_image = self.process_image_datas_to_base64(image_datas)
         user = request.env['face.recognition'].find_id_of_the_user_on_the_image(unknown_user_image)
+        print(5)
         if not user or user == -1 or user == -2:
             if user == 0:
                 return ["NoUser"]
@@ -82,6 +83,7 @@ class FaceRecognitionController(http.Controller):
                 return ["TooManyFaces"]
             else:
                 return ["NoFace"]
+        print(6)
         return [user.login, user.has_password, user.name]
 
     def process_image_datas_to_base64(self, image_datas):

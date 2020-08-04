@@ -152,9 +152,9 @@ class ResPartnerFaceModel(models.Model):
 
         if vals.get("type"):
             if vals["type"] == 'temp':
-                vals["name"] = self.env['ir.sequence'].sudo().next_by_code('seq.face.model.temporary')
+                vals["name"] = self.env['ir.sequence'].next_by_code('seq.face.model.temporary')
             else:
-                vals["name"] = self.env['ir.sequence'].sudo().next_by_code('seq.face.model.permanent') + "-" + \
+                vals["name"] = self.env['ir.sequence'].next_by_code('seq.face.model.permanent') + "-" + \
                                self.env["res.partner"].browse(vals["partner_id"])[0].name
 
         if vals.get("attachment_ids") != [[6, 0, []]]:
@@ -167,7 +167,7 @@ class ResPartnerFaceModel(models.Model):
     def create_temporary_face_model(self, vals):
         if vals.get('image_in_base64') and vals.get('face_encoding'):
             image_in_base64, face_encoding = vals["image_in_base64"], vals["face_encoding"]
-            face_model = self.sudo().create({
+            face_model = self.create({
                 "type": "temp"
             })
             attachment, _ = face_model.add_new_face_image_attachment(image_in_base64, "temp")
@@ -209,10 +209,14 @@ class ResPartnerFaceModel(models.Model):
     def compare_with_unknown(self, unknown_encoding):
         similar_partners, face_models = self._organize_model_objects_in_dictionary()
         batch_number = 0
+        print(1)
         if len(similar_partners) == 1:
             encoding_batch = []
+            print(1.2)
             for face_model in face_models:
+                print(1.5)
                 encoding_batch.append(face_model[list(face_model.keys())[0]])
+
             results = face_recognition.compare_faces(encoding_batch, unknown_encoding[0], 0.4)
             for i in range(len(results)):
                 if not results[i]:
@@ -231,7 +235,7 @@ class ResPartnerFaceModel(models.Model):
                         face_models.pop(i - deleted)
                         deleted += 1
                 batch_number += 1
-
+        print(2)
         if len(similar_partners) and len(similar_partners) <= 1:
             user = self.env['res.users'].search([['partner_id', '=', similar_partners[0]]])
         else:
