@@ -181,7 +181,6 @@ class ResPartnerFaceModel(models.Model):
         attachment_tuple = vals.get("attachment_ids")
         if attachment_tuple and attachment_tuple[0][0] == 6 and attachment_tuple[0][2] == []:
             self.face_encodings = ""
-
         if vals.get("partner_id"):
             if self.type == 'temp':
                 vals["type"] = "perm"
@@ -254,7 +253,9 @@ class ResPartnerFaceModel(models.Model):
     def compute_partner(self):
         for fm in self:
             if len(fm.partner_ids) > 0:
-                fm.partner_id = fm.partner_ids[0]
+                fm.write({
+                    "partner_id" : fm.partner_ids[0].id
+                })
 
     def partner_inverse(self):
         for fm in self:
