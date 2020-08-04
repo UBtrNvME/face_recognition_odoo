@@ -18,7 +18,6 @@ class ResPartnerFaceModel(models.Model):
     _name = "res.partner.face.model"
 
     name = fields.Char(string="Name", readonly=True)
-    partner_id = fields.Many2one(comodel_name="res.partner", string="Partner")
     face_encodings = fields.Text(string="Face Encoding")
     is_encodings_hidden = fields.Boolean(string="Show/Hide Encodings")
     type = fields.Selection(selection=[("temp", "Temporary"), ("perm", "Permanent")],
@@ -29,6 +28,13 @@ class ResPartnerFaceModel(models.Model):
                                       relation="res_partner_face_model_ir_attachment_rel",
                                       column1="face_model_id",
                                       column2="attachment_id")
+    partner_id = fields.Many2one(comodel_name='res.partner',
+                                 string="Partner",
+                                 compute='compute_partner',
+                                 inverse='partner_inverse')
+    # Buffer for One2one field
+    partner_ids = fields.One2many(comodel_name='res.partner',
+                                  inverse_name='face_model_id')
 
     def _compute_face_encoding(self, base64encoded_image):
         """ Computes face encodings from the base64 encoded image object.
@@ -138,9 +144,7 @@ class ResPartnerFaceModel(models.Model):
 
     @api.model
     def create(self, vals):
-        partner_id = 0
         if vals.get("partner_id"):
-            partner_id = vals["partner_id"]
             if vals["type"] == 'temp':
                 vals["type"] = 'perm'
                 # raise Warning(_("Error!"), _("We are going to make this as a permanent Face Model"))
@@ -154,14 +158,10 @@ class ResPartnerFaceModel(models.Model):
 
         if vals.get("attachment_ids") != [[6, 0, []]]:
             pass
-        fm = super(ResPartnerFaceModel, self).create(vals)
-        print(fm)
-        if partner_id:
-            fm._attach_face_model_id_to_referenced_res_partner(partner_id)
 
-        return fm
+        return super(ResPartnerFaceModel, self).create(vals)
 
-    #TODO Add mechanics of removing unnecessary temp face models
+    # TODO Add mechanics of removing unnecessary temp face models
     @api.model
     def create_temporary_face_model(self, vals):
         if vals.get('image_in_base64') and vals.get('face_encoding'):
@@ -170,7 +170,7 @@ class ResPartnerFaceModel(models.Model):
                 "type": "temp"
             })
             attachment, _ = face_model.add_new_face_image_attachment(image_in_base64, "temp")
-            #TODO move this block of code into separate function
+            # TODO move this block of code into separate function
             face_model.face_encodings = face_model.face_encodings or "{}"
             jsondata = json.loads(face_model.face_encodings)
             jsondata[str(attachment.id)] = list(face_encoding[0])
@@ -178,7 +178,6 @@ class ResPartnerFaceModel(models.Model):
 
     def write(self, vals):
         attachment_tuple = vals.get("attachment_ids")
-        print(attachment_tuple)
         if attachment_tuple and attachment_tuple[0][0] == 6 and attachment_tuple[0][2] == []:
             self.face_encodings = ""
         elif attachment_tuple and attachment_tuple[0][0] == 6:
@@ -198,19 +197,10 @@ class ResPartnerFaceModel(models.Model):
             vals["number_of_encodings"] = number_of_encodings
 
         if vals.get("partner_id"):
-            partner_id = vals["partner_id"]
             if self.type == 'temp':
                 vals["type"] = "perm"
                 vals["name"] = self.env['ir.sequence'].next_by_code('seq.face.model.permanent') + "-" + \
                                self.env["res.partner"].browse(vals["partner_id"])[0].name
-            if vals["partner_id"]:
-                self._attach_face_model_id_to_referenced_res_partner(partner_id)
-            elif "is_deleting" not in vals:
-                self._detach_face_model_id_from_referenced_res_partner()
-            else:
-                vals.pop("is_deleting")
-
-
 
         return super(ResPartnerFaceModel, self).write(vals)
 
@@ -250,33 +240,25 @@ class ResPartnerFaceModel(models.Model):
     def _organize_model_objects_in_dictionary(self):
         face_models = []
         partners = []
-        gotten_face_models_records = self.search_read([["type", "=", "perm"],["face_encodings", "!=", ""]], fields=['partner_id', 'face_encodings'])
+        gotten_face_models_records = self.search_read([["type", "=", "perm"], ["face_encodings", "!=", ""]],
+                                                      fields=['partner_id', 'face_encodings'])
         for record in gotten_face_models_records:
             face_models.append(json.loads(record['face_encodings']))
             partners.append(record['partner_id'][0])
         return partners, face_models
 
-    # TODO make better one2one mechanis
-    def _detach_face_model_id_from_referenced_res_partner(self):
-        """ Unlinks face model id from linked partner id.
-            In case there is no linked partner id raises AssertionError.
 
-        :return: None
-        """
-        assert self.partner_id, "Face model has no partner id!"
-        if self.partner_id.face_model_id != False:
-            self.partner_id.write({
-                "face_model_id": False,
-                "is_deleting": True,
-            })
+    @api.depends('partner_ids')
+    def compute_partner(self):
+        for fm in self:
+            if len(fm.partner_ids) > 0:
+                fm.partner_id = fm.partner_ids[0]
 
-    def _attach_face_model_id_to_referenced_res_partner(self, partner_id: int):
-        """ Links values of partner_id given in the arguments and face model id.
-            In case there has not been given parameter raises AssertionError
-
-        :param partner_id: id of the partner to be linked with
-        :return:
-        """
-        assert partner_id, "No value has been given!"
-        partner = self.env["res.partner.face.model"].browse(partner_id)[0]
-        partner.face_model_id = self.id
+    def partner_inverse(self):
+        for fm in self:
+            if len(fm.asset_ids) > 0:
+                # delete previous reference
+                partner = self.env['res.partner'].browse(fm.partner_ids[0].id)
+                partner.face_model_id = False
+            # set new reference
+            fm.partner_id.face_model_id = fm
