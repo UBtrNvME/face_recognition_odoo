@@ -142,7 +142,7 @@
         </xpath>
     </template>
 
-    <template id="face_recognition_page" name="Example page">
+    <template id="face_recognition_page" name="Face Recognition Page">
         <t t-call="website.layout">
             <div class="qzhub_signup_form_face_recognition">
                 <div class="qzhub_container" id="photobooth-container-with-all-things">
@@ -157,6 +157,7 @@
                 </div>
             </div>
         </t>
+
     </template>
 
 </odoo>
