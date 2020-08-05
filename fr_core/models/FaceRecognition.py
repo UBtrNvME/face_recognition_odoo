@@ -92,11 +92,11 @@ class FaceRecognition(models.TransientModel):
             return -1
         if result == -2:
             return -2
-        user = self.env['res.partner.face.model'].with_user(2).compare_with_unknown(encoding)
+        user = self.env['res.partner.face.model'].sudo(True).compare_with_unknown(encoding)
         print(3)
         if not user:
             print(3.2)
-            self.env['res.partner.face.model'].with_user(2).create_temporary_face_model({
+            self.env['res.partner.face.model'].sudo(True).create_temporary_face_model({
                 "image_in_base64": face_image,
                 "face_encoding"  : encoding,
             })
