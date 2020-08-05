@@ -167,7 +167,7 @@ class ResPartnerFaceModel(models.Model):
     def create_temporary_face_model(self, vals):
         if vals.get('image_in_base64') and vals.get('face_encoding'):
             image_in_base64, face_encoding = vals["image_in_base64"], vals["face_encoding"]
-            face_model = self.create({
+            face_model = self.env["res.partner.face.model"].sudo(True).create({
                 "type": "temp"
             })
             attachment, _ = face_model.add_new_face_image_attachment(image_in_base64, "temp")
@@ -209,12 +209,10 @@ class ResPartnerFaceModel(models.Model):
     def compare_with_unknown(self, unknown_encoding):
         similar_partners, face_models = self._organize_model_objects_in_dictionary()
         batch_number = 0
-        print(1)
+
         if len(similar_partners) == 1:
             encoding_batch = []
-            print(1.2)
             for face_model in face_models:
-                print(1.5)
                 encoding_batch.append(face_model[list(face_model.keys())[0]])
 
             results = face_recognition.compare_faces(encoding_batch, unknown_encoding[0], 0.4)
@@ -223,6 +221,7 @@ class ResPartnerFaceModel(models.Model):
                     similar_partners.pop(i)
                     face_models.pop(i)
         else:
+            print("else")
             while len(similar_partners) > 1:
                 encoding_batch = []
                 for face_model in face_models:
@@ -235,7 +234,6 @@ class ResPartnerFaceModel(models.Model):
                         face_models.pop(i - deleted)
                         deleted += 1
                 batch_number += 1
-        print(2)
         if len(similar_partners) and len(similar_partners) <= 1:
             user = self.env['res.users'].search([['partner_id', '=', similar_partners[0]]])
         else:
