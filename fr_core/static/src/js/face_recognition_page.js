@@ -14,6 +14,7 @@ publicWidget.registry.SignUpFaceRecognition = publicWidget.Widget.extend({
         self.Data = {};
         self.Events = {}
         self.Events.TryAgain = new Event('tryAgain');
+        console.log('face_recognition_page.js')
         console.log(self)
         let stream = navigator.mediaDevices.getUserMedia({video: true})
             .then(function (mediaStream) {
@@ -38,7 +39,7 @@ publicWidget.registry.SignUpFaceRecognition = publicWidget.Widget.extend({
 
 
     process_video: function () {
-        console.log("Hello")
+        console.log("Hello from process_video")
         let self = this;
         self.$("#progress-bar").show();
         let image = self._takeAPhoto();
@@ -85,7 +86,7 @@ publicWidget.registry.SignUpFaceRecognition = publicWidget.Widget.extend({
                         window.location.href = `${window.location.origin}/`
                     }
                 } else {
-                    window.location.href = `${window.location.origin}/web/login?isRecognised=${false}`
+                    window.location.href = `${window.location.origin}/web/login?isRecognised=${false}&model=${result[0]}`
                 }
 
             }

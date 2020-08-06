@@ -37,7 +37,7 @@
                 <t t-esc="widget.number_of_encodigs"/>
             </span>
         </h3>
-        <br></br>
+        <br/>
         <div class="photo_kalash">
             <t t-foreach="widget.local_urls" t-as="local_url">
                 <div class="image_box">
@@ -97,6 +97,7 @@
             </div>
         </div>
     </t>
+
 
     <!--    <t t-name="HrAttendanceMyMainMenuExtended">-->
     <!--        <div class="o_hr_attendance_kiosk_mode_container o_home_menu_background">-->
