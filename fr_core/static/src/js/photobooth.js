@@ -24,9 +24,11 @@ odoo.define('fr_core.photobooth', function (require) {
             this.Action = action;
             this._super.apply(this, arguments);
         },
+
         willStart: function () {
             let self = this;
             return this._super.apply(this, arguments).then(function () {
+                console.log('Hello from photobooth.js')
                 if (self.Action.xml_id === "fr_core.face_recognition_create_face_model_action") {
                     self.Mode = "Create";
                 } else {
@@ -61,6 +63,7 @@ odoo.define('fr_core.photobooth', function (require) {
             console.log("On Start")
             window.dispatchEvent(self.StartVideo)
         },
+
         _onTakeAShot: function (event) {
             let self = this;
             self.$("#progress-bar").show()

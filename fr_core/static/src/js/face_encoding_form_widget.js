@@ -51,6 +51,7 @@ odoo.define('fr_core.field_many2one_form_preview', function (require) {
             var self = this;
             this.set("title", 'Face Encoding');
             return this._super().then(function () {
+                console.log('hello from start face_encoding_form_widget.js')
                 self.renderForm();
             });
         },

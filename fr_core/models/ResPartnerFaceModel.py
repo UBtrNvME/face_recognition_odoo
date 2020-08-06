@@ -167,7 +167,7 @@ class ResPartnerFaceModel(models.Model):
     def create_temporary_face_model(self, vals):
         if vals.get('image_in_base64') and vals.get('face_encoding'):
             image_in_base64, face_encoding = vals["image_in_base64"], vals["face_encoding"]
-            face_model = self.env["res.partner.face.model"].sudo(True).create({
+            face_model = self.env["res.partner.face.model"].sudo().create({
                 "type": "temp"
             })
             attachment, _ = face_model.add_new_face_image_attachment(image_in_base64, "temp")
@@ -176,6 +176,8 @@ class ResPartnerFaceModel(models.Model):
             jsondata = json.loads(face_model.face_encodings)
             jsondata[str(attachment.id)] = list(face_encoding[0])
             face_model.face_encodings = json.dumps(jsondata)
+            return face_model
+        return None
 
     def write(self, vals):
         attachment_tuple = vals.get("attachment_ids")
@@ -189,7 +191,7 @@ class ResPartnerFaceModel(models.Model):
 
         elif attachment_tuple and attachment_tuple[0][0] == 6:
             attachment_ids = attachment_tuple[0][2]
-            json_data = json.loads(self.face_encodings) if self.face_encodings != False else {}
+            json_data = json.loads(self.face_encodings) if self.face_encodings else {}
             keys = list(json_data.keys())
             for key in keys:
                 if key not in attachment_ids:
@@ -221,7 +223,6 @@ class ResPartnerFaceModel(models.Model):
                     similar_partners.pop(i)
                     face_models.pop(i)
         else:
-            print("else")
             while len(similar_partners) > 1:
                 encoding_batch = []
                 for face_model in face_models:
@@ -267,3 +268,7 @@ class ResPartnerFaceModel(models.Model):
                 partner.face_model_id = False
             # set new reference
             fm.partner_id.face_model_id = fm
+
+    def retry_button(self):
+        print('go')
+        return 123
