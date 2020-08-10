@@ -1,12 +1,16 @@
 import json
-import odoo
+
+from PIL import Image
+import base64
+from io import BytesIO
+import pytesseract
+from odoo.addons.web.controllers.main import Home
+
 from odoo import http
+from odoo.exceptions import UserError
 from odoo.http import request
 from odoo.tools import logging
 from odoo.tools.translate import _
-from odoo.exceptions import AccessError, UserError, AccessDenied
-from odoo.addons.web.controllers.main import Home
-
 
 _loger = logging.getLogger(__name__)
 
@@ -88,6 +92,23 @@ class FaceRecognitionController(http.Controller):
         print(6)
         return [user.login, user.has_password, user.name]
 
+    @http.route(['/api/v1/processUinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
+                csrf=False)
+    def processImageOfUin(self):
+        image_data = request.params.get('unknown_uin')
+        face_model_id = request.params.get('face_model_id')
+        if not image_data:
+            return http.Response("No Terms Found", status=412)
+        image_data = self.process_image_datas_to_base64(image_data)
+        img = Image.open(BytesIO(base64.b64decode(image_data)))
+        text = pytesseract.image_to_string(img)
+        uin = [int(s) for s in text.split() if s.isdigit() and len(s) == 12]
+
+        if len(uin):
+            partner = request.env['res.partner'].sudo().search([['face_model_id', '=', int(face_model_id)]])
+            partner.user_uin = str(uin[0])
+        return uin
+
     def process_image_datas_to_base64(self, image_datas):
         index_to_strip_from = image_datas.find("base64,") + len("base64,")
         return image_datas[index_to_strip_from:]
@@ -120,7 +141,7 @@ class FaceRecognitionController(http.Controller):
                 })
                 user.password = data['password']
 
-            return request.render('fr_core.uin_recognition_page')
+            return request.render('fr_core.face_recognition_page')
 
 
 class HomeInheritedController(Home):

@@ -248,7 +248,8 @@ class ResPartnerFaceModel(models.Model):
                                                       fields=['partner_id', 'face_encodings'])
         for record in gotten_face_models_records:
             face_models.append(json.loads(record['face_encodings']))
-            partners.append(record['partner_id'][0])
+            if record['partner_id']:
+                partners.append(record['partner_id'][0])
         return partners, face_models
 
 
