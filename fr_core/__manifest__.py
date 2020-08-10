@@ -21,6 +21,12 @@
     # any module necessary for this one to work correctly
     'depends'    : ['base', 'contacts', 'hr', 'hr_attendance', 'web'],
 
+    "external_dependencies": {"python": [
+        'pytesseract',
+        'opencv-python',
+        'Pillow'
+    ], "bin": []},
+
     # always loaded
     'data'       : [
         'security/ir.model.access.csv',
