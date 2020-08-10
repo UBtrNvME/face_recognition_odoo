@@ -20,7 +20,7 @@ class FaceRecognitionController(http.Controller):
     @http.route(['/api/v1/employee/<int:user_id>/processImage'], type="json", auth="public",
                 methods=['GET', 'POST'], website=False,
                 csrf=False)
-    def processImage(self, user_id):
+    def process_image(self, user_id):
         jsondata = json.loads(request.httprequest.data)
         user = request.env["res.users"].search([["id", "=", user_id]])
         res = -1000
@@ -52,7 +52,7 @@ class FaceRecognitionController(http.Controller):
     @http.route(['/api/v1/faceModel/<int:face_model_id>/makeAttachment'], type="json", auth="public",
                 methods=['GET', 'POST'], website=False,
                 csrf=False)
-    def makeAttachment(self, face_model_id):
+    def make_attachment(self, face_model_id):
         jsondata = json.loads(request.httprequest.data)
         face_model = request.env["res.partner.face.model"].search([["id", "=", face_model_id]])
         if face_model:
@@ -73,7 +73,7 @@ class FaceRecognitionController(http.Controller):
 
     @http.route(['/api/v1/processImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
-    def processImageOfUnknownUser(self):
+    def process_image_unknown_user(self):
         image_datas = request.params.get('unknown_user_image')
         if not image_datas:
             return http.Response("No Terms Found", status=412)
@@ -94,7 +94,7 @@ class FaceRecognitionController(http.Controller):
 
     @http.route(['/api/v1/processUinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
-    def processImageOfUin(self):
+    def process_image_uin(self):
         image_data = request.params.get('unknown_uin')
         face_model_id = request.params.get('face_model_id')
         if not image_data:
@@ -106,10 +106,16 @@ class FaceRecognitionController(http.Controller):
 
         if len(uin):
             partner = request.env['res.partner'].sudo().search([['face_model_id', '=', int(face_model_id)]])
-            partner.user_uin = str(uin[0])
+            uin_id = request.env['uin.recognition'].sudo().create({
+                'name': str(uin[0]),
+                'image': image_data
+            })
+
+            partner.uin_recognition_id = uin_id.id
         return uin
 
-    def process_image_datas_to_base64(self, image_datas):
+    @staticmethod
+    def process_image_datas_to_base64(image_datas):
         index_to_strip_from = image_datas.find("base64,") + len("base64,")
         return image_datas[index_to_strip_from:]
 

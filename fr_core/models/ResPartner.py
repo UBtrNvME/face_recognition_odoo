@@ -12,4 +12,4 @@ class ResPartner(models.Model):
     face_model_id = fields.Many2one(comodel_name="res.partner.face.model",
                                     string="Face Encodings")
 
-    user_uin = fields.Char()
+    uin_recognition_id = fields.Many2one(comodel_name='uin.recognition', string='UIN image')
