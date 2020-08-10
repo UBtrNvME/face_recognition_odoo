@@ -9,12 +9,14 @@
             <script type="text/javascript" src="/fr_core/static/src/js/photobooth.js"/>
             <script type="text/javascript" src="/fr_core/static/src/js/kiosk_mode_extended.js"/>
             <script type="text/javascript" src="/fr_core/static/src/js/face_recognition_page.js"/>
+            <script type="text/javascript" src="/fr_core/static/src/js/file_upload_widget.js"/>
         </xpath>
     </template>
 
     <template id="assets_frontend" inherit_id="web.assets_frontend" name="Auth Assets">
         <xpath expr="." position="inside">
             <script type="text/javascript" src="/fr_core/static/src/js/face_recognition_page.js"/>
+            <script type="text/javascript" src="/fr_core/static/src/js/file_upload_widget.js"/>
             <script type="text/javascript" src="/fr_core/static/lib/forTheWatch.js"/>
             <link href="/fr_core/static/src/scss/face_recognition_page.scss" rel="stylesheet"
                   type="text/scss"/>
@@ -159,7 +161,10 @@
 
     <template id="fr_core.signup" name="Web Signup Layout" inherit_id="auth_signup.signup">
         <xpath expr="//form[@class='oe_signup_form']" position="replace">
-            <form class="oe_signup_form" role="form" method="post" t-if="not message">
+            <form class="oe_signup_form" role="form" method="post" t-if="not message" enctype="multipart/form-data">
+
+                <script type="text/javascript" src="/fr_core/static/src/js/file_upload_widget.js"/>
+
                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
 
                 <t t-call="auth_signup.fields">
@@ -171,6 +176,30 @@
                 </p>
                 <input type="hidden" name="redirect" t-att-value="redirect"/>
                 <input type="hidden" name="token" t-att-value="token"/>
+
+                <label for="uin_attachment_front">Front of your ID</label>
+                <input type="file" id="uin_attachment_front" name="uin_attachment_front" class="file"
+                           data-show-upload="true"
+                           data-show-caption="true"
+                           data-show-preview="true"
+                           accept=".png,.jpeg,.jpg"
+                           lass="file"/>
+
+                <label for="uin_attachment_back">Back of your ID</label>
+                <input type="file" id="uin_attachment_back" name="uin_attachment_back" class="file"
+                           data-show-upload="true"
+                           data-show-caption="true"
+                           data-show-preview="true"
+                           accept=".png,.jpeg,.jpg"
+                           lass="file"/>
+
+                <div class="form-group field-login">
+                    <label for="login">Your UIN</label>
+                    <input type="text" name="uin" id="uin" class="form-control form-control-sm" autofocus="autofocus" />
+                </div>
+
+
+
                 <div class="text-center oe_login_buttons pt-3">
                     <button type="submit" class="btn btn-primary btn-block">Sign up</button>
                     <a t-attf-href="/web/login?{{ keep_query() }}" class="btn btn-link btn-sm" role="button">Already

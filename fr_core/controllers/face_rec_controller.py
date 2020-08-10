@@ -94,7 +94,7 @@ class FaceRecognitionController(http.Controller):
 
     @http.route(['/api/v1/processUinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
-    def process_image_uin(self):
+    def process_image_uin_v1(self):
         image_data = request.params.get('unknown_uin')
         face_model_id = request.params.get('face_model_id')
         if not image_data:
@@ -114,6 +114,26 @@ class FaceRecognitionController(http.Controller):
             partner.uin_recognition_id = uin_id.id
         return uin
 
+    @http.route(['/api/processFrontUinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
+                csrf=False)
+    def process_image_uin_front(self):
+        image_data = self.process_image_datas_to_base64(request.params.get('unknown_uin_image'))
+        img = Image.open(BytesIO(base64.b64decode(image_data)))
+        text = pytesseract.image_to_string(img)
+        uin = [int(s) for s in text.split() if s.isdigit() and len(s) == 12]
+
+        return uin[0] if len(uin) else -1
+
+    @http.route(['/api/processBackUinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
+                csrf=False)
+    def process_image_uin_back(self):
+        image_data = self.process_image_datas_to_base64(request.params.get('unknown_uin_image'))
+        img = Image.open(BytesIO(base64.b64decode(image_data)))
+        text = pytesseract.image_to_string(img)
+        uin = [int(s) for s in text.split() if s.isdigit() and len(s) == 12]
+
+        return uin[0] if len(uin) else -1
+
     @staticmethod
     def process_image_datas_to_base64(image_datas):
         index_to_strip_from = image_datas.find("base64,") + len("base64,")
@@ -131,11 +151,12 @@ class FaceRecognitionController(http.Controller):
         else:
             data = request.params
             print(data)
+
             res = request.env['res.users'].sudo().search([['login', '=', data['login']]])
             if len(res):
                 raise UserError(_('User with given email already registered'))
             elif data['password'] != data['confirm_password']:
-                raise UserError(_('Password do not match'))
+                raise UserError(_('Passwords do not match'))
             else:
                 user = request.env['res.users'].sudo().create({
                     'login': data['login'],
@@ -146,6 +167,21 @@ class FaceRecognitionController(http.Controller):
                     }).id
                 })
                 user.password = data['password']
+
+                if data['uin']:
+                    if kw.get('uin_attachment_front', False):
+                        b64_image = base64.b64encode(kw.get('uin_attachment_front').read()).decode('utf-8')
+                        uin_id = request.env['uin.recognition'].sudo().create({
+                            'name': str(data['uin']),
+                            'image': b64_image
+                        })
+                    else:
+                        uin_id = request.env['uin.recognition'].sudo().create({
+                            'name': str(data['uin'])
+                        })
+                    user.uin_recognition_id = uin_id.id
+
+                    return http.redirect_with_hash('/web/login/face_recognition')
 
             return request.render('fr_core.face_recognition_page')
 
