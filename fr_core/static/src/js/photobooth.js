@@ -105,11 +105,14 @@ odoo.define('fr_core.photobooth', function (require) {
             let self = this;
             self.$("#photobooth-container-with-all-things").show();
             self.$(".qzhub_welcome_to_face_create_box").hide();
-            let stream = navigator.mediaDevices.getUserMedia({video: true})
+            let stream = navigator.mediaDevices.getUserMedia({video: {
+                    facingMode: 'user'
+                }})
                 .then(function (mediaStream) {
                     let video = document.querySelector('#photobooth');
                     console.log(video)
                     let canvas = document.createElement("canvas");
+
                     video.srcObject = mediaStream;
                     self.VideoObj = video;
                     self.CanvasObj = canvas;

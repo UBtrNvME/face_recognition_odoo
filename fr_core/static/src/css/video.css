@@ -1,5 +1,12 @@
+#photobooth {
+    transform: rotateY(180deg);
+    -webkit-transform:rotateY(180deg); /* Safari and Chrome */
+    -moz-transform:rotateY(180deg); /* Firefox */
+}
+
 div#photobooth-container-with-all-things {
     margin: auto;
     position: relative;
     text-align: center;
 }
+
