@@ -5,6 +5,7 @@ class ResUsers(models.Model):
     _inherit = "res.users"
 
     has_password = fields.Boolean(string="Has/Hasn't Password", default=False, compute="_compute_has_password", store=True)
+
     @api.depends("password")
     def _compute_has_password(self):
         for user in self:

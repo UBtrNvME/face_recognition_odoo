@@ -23,7 +23,6 @@
 
     "external_dependencies": {"python": [
         'pytesseract',
-        'opencv-python',
         'Pillow'
     ], "bin": []},
 

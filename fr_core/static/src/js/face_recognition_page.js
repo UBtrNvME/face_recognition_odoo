@@ -37,7 +37,6 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
 
         },
 
-
         process_video: function () {
             console.log("Hello from process_video")
             let self = this;
@@ -69,13 +68,14 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
                 })
             } else {
                 let self = this;
+                console.log('make request')
                 this._rpc({
                     route: '/api/v1/processImage',
                     params: {
                         'unknown_user_image': image,
                     },
                 }).then(function (result) {
-                    console.log('result', result)
+                    console.log('result', result);
                     self.$("#progress-bar").css('width', '100%');
                     if (result.length > 1) {
                         window.location.href = `${window.location.origin}/web/login?isRecognised=${true}&login=${result[0]}&hasPassword=${result[1]}&name=${result[2]}`
@@ -91,6 +91,8 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
                         }
 
                     }
+                }).catch(function (error) {
+                    console.log('request error', error)
                 });
             }
         },
