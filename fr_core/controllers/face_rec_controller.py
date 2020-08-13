@@ -193,19 +193,20 @@ class FaceRecognitionController(http.Controller):
 class HomeInheritedController(Home):
     @http.route()
     def web_login(self, redirect=None, **kw):
+
         if request.httprequest.method == 'POST':
             return super(HomeInheritedController, self).web_login(redirect=redirect, **kw)
 
-        if 'login' in request.params:
+        if 'login' in request.params or 'isRecognised' in request.params:
             return super(HomeInheritedController, self).web_login(redirect=redirect, **kw)
 
-        if 'isRecognised' in request.params:
-            return super(HomeInheritedController, self).web_login(redirect=redirect, **kw)
-        else:
-            return http.redirect_with_hash('/web/login/face_recognition')
+        return http.redirect_with_hash('/web/login/face_recognition')
 
     @http.route("/web/login/<string:login>", type="http", auth="none")
     def web_login_user(self, login, redirect=None, **kw):
+        if login == 'unrecognized_user':
+            s = f'?login=false&hasPassword=true&isRecognised=true'
+            return http.redirect_with_hash('/web/login%s' % s)
         user = request.env['res.users'].sudo(True).search([['login', '=', login]])
         if user and user.has_password:
             s = f'?login={login}&hasPassword=true&name={user.partner_id.name}&isRecognised=true'
