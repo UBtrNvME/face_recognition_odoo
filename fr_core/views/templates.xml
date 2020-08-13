@@ -24,8 +24,8 @@
         </xpath>
     </template>
 
-    <template id="fr_core.login" name="Web Login Layout" inherit_id="web.login">
 
+    <template id="fr_core.login" name="Web Login Layout" inherit_id="web.login">
         <xpath expr="//form[@class='oe_login_form']" position="replace">
             <t t-set="widget" t-value="request.params"/>
             <t t-if="'login' in widget">
@@ -61,13 +61,14 @@
                         </span>
                     </div>
                 </div>
+
                 <t t-if="isRecognised=='true'">
                     <t t-if="login=='false'">
                         <div class="form-group field-login">
                             <label for="login">Email</label>
                             <input type="text" placeholder="Email" name="login" id="login" required="required"
                                    autofocus="autofocus"
-                                   autocapitalize="off" t-att-value="login"
+                                   autocapitalize="off"
                                    t-attf-class="form-control #{'form-control-sm' if form_small else ''}"/>
                         </div>
                     </t>
@@ -87,16 +88,29 @@
 
                     <t t-if="hasPassword=='true'">
 
-                        <h4 class="text-justify">Enter your password</h4>
-                        <br/>
-                        <div class="form-group field-password">
-                            <!--<label for="password">Password</label>-->
-                            <input type="password" placeholder="Password" name="password" id="password"
-                                   required="required"
-                                   autocomplete="current-password" maxlength="4096"
-                                   t-attf-class="form-control #{'form-control-sm' if form_small else ''}"
-                                   t-att-autofocus="'autofocus' if login else None"/>
-                        </div>
+                        <t t-if="login=='false'">
+                            <div class="form-group field-password">
+                                <label for="password">Password</label>
+                                <input type="password" placeholder="Password" name="password" id="password"
+                                       required="required"
+                                       autocomplete="current-password" maxlength="4096"
+                                       t-attf-class="form-control #{'form-control-sm' if form_small else ''}"
+                                       t-att-autofocus="'autofocus' if login else None"/>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <h4 class="text-justify">Enter your password</h4>
+                            <div class="form-group field-password">
+                                <!--<label for="password">Password</label>-->
+                                <input type="password" placeholder="Password" name="password" id="password"
+                                       required="required"
+                                       autocomplete="current-password" maxlength="4096"
+                                       t-attf-class="form-control #{'form-control-sm' if form_small else ''}"
+                                       t-att-autofocus="'autofocus' if login else None"/>
+                            </div>
+                        </t>
+
+
                     </t>
                     <t t-else="">
                         <div class="card text-justify" style="font-size: 18px;">
@@ -139,14 +153,24 @@
                     <div class="card text-justify" style="font-size: 18px;">
                         <div class="card-header">System Notification</div>
                         <div class="card-body">
-                            <p class="card-text">System couldn't recognize your face, please try again or sign up</p>
+                            <p class="card-text">System couldn't recognize you</p>
                             <form role="form" method="get" action="/web/login">
                                 <button type="submit" class="btn btn-primary btn-block" style="display: none;">
                                     Retry
                                 </button>
                             </form>
+                            <form role="form" method="get" t-att-action="'/web/login/face_recognition'">
+                                <button type="submit" class="btn btn-primary btn-block">Retry</button>
+                            </form>
+                            <p/>
                             <form role="form" method="get" t-att-action="'/web/signup/' + model">
                                 <button type="submit" class="btn btn-primary btn-block">Sign up</button>
+                            </form>
+                            <p/>
+                            <form role="form" method="get" t-att-action="'/web/login/unrecognized_user'">
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    Already have an account?
+                                </button>
                             </form>
 
                         </div>
@@ -179,31 +203,30 @@
 
                 <label for="uin_attachment_front">Front of your ID</label>
                 <input type="file" id="uin_attachment_front" name="uin_attachment_front" class="file"
-                           data-show-upload="true"
-                           data-show-caption="true"
-                           data-show-preview="true"
-                           accept=".png,.jpeg,.jpg"
-                           lass="file"/>
+                       data-show-upload="true"
+                       data-show-caption="true"
+                       data-show-preview="true"
+                       accept=".png,.jpeg,.jpg"
+                       lass="file"/>
 
                 <label for="uin_attachment_back">Back of your ID</label>
                 <input type="file" id="uin_attachment_back" name="uin_attachment_back" class="file"
-                           data-show-upload="true"
-                           data-show-caption="true"
-                           data-show-preview="true"
-                           accept=".png,.jpeg,.jpg"
-                           lass="file"/>
+                       data-show-upload="true"
+                       data-show-caption="true"
+                       data-show-preview="true"
+                       accept=".png,.jpeg,.jpg"
+                       lass="file"/>
 
                 <div class="form-group field-login">
                     <label for="login">Your UIN</label>
-                    <input type="text" name="uin" id="uin" class="form-control form-control-sm" autofocus="autofocus" />
+                    <input type="text" name="uin" id="uin" class="form-control form-control-sm" autofocus="autofocus"/>
                 </div>
-
 
 
                 <div class="text-center oe_login_buttons pt-3">
                     <button type="submit" class="btn btn-primary btn-block">Sign up</button>
-                    <a t-attf-href="/web/login?{{ keep_query() }}" class="btn btn-link btn-sm" role="button">Already
-                        have an account?
+                    <a t-attf-href="/web/login/unrecognized_user" class="btn btn-link btn-sm" role="button">
+                        Already have an account?
                     </a>
                     <div class="o_login_auth"/>
                 </div>
@@ -216,12 +239,12 @@
         <t t-call="website.layout">
             <div class="qzhub_signup_form_face_recognition">
                 <div class="qzhub_container" id="photobooth-container-with-all-things">
-                    <video autoplay="1" muted="1" playsinline="1" id="photobooth" class="video_rec" />
+                    <video autoplay="1" muted="1" playsinline="1" id="photobooth" class="video_rec"/>
 
                     <div class="progress">
                         <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
                              aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 20%"
-                             id="progress-bar" />
+                             id="progress-bar"/>
                     </div>
                 </div>
             </div>
