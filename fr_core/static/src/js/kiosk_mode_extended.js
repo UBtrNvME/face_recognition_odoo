@@ -6,7 +6,7 @@ odoo.define('fr_core.kiosk_mode_extended', function (require) {
 
     MyAttendances.include({
         update_attendance: function () {
-            console.log("Hello")
+            console.log("Hello from kiosk mode extended")
             let self = this;
             this.do_action("fr_core.face_recognition_photobooth_action", {
                 additional_context: {

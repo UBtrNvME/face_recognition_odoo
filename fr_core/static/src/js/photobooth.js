@@ -24,9 +24,11 @@ odoo.define('fr_core.photobooth', function (require) {
             this.Action = action;
             this._super.apply(this, arguments);
         },
+
         willStart: function () {
             let self = this;
             return this._super.apply(this, arguments).then(function () {
+                console.log('Hello from photobooth.js')
                 if (self.Action.xml_id === "fr_core.face_recognition_create_face_model_action") {
                     self.Mode = "Create";
                 } else {
@@ -61,6 +63,7 @@ odoo.define('fr_core.photobooth', function (require) {
             console.log("On Start")
             window.dispatchEvent(self.StartVideo)
         },
+
         _onTakeAShot: function (event) {
             let self = this;
             self.$("#progress-bar").show()
@@ -102,11 +105,14 @@ odoo.define('fr_core.photobooth', function (require) {
             let self = this;
             self.$("#photobooth-container-with-all-things").show();
             self.$(".qzhub_welcome_to_face_create_box").hide();
-            let stream = navigator.mediaDevices.getUserMedia({video: true})
+            let stream = navigator.mediaDevices.getUserMedia({video: {
+                    facingMode: 'user'
+                }})
                 .then(function (mediaStream) {
                     let video = document.querySelector('#photobooth');
                     console.log(video)
                     let canvas = document.createElement("canvas");
+
                     video.srcObject = mediaStream;
                     self.VideoObj = video;
                     self.CanvasObj = canvas;

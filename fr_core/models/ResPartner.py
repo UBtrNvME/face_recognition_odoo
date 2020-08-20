@@ -11,3 +11,5 @@ class ResPartner(models.Model):
     #                                   column2="attachment_id")
     face_model_id = fields.Many2one(comodel_name="res.partner.face.model",
                                     string="Face Encodings")
+
+    uin_recognition_id = fields.Many2one(comodel_name='uin.recognition', string='UIN image')
