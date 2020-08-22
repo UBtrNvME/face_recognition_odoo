@@ -1,25 +1,34 @@
 .qzhub_action_photobooth_face_recognition {
 
-  width: 400px;
-  margin:auto;
+  width: 500px;
+  margin: auto;
+
   .qzhub_container {
-    width: 400px;
     text-align: center;
     align-content: center;
     margin: 0;
-    border: 0;
+    width: min-content;
     .progress {
       margin-top: 0;
     }
 
-    #progress-bar{
+    #progress-bar {
       display: none;
       background-color: #7C7BAD;
-
+      width: 400px;
     }
-    .video_rec{
-      height: 300px;
+
+    .video-container {
       border: 5px solid #7C7BAD;
+      padding: 0;
+      width: inherit;
+      height: 310px;
+      .video_rec {
+        margin: 0;
+        width: 400px;
+        height: 300px;
+        transform: rotateY(180deg);
+      }
     }
   }
 }
