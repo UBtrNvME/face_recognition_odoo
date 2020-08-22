@@ -4,7 +4,7 @@ import base64
 import json
 import os
 from io import BytesIO
-
+import math
 import face_recognition
 import numpy as np
 from PIL import Image
@@ -86,8 +86,8 @@ class FaceRecognition(models.TransientModel):
         return percentage
 
     @api.model
-    def find_id_of_the_user_on_the_image(self, face_image: str):
-        encoding, result = self._check_image_for_face_and_return_if_only_one_encoding(face_image)
+    def find_id_of_the_user_on_the_image(self, face_image: str, face_location):
+        encoding, result = self._check_image_for_face_and_return_if_only_one_encoding(face_image, face_location)
         if not result:
             return -1, None
         if result == -2:
@@ -113,20 +113,59 @@ class FaceRecognition(models.TransientModel):
     def _is_only_one_face(encoding):
         return not len(encoding) > 1
 
-    def _check_image_for_faces_and_return_encodings(self, image):
-        encoding = face_recognition.face_encodings(self.load_image_base64(image), None, 20, "large")
+    def _check_image_for_faces_and_return_encodings(self, image, face_location):
+        encoding = face_recognition.face_encodings(self.load_image_base64(image), face_location, 20, "large")
         if not self._is_face_on_encoding(encoding):
             return [], False
         return encoding, True
 
-    def _check_image_for_face_and_return_if_only_one_encoding(self, image):
-        encodings, result = self._check_image_for_faces_and_return_encodings(image)
+    def _check_image_for_face_and_return_if_only_one_encoding(self, image, face_location):
+        encodings, result = self._check_image_for_faces_and_return_encodings(image, face_location)
         if not result:
             return [], -2
         if self._is_only_one_face(encodings):
             return encodings, True
         else:
             return [], False
+
+    def get_face_locations_within_ellipse(self, image):
+
+        def _checkpoint(h, k, x, y, a, b):
+            # checking the equation of
+            # ellipse with the given point
+            p = ((math.pow((x - h), 2) // math.pow(a, 2)) +
+                 (math.pow((y - k), 2) // math.pow(b, 2)))
+
+            return p
+
+        image_arr = self.load_image_base64(image)
+        bound_tuples = face_recognition.face_locations(image_arr)
+        rectangles = []
+        for tuple in bound_tuples:
+            rect_points = [(tuple[3], -tuple[0]), (tuple[1], -tuple[0]),
+                           (tuple[1], -tuple[2]), (tuple[3], -tuple[2])]
+            rectangles.append(rect_points)
+
+        center_by_x = 400 / 2
+        center_by_y = (-300 / 2) -25
+        radius_x = 400 * 0.20
+        radius_y = 300 * 0.35
+        res = []
+        for i in range(len(rectangles)):
+
+            is_inside = True
+            for x, y in rectangles[i]:
+                print("outer: ", _checkpoint(center_by_x, center_by_y, x, y, radius_y, radius_x) < 1)
+                print("inner: ", _checkpoint(center_by_x, center_by_y, x, y, radius_y / 1.3, radius_x / 1.3) < 1)
+                if not _checkpoint(center_by_x, center_by_y, x, y, radius_y, radius_x) < 1 or _checkpoint(center_by_x, center_by_y, x, y, radius_y/1.5, radius_x/1.5) < 1:
+                    is_inside = False
+                    break
+            if is_inside:
+                print("Test")
+                res.append(bound_tuples[i])
+                print("test2")
+            print(f"{is_inside=}")
+        return res
 
 # # =====================================
 # #   Face Recognition Changed Functions

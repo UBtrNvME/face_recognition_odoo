@@ -80,7 +80,10 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
                     if (result.length > 1) {
                         window.location.href = `${window.location.origin}/web/login?isRecognised=${true}&login=${result[0]}&hasPassword=${result[1]}&name=${result[2]}`
                     } else {
-                        if (result[0] === "TooManyFaces") { // Too Many Faces
+                        if (result === false) {
+                            self._tryAgain(true)
+                        }
+                        else if (result[0] === "TooManyFaces") { // Too Many Faces
                             let tryAgain = window.confirm("Sorry, more than one face in the frame, try again.")
                             self._tryAgain(tryAgain)
                         } else if (result[0] === "NoFace") {

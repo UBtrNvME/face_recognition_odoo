@@ -11,7 +11,9 @@
     }
     .video_rec{
       height: 300px;
-      border: 5px solid #7C7BAD;
+      width: 100%;
+      //border: 5px solid #7C7BAD;
+      transform: rotateY(180deg);
     }
   }
 }

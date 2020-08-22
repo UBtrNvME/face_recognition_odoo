@@ -78,23 +78,23 @@ class FaceRecognitionController(http.Controller):
         if not image_datas:
             return http.Response('No Terms Found', status=412)
         unknown_user_image = self.process_image_datas_to_base64(image_datas)
+        face_locations = request.env['face.recognition'].sudo(True).get_face_locations_within_ellipse(unknown_user_image)
+        print(f"{face_locations=}")
+        if 0 < len(face_locations) <= 1:
+            user, model = request.env['face.recognition'].sudo(True).find_id_of_the_user_on_the_image(unknown_user_image, face_locations)
 
-        for group in request.env.user.groups_id:
-            print(group, group.name)
+            if not user or user in [-i for i in range(1, 4)]:
+                if user == 0:
+                    return ['NoUser']
+                elif user == -1:
+                    return ['TooManyFaces']
+                elif user == -3:
+                    return [model.id]
+                else:
+                    return ['NoFace']
+            return [user.login, user.has_password, user.name]
+        return False
 
-        user, model = request.env['face.recognition'].sudo(True).find_id_of_the_user_on_the_image(unknown_user_image)
-        print(5, user)
-        if not user or user in [-i for i in range(1, 4)]:
-            if user == 0:
-                return ['NoUser']
-            elif user == -1:
-                return ['TooManyFaces']
-            elif user == -3:
-                return [model.id]
-            else:
-                return ['NoFace']
-        print(6)
-        return [user.login, user.has_password, user.name]
 
     @http.route(['/api/v1/processUinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
@@ -154,7 +154,6 @@ class FaceRecognitionController(http.Controller):
             return request.render('fr_core.signup')
         else:
             data = request.params
-            print(data)
 
             res = request.env['res.users'].sudo(True).search([['login', '=', data['login']]])
             if len(res):

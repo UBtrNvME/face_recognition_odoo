@@ -236,10 +236,17 @@
 
 
     <template id="face_recognition_page" name="Face Recognition Page">
+        <!--TODO: move svg tag with all contents into one file and apply it from there-->
+        <svg height="0">
+            <mask id="masking" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+                <rect y="0" width="1" height="1" fill="#727272"/>
+                <ellipse cx="0.5" cy="0.5" ry="0.35" rx="0.2" fill="white"/>
+            </mask>
+        </svg>
         <t t-call="website.layout">
             <div class="qzhub_signup_form_face_recognition">
                 <div class="qzhub_container" id="photobooth-container-with-all-things">
-                    <video autoplay="1" muted="1" playsinline="1" id="photobooth" class="video_rec"/>
+                    <video autoplay="1" muted="1" playsinline="1" id="photobooth" class="video_rec" style="mask: url(#masking)"/>
 
                     <div class="progress">
                         <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
