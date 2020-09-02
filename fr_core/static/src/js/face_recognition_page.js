@@ -2,7 +2,7 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
     'use strict';
 
     var publicWidget = require('web.public.widget');
-
+    var csrf_token = require('web.core').csrf_token
     publicWidget.registry.SignUpFaceRecognition = publicWidget.Widget.extend({
         selector: '.qzhub_signup_form_face_recognition',
         events: {
@@ -11,11 +11,16 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
 
         start: function () {
             let self = this;
+            this.csrf_token = csrf_token
             self.Data = {};
             self.Events = {}
+            self.Data.images_to_upload = {
+                en_face: null,
+                left_profile: null,
+                right_profile: null,
+                face_with_smile: null
+            };
             self.Events.TryAgain = new Event('tryAgain');
-            console.log('face_recognition_page.js')
-            console.log(self)
             let stream = navigator.mediaDevices.getUserMedia({video: true})
                 .then(function (mediaStream) {
                     let video = document.querySelector('#photobooth');
@@ -25,26 +30,149 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
                     self.Data.canvas = canvas;
                     self.Data.video.onloadedmetadata = function (e) {
                         self.Data.video.play();
-                        self.process_video()
+                        self.process_web_page()
                     };
                     window.addEventListener('tryAgain', function (e) {
-                        console.log("Event_dispatch")
-                        self.process_video()
+                        self.process_web_page()
                     })
                 }).catch(function (err) {
                 });
 
 
         },
-
-        process_video: function () {
-            console.log("Hello from process_video")
+        face_model_fill: async function () {
+            console.log("face_model_fill")
             let self = this;
+            let image = null;
+            let images_to_upload_data = {
+                en_face: ["En Face", "Look Straight Into Camera"],
+                left_profile: ["Left Profile", "Look To The Right"],
+                right_profile: ["Right Profile", "Look To The Left"],
+                face_with_smile: ["Face With Smile", "Look Straight And Smile"]
+            }
+            const keys = Object.keys(self.Data.images_to_upload);
+            let key;
+            let progress = 0;
             self.$("#progress-bar").show();
-            let image = self._takeAPhoto();
-            self.$("#progress-bar").css('width', '40%');
-            self.send_image_to_controller(image);
-            self.$("#progress-bar").css('width', '80%');
+            for (key in keys) {
+                key = keys[key]
+                $('.message').text(`${images_to_upload_data[key][1]}`)
+                let is_correct_type = false;
+                while (!is_correct_type) {
+                    let payload = {
+                        image_data: this._takeAPhoto(),
+                        image_type: key
+                    }
+                    is_correct_type = await this.process_image_type(payload, images_to_upload_data)
+                    if (is_correct_type) {
+                        progress += 5;
+                        self.$("#progress-bar").css('width', `${progress}%`);
+                    }
+                }
+                progress += 15;
+                self.$("#progress-bar").css('width', `${progress}%`);
+            }
+            let request_params = {
+                method: 'POST',
+                body: JSON.stringify({
+                    images_to_attach: self.Data.images_to_upload,
+                })
+            }
+            let model_id = window.location.pathname.split('/')[4]
+            console.log(model_id)
+            $('.message').text(`Wait, we are adding your encoding to the database`)
+            this.send_data_to_controller(`/api/v1/face_model/${model_id}/fill?csrf_token=${csrf_token}`, request_params, 'http')
+                .then(response => {
+                    self.$("#progress-bar").css('width', '100%');
+                    this.redirect_with_params("/web/login", {})
+                })
+        },
+        process_image_type: async function (payload, images_to_upload_data) {
+            let self = this;
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    self.send_data_to_controller('/api/v1/face_model/checkImageType', payload)
+                        .then(result => {
+                            console.log(result)
+                            if (result.status.success && result.payload.is_correct_type) {
+                                self.Data.images_to_upload[payload.image_type] = payload.image_data;
+                                $('.message').text(`Successfully added ${images_to_upload_data[payload.image_type][0]}`)
+                                console.log(result)
+                                resolve(true)
+                            } else {
+                                resolve(false)
+                            }
+                        })
+                }, 200)
+
+            })
+        },
+
+        call_function: function (callback, args) {
+            callback.apply(this, args);
+        },
+        web_login_face_recognition: function () {
+            console.log('web_login_face_recognition')
+            this.$("#progress-bar").show();
+            let image = this._takeAPhoto();
+            let payload = {
+                unknown_user_image: image,
+            }
+            this.send_data_to_controller('/api/v1/processImage', payload)
+                .then(result => {
+                    console.log(result)
+                    this.process_response(result)
+                });
+
+        },
+        process_web_page: function () {
+            console.log("process_web_page")
+            if (window.location.pathname.includes('fill')) {
+                this.face_model_fill()
+            } else {
+                this.web_login_face_recognition()
+            }
+        },
+        send_data_to_controller: function (route, params, type = "json") {
+            return new Promise(resolve => {
+                if (type === 'json') {
+                    resolve(this._rpc({
+                        route: route,
+                        params: params
+                    }));
+                } else {
+                    fetch(route, params)
+                        .then(response => {
+                            console.log('RESPONSE ', response)
+                            resolve(response)
+                        }).catch(error => {
+                        console.log(error)
+                    })
+                }
+            })
+        },
+        redirect_with_params: function (route, params) {
+            let url = new URL(`${window.location.origin}${route}`);
+            let search_params = url.searchParams;
+            for (const [key, value] of Object.entries(params)) {
+                search_params.set(key, value)
+            }
+            url.search = search_params.toString();
+            window.location.href = url.toString()
+        },
+        process_response: function (result) {
+            let self = this;
+            let options = self.ResponseOptions;
+            console.log('result', result)
+            if (result['status']['success']) {
+                if (300 <= result['status']['code'] < 400) {
+                    this.redirect_with_params(result['route'], result['payload'])
+                }
+            } else {
+                // let tryAgain = window.confirm(`Error, ${result['status']['message']}, want to try again?`)
+                self._tryAgain(true)
+            }
+
         },
 
         send_image_to_controller: function (image) {
@@ -75,18 +203,18 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
                         'unknown_user_image': image,
                     },
                 }).then(function (result) {
-                    console.log('result', result);
+
                     self.$("#progress-bar").css('width', '100%');
-                    if (result.length > 1) {
+                    if (result[0] === true) {
+                        console.log('result', result);
                         window.location.href = `${window.location.origin}/web/login?isRecognised=${true}&login=${result[0]}&hasPassword=${result[1]}&name=${result[2]}`
                     } else {
                         if (result === false) {
                             self._tryAgain(true)
-                        }
-                        else if (result[0] === "TooManyFaces") { // Too Many Faces
+                        } else if (result[1] === "TooManyFaces") { // Too Many Faces
                             let tryAgain = window.confirm("Sorry, more than one face in the frame, try again.")
                             self._tryAgain(tryAgain)
-                        } else if (result[0] === "NoFace") {
+                        } else if (result[1] === "NoFace") {
                             let tryAgain = window.confirm("Sorry, camera didn't detect any face, try again.")
                             self._tryAgain(tryAgain)
                         } else {

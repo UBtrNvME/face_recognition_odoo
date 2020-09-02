@@ -1,1 +1,1 @@
-from . import face_rec_controller
+from . import Controller
