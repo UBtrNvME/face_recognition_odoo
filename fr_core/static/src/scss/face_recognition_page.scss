@@ -1,29 +1,30 @@
 .qzhub_signup_form_face_recognition {
 
   width: 400px;
-  margin:auto;
+  margin: auto;
+
   .qzhub_container {
     text-align: center;
-    #photoboothes {
 
-      #progress-bar{
+    #progress-bar {
       display: none;
       background-color: #7C7BAD;
       width: 0;
 
     }
-      .video_rec{
-        height: 300px;
-        width: 100%;
-        //border: 5px solid #7C7BAD;
-        transform: rotateY(180deg);
-      }
 
-      img {
-        margin-bottom: -300px;
-      }
+    .video_rec {
+      height: 300px;
+      width: 100%;
+      //border: 5px solid #7C7BAD;
+      transform: rotateY(180deg);
     }
 
+    img {
+      margin-bottom: -300px;
+    }
   }
+
 }
+
 

@@ -102,7 +102,7 @@ class FaceRecognitionController(http.Controller):
                     response['route'] = "/web/login"
                     response['payload'] = {
                         'isRecognised': False,
-                        'model_id'    : model.id,
+                        'model'    : model.id,
                     }
                 else:
                     response['status'] = {
