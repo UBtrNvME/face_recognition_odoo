@@ -4,17 +4,26 @@
   margin:auto;
   .qzhub_container {
     text-align: center;
-    #progress-bar{
+    #photoboothes {
+
+      #progress-bar{
       display: none;
       background-color: #7C7BAD;
+      width: 0;
 
     }
-    .video_rec{
-      height: 300px;
-      width: 100%;
-      //border: 5px solid #7C7BAD;
-      transform: rotateY(180deg);
+      .video_rec{
+        height: 300px;
+        width: 100%;
+        //border: 5px solid #7C7BAD;
+        transform: rotateY(180deg);
+      }
+
+      img {
+        margin-bottom: -300px;
+      }
     }
+
   }
 }
 

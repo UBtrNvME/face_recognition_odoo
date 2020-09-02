@@ -260,6 +260,7 @@ class ResPartnerFaceModel(models.Model):
                 partners.append(record['partner_id'][0])
         return partners, face_models
 
+    #  Round about way of making One2one field in odoo
     @api.depends('partner_ids')
     def compute_partner(self):
         for fm in self:
@@ -276,4 +277,3 @@ class ResPartnerFaceModel(models.Model):
                 partner.face_model_id = False
             # set new reference
             fm.partner_id.face_model_id = fm
-

@@ -12,7 +12,8 @@ from odoo.http import request
 from odoo.tools import logging
 from odoo.tools.translate import _
 
-_loger = logging.getLogger(__name__)
+
+_logger = logging.getLogger(__name__)
 
 
 class FaceRecognitionController(http.Controller):
@@ -67,7 +68,7 @@ class FaceRecognitionController(http.Controller):
                 return http.Response("No Terms Found", status=412)
 
     @http.route('/web/login/face_recognition', type='http', auth="public", website=True)
-    def login_face_recognition(self, **kw):
+    def web_login_face_recognition(self, **kw):
         # from here you can call
         return request.render('fr_core.face_recognition_page')
 
@@ -75,26 +76,60 @@ class FaceRecognitionController(http.Controller):
                 csrf=False)
     def process_image_unknown_user(self):
         image_datas = request.params.get('unknown_user_image')
+        response = {}
         if not image_datas:
-            return http.Response('No Terms Found', status=412)
+            response['status'] = {
+                'success': True,
+                'code'   : 400,
+                'message': "Bad Request"
+            }
+            return response
         unknown_user_image = self.process_image_datas_to_base64(image_datas)
-        face_locations = request.env['face.recognition'].sudo(True).get_face_locations_within_ellipse(unknown_user_image)
-        print(f"{face_locations=}")
-        if 0 < len(face_locations) <= 1:
-            user, model = request.env['face.recognition'].sudo(True).find_id_of_the_user_on_the_image(unknown_user_image, face_locations)
+        face_locations = request.env['face.recognition'].sudo(True).get_face_locations_within_ellipse(
+            unknown_user_image)
+        print(face_locations)
+        if len(face_locations) and len(face_locations) <= 1:
+            user, model = request.env['face.recognition'].sudo(True).find_id_of_the_user_on_the_image(
+                unknown_user_image, face_locations)
 
             if not user or user in [-i for i in range(1, 4)]:
-                if user == 0:
-                    return ['NoUser']
-                elif user == -1:
-                    return ['TooManyFaces']
-                elif user == -3:
-                    return [model.id]
+                if user == -3:
+                    response['status'] = {
+                        'success': True,
+                        'code'   : 301,
+                        'message': "No User With Such Encoding In Database"
+                    }
+                    response['route'] = "/web/login"
+                    response['payload'] = {
+                        'isRecognised': False,
+                        'model_id'    : model.id,
+                    }
                 else:
-                    return ['NoFace']
-            return [user.login, user.has_password, user.name]
-        return False
-
+                    response['status'] = {
+                        'success': False,
+                        'code'   : 402,
+                        'message': "No Face On The Image"
+                    }
+            else:
+                response['status'] = {
+                    'success': True,
+                    'code'   : 300,
+                    'message': "Successfully Recognised User"
+                }
+                response['payload'] = {
+                    'isRecognised': True,
+                    'login'       : user.login,
+                    'name'        : user.name,
+                    'hasPassword' : user.has_password,
+                }
+                response['route'] = "/web/login"
+        else:
+            response['status'] = {
+                'success': False,
+                'code'   : 401,
+                'message': "Too Many Faces On The Image"
+            }
+        return response
 
     @http.route(['/api/v1/processUinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
@@ -111,7 +146,7 @@ class FaceRecognitionController(http.Controller):
         if len(uin):
             partner = request.env['res.partner'].sudo(True).search([['face_model_id', '=', int(face_model_id)]])
             uin_id = request.env['uin.recognition'].sudo(True).create({
-                'name': str(uin[0]),
+                'name' : str(uin[0]),
                 'image': image_data
             })
 
@@ -154,7 +189,6 @@ class FaceRecognitionController(http.Controller):
             return request.render('fr_core.signup')
         else:
             data = request.params
-
             res = request.env['res.users'].sudo(True).search([['login', '=', data['login']]])
             if len(res):
                 raise UserError(_('User with given email already registered'))
@@ -162,10 +196,10 @@ class FaceRecognitionController(http.Controller):
                 raise UserError(_('Passwords do not match'))
             else:
                 user = request.env['res.users'].sudo(True).create({
-                    'login': data['login'],
-                    'groups_id': [(6, 0, [8])],
+                    'login'     : data['login'],
+                    'groups_id' : [(6, 0, [8])],
                     'partner_id': request.env['res.partner'].sudo(True).create({
-                        'name': data['name'],
+                        'name'         : data['name'],
                         'face_model_id': model_id
                     }).id
                 })
@@ -175,7 +209,7 @@ class FaceRecognitionController(http.Controller):
                     if kw.get('uin_attachment_front', False):
                         b64_image = base64.b64encode(kw.get('uin_attachment_front').read()).decode('utf-8')
                         uin_id = request.env['uin.recognition'].sudo(True).create({
-                            'name': str(data['uin']),
+                            'name' : str(data['uin']),
                             'image': b64_image
                         })
                     else:
@@ -184,9 +218,93 @@ class FaceRecognitionController(http.Controller):
                         })
                     user.uin_recognition_id = uin_id.id
 
-                    return http.redirect_with_hash('/web/login/face_recognition')
+                    return http.redirect_with_hash('/api/v1/face_model/%d/fill' % (model_id))
 
             return request.render('fr_core.face_recognition_page')
+
+    @http.route(['/api/v1/face_model/checkImageType'], type='json', auth='public', website=True)
+    def face_model_check_image_type(self):
+        data = request.params
+        image_type = data['image_type']
+        image_data = self.process_image_datas_to_base64(data['image_data'])
+        face_location = request.env['face.recognition'].get_face_locations_within_ellipse(image_data)
+        if len(face_location) >= 1 and len(face_location):
+            if image_type == 'face_with_smile':
+                is_face_smiling = request.env['face.recognition'].is_face_smiling(image_data, face_location)
+                if is_face_smiling and len(is_face_smiling) and len(is_face_smiling) <= 1:
+                    for value in is_face_smiling.values():
+                        return {
+                            'status' : {
+                                'success': True,
+                                'code'   : 200,
+                                'message': "Successful request",
+                            },
+                            'payload': {
+                                'requested_image_type': image_type,
+                                'is_correct_type'     : value,
+                                'actual_image_type'   : 'face_with_smile' if value else 'other',
+                            }
+                        }
+                else:
+                    return {
+                        'status': {
+                            'success': False,
+                            'code'   : 400,
+                            'message': "Bad request",
+                        },
+                    }
+            else:
+                image_raccourcir = request.env['face.recognition'].determine_face_raccourcir(
+                    request.env['face.recognition'].get_face_landmarks(image_data))
+                print(image_raccourcir)
+                if not image_raccourcir:
+                    return {
+                        'status': {
+                            'success': False,
+                            'code'   : 400,
+                            'message': "Bad request",
+                        },
+                    }
+                is_correct_raccoursir = image_raccourcir == image_type
+                return {
+                    'status' : {
+                        'success': True,
+                        'code'   : 200,
+                        'message': "Successful request",
+                    },
+                    'payload': {
+                        'requested_image_type': image_type,
+                        'is_correct_type'     : is_correct_raccoursir,
+                        'actual_image_type'   : image_raccourcir,
+                    }
+                }
+        else:
+            return {
+                'status': {
+                    'success': False,
+                    'code'   : 400,
+                    'message': "Bad request",
+                },
+            }
+
+    @http.route(['/api/v1/face_model/<int:model_id>/fill'], type='http', auth='public', website=True)
+    def face_model_fill(self, model_id):
+        if request.httprequest.method == 'POST':
+            data = json.loads(request.httprequest.data)
+            images_to_attach = data['images_to_attach']
+            face_model = request.env['res.partner.face.model'].search(
+                [['id', '=', model_id]])
+            try:
+                for key in images_to_attach:
+                    face_model.add_new_face_image_attachment(
+                        image_datas=self.process_image_datas_to_base64(images_to_attach[key]),
+                        image_name='new',
+                        with_encoding=True)
+                return http.Response("Success", status=200)
+            except:
+                return http.Response("Bad request", status=400)
+        else:
+            return request.render('fr_core.face_model_fill')
 
 
 class HomeInheritedController(Home):

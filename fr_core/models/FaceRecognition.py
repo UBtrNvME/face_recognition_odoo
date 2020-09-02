@@ -4,11 +4,11 @@ import base64
 import json
 import os
 from io import BytesIO
-import math
 import face_recognition
 import numpy as np
 from PIL import Image
-
+from ..scripts import fr_scripts as frs
+import math
 from odoo import api, fields, models
 
 
@@ -59,9 +59,7 @@ class FaceRecognition(models.TransientModel):
         return vals
 
     def load_image_base64(self, base64string):
-        print(base64string)
         image = Image.open(BytesIO(base64.b64decode(base64string)))
-        print(image)
         return np.array(image.convert("RGB"))
 
     @api.model
@@ -140,6 +138,7 @@ class FaceRecognition(models.TransientModel):
 
         image_arr = self.load_image_base64(image)
         bound_tuples = face_recognition.face_locations(image_arr)
+
         rectangles = []
         for tuple in bound_tuples:
             rect_points = [(tuple[3], -tuple[0]), (tuple[1], -tuple[0]),
@@ -147,39 +146,39 @@ class FaceRecognition(models.TransientModel):
             rectangles.append(rect_points)
 
         center_by_x = 400 / 2
-        center_by_y = (-300 / 2) -25
+        center_by_y = (-300 / 2) - 25
         radius_x = 400 * 0.20
         radius_y = 300 * 0.35
         res = []
         for i in range(len(rectangles)):
-
             is_inside = True
             for x, y in rectangles[i]:
-                print("outer: ", _checkpoint(center_by_x, center_by_y, x, y, radius_y, radius_x) < 1)
-                print("inner: ", _checkpoint(center_by_x, center_by_y, x, y, radius_y / 1.3, radius_x / 1.3) < 1)
-                if not _checkpoint(center_by_x, center_by_y, x, y, radius_y, radius_x) < 1 or _checkpoint(center_by_x, center_by_y, x, y, radius_y/1.5, radius_x/1.5) < 1:
+                inside_outer_ellipse = _checkpoint(center_by_x, center_by_y, x, y, radius_y, radius_x) < 1
+                inside_inner_ellipse = _checkpoint(center_by_x, center_by_y, x, y, radius_y / 1.8, radius_x / 1.8) < 1
+                if not inside_outer_ellipse or inside_inner_ellipse:
                     is_inside = False
                     break
             if is_inside:
-                print("Test")
                 res.append(bound_tuples[i])
-                print("test2")
-            print(f"{is_inside=}")
         return res
 
-# # =====================================
-# #   Face Recognition Changed Functions
-# # =====================================
-# def _face_encodings(face_image, known_face_locations=None, num_jitters=1, model="small"):
-#     """
-#     Given an image, return the 128-dimension face encoding for each face in the image.
-#
-#     :param face_image: The image that contains one or more faces
-#     :param known_face_locations: Optional - the bounding boxes of each face if you already know them.
-#     :param num_jitters: How many times to re-sample the face when calculating encoding. Higher is more accurate,
-#     but slower (i.e. 100 is 100x slower)
-#     :return: A list of 128-dimensional face encodings (one for each face in the image)
-#     """
-#     raw_landmarks = face_recognition._raw_face_landmarks(face_image, known_face_locations, model)
-#     return [np.array(face_recognition.face_encoder.compute_face_descriptor(face_image, raw_landmark_set,
-#     num_jitters)) for raw_landmark_set in raw_landmarks]
+    def determine_face_raccourcir(self, face_landmarks):
+        if face_landmarks:
+            raccourcirs = {(-5.000, 5.000): 'en_face', (-45.000, -20.000): 'left_profile', (20.000, 45.000): 'right_profile'}
+            angle = frs.compute_face_angle(face_landmarks=face_landmarks)
+            for bleft, bright in raccourcirs:
+                if bright > angle > bleft:
+                    return raccourcirs[(bleft,bright)]
+        return False
+
+    def get_face_landmarks(self, image):
+        image_arr = self.load_image_base64(image)
+        return face_recognition.face_landmarks(face_image=image_arr)
+
+    def is_face_smiling(self, image, face_location):
+        image_arr = self.load_image_base64(image)
+        if len(face_location) > 1 or len(face_location) < 1:
+            return False
+        for top, right, bottom, left in face_location:
+            print(face_location)
+            return frs.are_faces_smiling(image_arr, face_location)

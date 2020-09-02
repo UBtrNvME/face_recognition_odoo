@@ -246,7 +246,12 @@
         <t t-call="website.layout">
             <div class="qzhub_signup_form_face_recognition">
                 <div class="qzhub_container" id="photobooth-container-with-all-things">
-                    <video autoplay="1" muted="1" playsinline="1" id="photobooth" class="video_rec" style="mask: url(#masking)"/>
+                    <div id="photoboothes">
+                        <img src="https://cdn.clipart.email/1da2a602f74fec420e17ab3b551baf89_best-ideas-of-theatre-masks-clipart-free-clip-art-brilliant-_1500-1500.jpeg" height="300px" width="400px"></img>
+                        <video autoplay="1" muted="1" playsinline="1" id="photobooth" class="video_rec" style="mask: url(#masking)"/>
+                    </div>
+
+
 
                     <div class="progress">
                         <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
@@ -258,4 +263,29 @@
         </t>
     </template>
 
+    <template id="face_model_fill" name="Fill Face Model">
+        <!---->
+        <svg height="0">
+            <mask id="masking" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox">
+                <rect y="0" width="1" height="1" fill="#727272"/>
+                <ellipse cx="0.5" cy="0.5" ry="0.35" rx="0.2" fill="white"/>
+            </mask>
+        </svg>
+        <t t-call="website.layout">
+            <div class="qzhub_signup_form_face_recognition">
+                <div class="qzhub_container" id="photobooth-container-with-all-things">
+                    <video autoplay="1" muted="1" playsinline="1" id="photobooth" class="video_rec" style="mask: url(#masking)"/>
+
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                             aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 20%"
+                             id="progress-bar"/>
+                    </div>
+                    <div class="message-box">
+                        <div class="message"/>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
 </odoo>
