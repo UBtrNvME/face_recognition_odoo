@@ -25,6 +25,9 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
                 .then(function (mediaStream) {
                     let video = document.querySelector('#photobooth');
                     let canvas = document.createElement("canvas");
+                    document.querySelector('.canvas-container').appendChild(canvas)
+                    canvas.style.mask = 'url(#masking)'
+                    canvas.style.transform = 'rotateY(180deg)'
                     video.srcObject = mediaStream;
                     self.Data.video = video;
                     self.Data.canvas = canvas;
@@ -89,21 +92,36 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
         },
         process_image_type: async function (payload, images_to_upload_data) {
             let self = this;
+            self.Data.canvas.height = 0;
             return new Promise(resolve => {
-                setTimeout(() => {
+                // setTimeout(() => {
                     self.send_data_to_controller('/api/v1/face_model/checkImageType', payload)
                         .then(result => {
                             console.log(result)
-                            if (result.status.success && result.payload.is_correct_type) {
-                                self.Data.images_to_upload[payload.image_type] = payload.image_data;
-                                $('.message').text(`Successfully added ${images_to_upload_data[payload.image_type][0]}`)
-                                console.log(result)
-                                resolve(true)
+                            self.Data.video.style.height = '0px';
+                            self.Data.canvas.height = 300;
+                            if (result.status.success) {
+                                self._drawEllipseOnCanvas('green', 5, true)
                             } else {
-                                resolve(false)
+                                self._drawEllipseOnCanvas('red', 5, true)
                             }
+                            setTimeout(() => {
+                                if (result.status.success && result.payload.is_correct_type) {
+                                    self.Data.images_to_upload[payload.image_type] = payload.image_data;
+                                    $('.message').text(`Successfully added ${images_to_upload_data[payload.image_type][0]}`)
+                                    console.log(result)
+                                    self.Data.video.style.height = '300px'
+                                    self.Data.canvas.height = 0;
+                                    resolve(true)
+                                } else {
+                                    self.Data.video.style.height = '300px'
+                                    self.Data.canvas.height = 0;
+                                    resolve(false)
+                                }
+                            }, 10)
                         })
-                }, 200)
+                // }, 100)
+
 
             })
         },
@@ -232,12 +250,27 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
             let self = this;
             let canvas = self.Data.canvas;
             let video = self.Data.video;
-            canvas.height = video.offsetHeight;
-            canvas.width = video.offsetWidth;
-            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-            return canvas.toDataURL("image/jpeg");
+            canvas.height = 300;
+            canvas.width = 400;
+            let canvas_context = canvas.getContext('2d')
+            canvas_context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            let photo_to_send = canvas.toDataURL("image/jpeg");
+            self._drawEllipseOnCanvas('gray', 2)
+            return photo_to_send
         },
-
+        _drawEllipseOnCanvas: function(color, width, with_image = false) {
+            let canvas = this.Data.canvas;
+            let video = this.Data.video;
+            let canvas_context = canvas.getContext('2d')
+            if (with_image === true) {
+                canvas_context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            }
+            canvas_context.lineWidth = width;
+            canvas_context.strokeStyle = color;
+            canvas_context.ellipse(canvas.width/2, canvas.height/2, canvas.width*0.2, canvas.height*0.35, Math.PI*2, 0, Math.PI*2)
+            canvas_context.stroke()
+        }
+        ,
         _tryAgain: function (condition) {
             let self = this
 
