@@ -12,7 +12,7 @@ import math
 from odoo import api, fields, models
 
 
-class FaceRecognition(models.TransientModel):
+class FaceRecognition(models.AbstractModel):
     _name = 'face.recognition'
 
     path = ""
@@ -182,3 +182,13 @@ class FaceRecognition(models.TransientModel):
         for top, right, bottom, left in face_location:
             print(face_location)
             return frs.are_faces_smiling(image_arr, face_location)
+
+
+    def make_attendance(self, user_id):
+        uid = int(user_id)
+        print(f"{uid=}")
+        if uid > 0:
+            employee = self.env['hr.employee'].search([['user_id', '=', uid]])
+            self.env['hr.attendance'].create({
+                'employee_id': employee.id,
+            })

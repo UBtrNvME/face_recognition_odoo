@@ -74,7 +74,7 @@ class FaceRecognitionController(http.Controller):
 
     @http.route(['/api/v1/processImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
-    def process_image_unknown_user(self):
+    def process_image_of_unknown_user(self):
         image_datas = request.params.get('unknown_user_image')
         response = {}
         if not image_datas:
@@ -89,8 +89,17 @@ class FaceRecognitionController(http.Controller):
             unknown_user_image)
         print(face_locations)
         if len(face_locations) and len(face_locations) <= 1:
-            user, model = request.env['face.recognition'].sudo(True).find_id_of_the_user_on_the_image(
-                unknown_user_image, face_locations)
+            try:
+                user, model = request.env['face.recognition'].sudo(True).find_id_of_the_user_on_the_image(
+                    unknown_user_image, face_locations)
+            except TimeoutError:
+                return {
+                    'status': {
+                        'success': False,
+                        'code'   : 408,
+                        'message': "Request Timeout"
+                    }
+                }
 
             if not user or user in [-i for i in range(1, 4)]:
                 if user == -3:
@@ -102,7 +111,7 @@ class FaceRecognitionController(http.Controller):
                     response['route'] = "/web/login"
                     response['payload'] = {
                         'isRecognised': False,
-                        'model'    : model.id,
+                        'model'       : model.id,
                     }
                 else:
                     response['status'] = {
@@ -121,6 +130,7 @@ class FaceRecognitionController(http.Controller):
                     'login'       : user.login,
                     'name'        : user.name,
                     'hasPassword' : user.has_password,
+                    'id': user.id
                 }
                 response['route'] = "/web/login"
         else:
@@ -310,8 +320,8 @@ class FaceRecognitionController(http.Controller):
 class HomeInheritedController(Home):
     @http.route()
     def web_login(self, redirect=None, **kw):
-
         if request.httprequest.method == 'POST':
+            request.env['face.recognition'].sudo(True).make_attendance(request.params['id'])
             return super(HomeInheritedController, self).web_login(redirect=redirect, **kw)
 
         if 'login' in request.params or 'isRecognised' in request.params:

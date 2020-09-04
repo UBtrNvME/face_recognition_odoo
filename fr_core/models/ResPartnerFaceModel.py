@@ -13,12 +13,32 @@ from odoo.tools.translate import _
 
 _logger = logging.getLogger(__name__)
 
+# from multiprocessing import Process
+#
+#
+# def timeout_after(time_to_wait):
+#     def decorator(func):
+#         def wrapper(*args, **kwargs):
+#
+#             # Create a process
+#             action_process = Process(target=func, args=args, kwargs=kwargs)
+#
+#             # Start the process and block for 5 seconds.
+#             action_process.daemon = True
+#             action_process.start()
+#             action_process.join(timeout=time_to_wait)
+#             if action_process.is_alive():
+#                 action_process.terminate()
+#                 raise TimeoutError
+#             action_process.terminate()
+#         return wrapper
+#     return decorator
 
 class ResPartnerFaceModel(models.Model):
     _name = 'res.partner.face.model'
 
     name = fields.Char(string='Name', readonly=True)
-    face_encodings = fields.Text(string='Face Encoding')
+    face_encodings = fields.Text(string='Face Encoding', default='{}')
     is_encodings_hidden = fields.Boolean(string='Show/Hide Encodings')
     type = fields.Selection(selection=[('temp', 'Temporary'), ('perm', 'Permanent')],
                             string='Permanent/Temporary Encoding',
@@ -214,10 +234,9 @@ class ResPartnerFaceModel(models.Model):
     @api.model
     def compare_with_unknown(self, unknown_encoding):
         similar_partners, face_models = self._organize_model_objects_in_dictionary()
-        batch_number = 0
-
         if len(similar_partners) == 1:
             encoding_batch = []
+            print(face_models)
             for face_model in face_models:
                 encoding_batch.append(face_model[list(face_model.keys())[0]])
 
@@ -230,7 +249,10 @@ class ResPartnerFaceModel(models.Model):
             while len(similar_partners) > 1:
                 encoding_batch = []
                 for face_model in face_models:
-                    encoding_batch.append(face_model[list(face_model.keys())[0]])
+                    try:
+                        encoding_batch.append(face_model[list(face_model.keys())[0]])
+                    except:
+                        pass
                 results = face_recognition.compare_faces(encoding_batch, unknown_encoding[0], 0.4)
                 deleted = 0
                 for i in range(len(results)):
@@ -238,7 +260,6 @@ class ResPartnerFaceModel(models.Model):
                         similar_partners.pop(i - deleted)
                         face_models.pop(i - deleted)
                         deleted += 1
-                batch_number += 1
         if len(similar_partners) and len(similar_partners) <= 1:
             user = self.env['res.users'].search([['partner_id', '=', similar_partners[0]]])
         else:
@@ -251,13 +272,14 @@ class ResPartnerFaceModel(models.Model):
 
         gotten_face_models_records = self.search_read([
             ['type', '=', 'perm'],
-            ['face_encodings', '!=', '']
+            ['face_encodings', '!=', '{}'],
         ], fields=['partner_id', 'face_encodings'])
-
+        print(f"{gotten_face_models_records=}")
         for record in gotten_face_models_records:
-            face_models.append(json.loads(record['face_encodings']))
             if record['partner_id']:
                 partners.append(record['partner_id'][0])
+                face_models.append(json.loads(record['face_encodings']))
+        print(f"{partners=}")
         return partners, face_models
 
     #  Round about way of making One2one field in odoo
