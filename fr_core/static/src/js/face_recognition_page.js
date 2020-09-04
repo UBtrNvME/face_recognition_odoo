@@ -25,9 +25,9 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
                 .then(function (mediaStream) {
                     let video = document.querySelector('#photobooth');
                     let canvas = document.createElement("canvas");
-                    document.querySelector('.canvas-container').appendChild(canvas)
-                    canvas.style.mask = 'url(#masking)'
-                    canvas.style.transform = 'rotateY(180deg)'
+                    // document.querySelector('.canvas-container').appendChild(canvas)
+                    // canvas.style.mask = 'url(#masking)'
+                    // canvas.style.transform = 'rotateY(180deg)'
                     video.srcObject = mediaStream;
                     self.Data.video = video;
                     self.Data.canvas = canvas;
@@ -132,9 +132,9 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
         web_login_face_recognition: function () {
             console.log('web_login_face_recognition')
             this.$("#progress-bar").show();
-            let image = this._takeAPhoto();
+
             let payload = {
-                unknown_user_image: image,
+                unknown_user_image: this._takeAPhoto(),
             }
             this.send_data_to_controller('/api/v1/processImage', payload)
                 .then(result => {
