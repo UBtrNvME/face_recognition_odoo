@@ -274,12 +274,10 @@ class ResPartnerFaceModel(models.Model):
             ['type', '=', 'perm'],
             ['face_encodings', '!=', '{}'],
         ], fields=['partner_id', 'face_encodings'])
-        print(f"{gotten_face_models_records=}")
         for record in gotten_face_models_records:
             if record['partner_id']:
                 partners.append(record['partner_id'][0])
                 face_models.append(json.loads(record['face_encodings']))
-        print(f"{partners=}")
         return partners, face_models
 
     #  Round about way of making One2one field in odoo
