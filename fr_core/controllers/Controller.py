@@ -335,7 +335,8 @@ class HomeInheritedController(Home):
             s = f'?login=false&hasPassword=true&isRecognised=true'
             return http.redirect_with_hash('/web/login%s' % s)
         user = request.env['res.users'].sudo(True).search([['login', '=', login]])
+        print(user.name)
         if user and user.has_password:
-            s = f'?login={login}&hasPassword=true&name={user.partner_id.name}&isRecognised=true'
+            s = f'?login={login}&hasPassword=true&name={user.name}&isRecognised=true&id={user.id}'
             return http.redirect_with_hash('/web/login%s' % s)
         return http.redirect_with_hash('/web/login/face_recognition')
