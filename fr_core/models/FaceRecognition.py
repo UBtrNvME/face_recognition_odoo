@@ -186,7 +186,7 @@ class FaceRecognition(models.AbstractModel):
 
     def make_attendance(self, user_id):
         uid = int(user_id)
-        print(f"{uid=}")
+
         if uid > 0:
             employee = self.env['hr.employee'].search([['user_id', '=', uid]])
             self.env['hr.attendance'].create({
