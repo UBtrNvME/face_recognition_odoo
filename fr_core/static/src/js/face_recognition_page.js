@@ -94,35 +94,18 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
             let self = this;
             self.Data.canvas.height = 0;
             return new Promise(resolve => {
-                // setTimeout(() => {
                     self.send_data_to_controller('/api/v1/face_model/checkImageType', payload)
                         .then(result => {
-                            console.log(result)
-                            self.Data.video.style.height = '0px';
-                            self.Data.canvas.height = 300;
-                            if (result.status.success) {
-                                self._drawEllipseOnCanvas('green', 5, true)
+                            if (result.status.success && result.payload.is_correct_type) {
+                                self.Data.images_to_upload[payload.image_type] = payload.image_data;
+                                $('.message').text(`Successfully added ${images_to_upload_data[payload.image_type][0]}`)
+                                console.log(result)
+                                resolve(true)
                             } else {
-                                self._drawEllipseOnCanvas('red', 5, true)
+                                resolve(false)
                             }
-                            setTimeout(() => {
-                                if (result.status.success && result.payload.is_correct_type) {
-                                    self.Data.images_to_upload[payload.image_type] = payload.image_data;
-                                    $('.message').text(`Successfully added ${images_to_upload_data[payload.image_type][0]}`)
-                                    console.log(result)
-                                    self.Data.video.style.height = '300px'
-                                    self.Data.canvas.height = 0;
-                                    resolve(true)
-                                } else {
-                                    self.Data.video.style.height = '300px'
-                                    self.Data.canvas.height = 0;
-                                    resolve(false)
-                                }
-                            }, 10)
+
                         })
-                // }, 100)
-
-
             })
         },
 
@@ -255,7 +238,6 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
             let canvas_context = canvas.getContext('2d')
             canvas_context.drawImage(video, 0, 0, canvas.width, canvas.height);
             let photo_to_send = canvas.toDataURL("image/jpeg");
-            self._drawEllipseOnCanvas('gray', 2)
             return photo_to_send
         },
         _drawEllipseOnCanvas: function(color, width, with_image = false) {
