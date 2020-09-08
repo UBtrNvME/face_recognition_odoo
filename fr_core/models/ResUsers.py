@@ -28,8 +28,3 @@ class ResUsers(models.Model):
         if user and is_internal_user and employee and is_checked_out:
             employee.attendance_manual('hr_attendance.hr_attendance_action_my_attendances')['action']
         return super()._update_last_login()
-
-class HrEmployee(models.Model):
-    _inherit = 'hr.employee'
-
-    attendance_state = fields.Selection(store=True)
