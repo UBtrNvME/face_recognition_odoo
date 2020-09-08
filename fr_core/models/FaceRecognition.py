@@ -182,13 +182,3 @@ class FaceRecognition(models.AbstractModel):
         for top, right, bottom, left in face_location:
             print(face_location)
             return frs.are_faces_smiling(image_arr, face_location)
-
-
-    def make_attendance(self, user_id):
-        uid = int(user_id)
-
-        if uid > 0:
-            employee = self.env['hr.employee'].search([['user_id', '=', uid]])
-            self.env['hr.attendance'].create({
-                'employee_id': employee.id,
-            })
