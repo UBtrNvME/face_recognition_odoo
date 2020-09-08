@@ -321,7 +321,6 @@ class HomeInheritedController(Home):
     @http.route()
     def web_login(self, redirect=None, **kw):
         if request.httprequest.method == 'POST':
-            request.env['face.recognition'].sudo(True).make_attendance(request.params['id'])
             return super(HomeInheritedController, self).web_login(redirect=redirect, **kw)
 
         if 'login' in request.params or 'isRecognised' in request.params:
