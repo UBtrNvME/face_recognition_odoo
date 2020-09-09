@@ -185,7 +185,20 @@
         </xpath>
     </template>
 
+    <template id="fr_core.fields_inherited" inherit_id="auth_signup.fields">
+        <xpath expr="//div[@class='form-group field-login']" position="after">
+            <p class="alert alert-danger" t-if="error_email" role="alert">
+                <t t-esc="error_email"/>
+            </p>
+        </xpath>
+        <xpath expr="//div[@class='form-group field-confirm_password']" position="after">
+            <p class="alert alert-danger" t-if="error_password" role="alert">
+                <t t-esc="error_password"/>
+            </p>
+        </xpath>
+    </template>
 
+    <!--TODO: modify template through xpath inherit-->
     <template id="fr_core.signup" name="Web Signup Layout" inherit_id="auth_signup.signup">
         <xpath expr="//form[@class='oe_signup_form']" position="replace">
             <form class="oe_signup_form" role="form" method="post" t-if="not message" enctype="multipart/form-data">
@@ -194,13 +207,9 @@
 
                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
 
-                <t t-call="auth_signup.fields">
+                <t t-call="fr_core.fields_inherited">
                     <t t-set="only_passwords" t-value="bool(token and not invalid_token)"/>
                 </t>
-
-                <p class="alert alert-danger" t-if="error" role="alert">
-                    <t t-esc="error"/>
-                </p>
                 <input type="hidden" name="redirect" t-att-value="redirect"/>
                 <input type="hidden" name="token" t-att-value="token"/>
 
@@ -224,8 +233,9 @@
                     <label for="login">Your UIN</label>
                     <input type="text" name="uin" id="uin" class="form-control form-control-sm" autofocus="autofocus"/>
                 </div>
-
-
+                <p class="alert alert-danger" t-if="error_uin" role="alert">
+                    <t t-esc="error_uin"/>
+                </p>
                 <div class="text-center oe_login_buttons pt-3">
                     <button type="submit" class="btn btn-primary btn-block">Sign up</button>
                     <a t-attf-href="/web/login/unrecognized_user" class="btn btn-link btn-sm" role="button">
@@ -236,7 +246,6 @@
             </form>
         </xpath>
     </template>
-
 
     <template id="face_recognition_page" name="Face Recognition Page">
         <!--TODO: move svg tag with all contents into one file and apply it from there-->

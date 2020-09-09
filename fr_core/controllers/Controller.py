@@ -5,6 +5,8 @@ import base64
 from io import BytesIO
 import pytesseract
 from odoo.addons.web.controllers.main import Home
+from odoo.addons.auth_signup.controllers.main import AuthSignupHome
+import werkzeug
 
 from odoo import http
 from odoo.exceptions import UserError
@@ -195,16 +197,35 @@ class FaceRecognitionController(http.Controller):
 
     @http.route('/web/signup/<int:model_id>', type='http', auth='public', website=True)
     def web_auth_signup(self, model_id, *args, **kw):
+        qcontext = request.params.copy()
+        is_error = False
         if request.httprequest.method == 'GET':
             return request.render('fr_core.signup')
         else:
             data = request.params
             res = request.env['res.users'].sudo(True).search([['login', '=', data['login']]])
             if len(res):
-                raise UserError(_('User with given email already registered'))
-            elif data['password'] != data['confirm_password']:
-                raise UserError(_('Passwords do not match'))
-            else:
+                is_error = True
+                qcontext["error_email"] = _("Another user is already registered using this email address.")
+            if data['password'] != data['confirm_password']:
+                is_error = True
+                qcontext["error_password"] = _("Passwords do not match.")
+            uin_id = None
+            if len(data['uin']) == 12 and not is_error:
+                if kw.get('uin_attachment_front', False):
+                    b64_image = base64.b64encode(kw.get('uin_attachment_front').read()).decode('utf-8')
+                    uin_id = request.env['uin.recognition'].sudo(True).create({
+                        'name' : str(data['uin']),
+                        'image': b64_image
+                    })
+                else:
+                    uin_id = request.env['uin.recognition'].sudo(True).create({
+                        'name': str(data['uin'])
+                    })
+            elif len(data['uin']) != 12:
+                qcontext['error_uin'] = _("Please enter correct UIN")
+                is_error = True
+            if not is_error:
                 user = request.env['res.users'].sudo(True).create({
                     'login'     : data['login'],
                     'groups_id' : [(6, 0, [8])],
@@ -214,23 +235,8 @@ class FaceRecognitionController(http.Controller):
                     }).id
                 })
                 user.password = data['password']
-
-                if data['uin']:
-                    if kw.get('uin_attachment_front', False):
-                        b64_image = base64.b64encode(kw.get('uin_attachment_front').read()).decode('utf-8')
-                        uin_id = request.env['uin.recognition'].sudo(True).create({
-                            'name' : str(data['uin']),
-                            'image': b64_image
-                        })
-                    else:
-                        uin_id = request.env['uin.recognition'].sudo(True).create({
-                            'name': str(data['uin'])
-                        })
-                    user.uin_recognition_id = uin_id.id
-
-                    return http.redirect_with_hash('/api/v1/face_model/%d/fill' % (model_id))
-
-            return request.render('fr_core.face_recognition_page')
+                user.uin_recognition_id = uin_id.id
+            return http.redirect_with_hash('/api/v1/face_model/%d/fill' % (model_id)) if not is_error else request.render('fr_core.signup', qcontext)
 
     @http.route(['/api/v1/face_model/checkImageType'], type='json', auth='public', website=True)
     def face_model_check_image_type(self):
