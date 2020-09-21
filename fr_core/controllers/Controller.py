@@ -7,13 +7,13 @@ import pytesseract
 from odoo.addons.web.controllers.main import Home
 from odoo.addons.auth_signup.controllers.main import AuthSignupHome
 import werkzeug
-
+import numpy as np
 from odoo import http
 from odoo.exceptions import UserError
 from odoo.http import request
 from odoo.tools import logging
 from odoo.tools.translate import _
-
+from ..scripts import auto_crop_uid as uid_rec
 
 _logger = logging.getLogger(__name__)
 
@@ -170,10 +170,9 @@ class FaceRecognitionController(http.Controller):
     def process_image_uin_front(self):
         image_data = self.process_image_datas_to_base64(request.params.get('unknown_uin_image'))
         img = Image.open(BytesIO(base64.b64decode(image_data)))
-        text = pytesseract.image_to_string(img)
-        uin = [int(s) for s in text.split() if s.isdigit() and len(s) == 12]
-
-        return uin[0] if len(uin) else -1
+        data = uid_rec.prepare_uid(np.array(img))
+        print(data)
+        return data['unique_individual_number'] if len(data) and len(data['unique_individual_number']) else -1
 
     @http.route(['/api/processBackUinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
