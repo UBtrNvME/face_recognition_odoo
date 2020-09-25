@@ -18,6 +18,10 @@
       width: 100%;
       //border: 5px solid #7C7BAD;
       transform: rotateY(180deg);
+      mask-image: url(/fr_core/static/src/img/ellipse.png);
+      mask-size: 400px 300px;
+      -webkit-mask-image: url(/fr_core/static/src/img/ellipse.png);
+      -webkit-mask-size: 400px 300px;
     }
 
     //canvas {

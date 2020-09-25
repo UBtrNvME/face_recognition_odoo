@@ -19,7 +19,7 @@
     'version'    : '0.1',
 
     # any module necessary for this one to work correctly
-    'depends'    : ['base', 'contacts', 'hr', 'hr_attendance', 'web'],
+    'depends'    : ['base', 'contacts', 'hr', 'hr_attendance', 'web', 'website'],
 
     "external_dependencies": {"python": [
         'pytesseract',
