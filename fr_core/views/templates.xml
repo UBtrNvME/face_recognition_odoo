@@ -9,7 +9,7 @@
             <script type="text/javascript" src="/fr_core/static/src/js/photobooth.js"/>
             <script type="text/javascript" src="/fr_core/static/src/js/kiosk_mode_extended.js"/>
             <script type="text/javascript" src="/fr_core/static/src/js/face_recognition_page.js"/>
-            <script type="text/javascript" src="/fr_core/static/src/js/file_upload_widget.js"/>
+            <!--            <script type="text/javascript" src="/fr_core/static/src/js/file_upload_widget.js"/>-->
         </xpath>
     </template>
 
@@ -19,7 +19,9 @@
             <script type="text/javascript" src="/fr_core/static/src/js/file_upload_widget.js"/>
             <link href="/fr_core/static/src/scss/face_recognition_page.scss" rel="stylesheet"
                   type="text/scss"/>
-
+            <link href="/fr_core/static/src/scss/signup_page.scss" rel="stylesheet"
+                  type="text/scss"/>
+            <!--            <script type="text/javascript" src="/fr_core/static/src/js/file_upload_widget.js"/>-->
         </xpath>
     </template>
 
@@ -165,7 +167,8 @@
                                 <button type="submit" class="btn btn-primary btn-block">Retry</button>
                             </form>
                             <p/>
-                            <form role="form" method="get" t-att-action="'/web/signup/' + model">
+                            <form role="form" method="get" t-att-action="'/web/signup'">
+                                <input type="hidden" t-att-value="model" name="face_model_id" id="face_model_id"/>
                                 <button type="submit" class="btn btn-primary btn-block">Sign up</button>
                             </form>
 
@@ -185,7 +188,7 @@
         </xpath>
     </template>
 
-    <template id="fr_core.fields_inherited" inherit_id="auth_signup.fields">
+    <template id="auth_signup_fields_extend" inherit_id="auth_signup.fields">
         <xpath expr="//div[@class='form-group field-login']" position="after">
             <p class="alert alert-danger" t-if="error_email" role="alert">
                 <t t-esc="error_email"/>
@@ -196,23 +199,8 @@
                 <t t-esc="error_password"/>
             </p>
         </xpath>
-    </template>
-
-    <!--TODO: modify template through xpath inherit-->
-    <template id="fr_core.signup" name="Web Signup Layout" inherit_id="auth_signup.signup">
-        <xpath expr="//form[@class='oe_signup_form']" position="replace">
-            <form class="oe_signup_form" role="form" method="post" t-if="not message" enctype="multipart/form-data">
-
-                <script type="text/javascript" src="/fr_core/static/src/js/file_upload_widget.js"/>
-
-                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-
-                <t t-call="fr_core.fields_inherited">
-                    <t t-set="only_passwords" t-value="bool(token and not invalid_token)"/>
-                </t>
-                <input type="hidden" name="redirect" t-att-value="redirect"/>
-                <input type="hidden" name="token" t-att-value="token"/>
-
+        <xpath expr="//div[hasclass('field-confirm_password')]" position="after">
+            <div class="form-group field-front_id">
                 <label for="iin_attachment_front">Front of your ID</label>
                 <input type="file" id="iin_attachment_front" name="iin_attachment_front" class="file"
                        data-show-upload="true"
@@ -220,31 +208,36 @@
                        data-show-preview="true"
                        accept=".png,.jpeg,.jpg"
                        lass="file"/>
+            </div>
+            <!--            <div class="form-group field-back_id">-->
+            <!--                <label for="iin_attachment_back">Back of your ID</label>-->
+            <!--                <input type="file" id="iin_attachment_back" name="iin_attachment_back" class="form-control file"-->
+            <!--                       data-show-upload="true"-->
+            <!--                       data-show-caption="true"-->
+            <!--                       data-show-preview="true"-->
+            <!--                       accept=".png,.jpeg,.jpg"-->
+            <!--                       lass="file"/>-->
+            <!--            </div>-->
 
-                <label for="iin_attachment_back">Back of your ID</label>
-                <input type="file" id="iin_attachment_back" name="iin_attachment_back" class="file"
-                       data-show-upload="true"
-                       data-show-caption="true"
-                       data-show-preview="true"
-                       accept=".png,.jpeg,.jpg"
-                       lass="file"/>
-
-                <div class="form-group field-login">
-                    <label for="login">Your IIN</label>
-                    <input type="text" name="iin" id="iin" class="form-control form-control-sm" autofocus="autofocus"/>
-                </div>
+            <div class="form-group field-iin">
+                <label for="iin">IIN</label>
+                <input type="text" id="iin" name="iin" class="form-control"
+                       t-att-readonly="'readonly' if only_passwords else None"/>
                 <p class="alert alert-danger" t-if="error_iin" role="alert">
                     <t t-esc="error_iin"/>
                 </p>
-                <div class="text-center oe_login_buttons pt-3">
-                    <button type="submit" class="btn btn-primary btn-block">Sign up</button>
-                    <a t-attf-href="/web/login/unrecognized_user" class="btn btn-link btn-sm" role="button">
-                        Already have an account?
-                    </a>
-                    <div class="o_login_auth"/>
-                </div>
-            </form>
+            </div>
         </xpath>
+    </template>
+
+    <!--TODO: modify template through xpath inherit-->
+    <template id="fr_core.signup" name="Web Signup Layout" inherit_id="auth_signup.signup">
+        <xpath expr="//form[@class='oe_signup_form']" position="after">
+            <div id="overlay" class="overlay">
+                <div class="loader"></div>
+            </div>
+        </xpath>
+
     </template>
 
     <template id="face_recognition_page" name="Face Recognition Page">
