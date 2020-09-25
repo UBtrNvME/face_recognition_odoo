@@ -51,7 +51,7 @@
                 }
             },
             {
-                "name": "unique_individual_number",
+                "name": "individual_identification_number",
                 "type": "unique",
                 "lang": "eng",
                 "reg_exp": "",

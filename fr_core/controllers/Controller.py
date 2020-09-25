@@ -143,46 +143,45 @@ class FaceRecognitionController(http.Controller):
             }
         return response
 
-    @http.route(['/api/v1/processUinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
+    @http.route(['/api/v1/processIinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
-    def process_image_uin_v1(self):
-        image_data = request.params.get('unknown_uin')
+    def process_image_iin_v1(self):
+        image_data = request.params.get('unknown_iin')
         face_model_id = request.params.get('face_model_id')
         if not image_data:
             return http.Response('No Terms Found', status=412)
         image_data = self.process_image_datas_to_base64(image_data)
         img = Image.open(BytesIO(base64.b64decode(image_data)))
         text = pytesseract.image_to_string(img)
-        uin = [int(s) for s in text.split() if s.isdigit() and len(s) == 12]
+        iin = [int(s) for s in text.split() if s.isdigit() and len(s) == 12]
 
-        if len(uin):
+        if len(iin):
             partner = request.env['res.partner'].sudo(True).search([['face_model_id', '=', int(face_model_id)]])
-            uin_id = request.env['uin.recognition'].sudo(True).create({
-                'name' : str(uin[0]),
+            iin_id = request.env['iin.recognition'].sudo(True).create({
+                'name' : str(iin[0]),
                 'image': image_data
             })
 
-            partner.uin_recognition_id = uin_id.id
-        return uin
+            partner.iin_recognition_id = iin_id.id
+        return iin
 
-    @http.route(['/api/processFrontUinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
+    @http.route(['/api/processFrontIinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
-    def process_image_uin_front(self):
-        image_data = self.process_image_datas_to_base64(request.params.get('unknown_uin_image'))
+    def process_image_iin_front(self):
+        image_data = self.process_image_datas_to_base64(request.params.get('unknown_iin_image'))
         img = Image.open(BytesIO(base64.b64decode(image_data)))
         data = uid_rec.prepare_uid(np.array(img))
-        print(data)
-        return data['unique_individual_number'] if len(data) and len(data['unique_individual_number']) else -1
+        return data['individual_identification_number'] if len(data) and len(data['individual_identification_number']) else -1
 
-    @http.route(['/api/processBackUinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
+    @http.route(['/api/processBackIinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
-    def process_image_uin_back(self):
-        image_data = self.process_image_datas_to_base64(request.params.get('unknown_uin_image'))
+    def process_image_iin_back(self):
+        image_data = self.process_image_datas_to_base64(request.params.get('unknown_iin_image'))
         img = Image.open(BytesIO(base64.b64decode(image_data)))
         text = pytesseract.image_to_string(img)
-        uin = [int(s) for s in text.split() if s.isdigit() and len(s) == 12]
+        iin = [int(s) for s in text.split() if s.isdigit() and len(s) == 12]
 
-        return uin[0] if len(uin) else -1
+        return iin[0] if len(iin) else -1
 
     @staticmethod
     def process_image_datas_to_base64(image_datas):
@@ -194,7 +193,7 @@ class FaceRecognitionController(http.Controller):
         print("hello bitch")
         return http.Response('OK', status=200)
 
-    @http.route('/web/signup/<int:model_id>', type='http', auth='public', website=True)
+    @http.route('/web/signup/<int:model_id>', type='http', auth='public', website=True, csrf=False)
     def web_auth_signup(self, model_id, *args, **kw):
         qcontext = request.params.copy()
         is_error = False
@@ -209,20 +208,8 @@ class FaceRecognitionController(http.Controller):
             if data['password'] != data['confirm_password']:
                 is_error = True
                 qcontext["error_password"] = _("Passwords do not match.")
-            uin_id = None
-            if len(data['uin']) == 12 and not is_error:
-                if kw.get('uin_attachment_front', False):
-                    b64_image = base64.b64encode(kw.get('uin_attachment_front').read()).decode('utf-8')
-                    uin_id = request.env['uin.recognition'].sudo(True).create({
-                        'name' : str(data['uin']),
-                        'image': b64_image
-                    })
-                else:
-                    uin_id = request.env['uin.recognition'].sudo(True).create({
-                        'name': str(data['uin'])
-                    })
-            elif len(data['uin']) != 12:
-                qcontext['error_uin'] = _("Please enter correct UIN")
+            if len(data['iin']) != 12:
+                qcontext['error_iin'] = _("Please enter correct IIN")
                 is_error = True
             if not is_error:
                 user = request.env['res.users'].sudo(True).create({
@@ -234,7 +221,7 @@ class FaceRecognitionController(http.Controller):
                     }).id
                 })
                 user.password = data['password']
-                user.uin_recognition_id = uin_id.id
+                user.partner_id.iin = data['iin']
             return http.redirect_with_hash('/api/v1/face_model/%d/fill' % (model_id)) if not is_error else request.render('fr_core.signup', qcontext)
 
     @http.route(['/api/v1/face_model/checkImageType'], type='json', auth='public', website=True)

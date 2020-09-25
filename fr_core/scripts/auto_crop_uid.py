@@ -94,7 +94,7 @@ def _rotate_image(image, angle):
 
 
 def rotate_until_correct_orientation(image, doc_char):
-    uin = re.compile(doc_char['uid']['characteristics']
+    iin = re.compile(doc_char['uid']['characteristics']
                      ['front']['markers'][2]['regex'])
     kaz = re.compile(doc_char['uid']['characteristics']
                      ['front']['markers'][0]['regex'])
@@ -112,12 +112,12 @@ def rotate_until_correct_orientation(image, doc_char):
             output_type=pytesseract.Output.DICT,
             # config='-c tessedit_char_whitelist=0123456789'
         )
-        top_uin, top_kaz, top_rus = 0, 0, 0
-        words = list(filter(uin.match, data['text']))
+        top_iin, top_kaz, top_rus = 0, 0, 0
+        words = list(filter(iin.match, data['text']))
 
         if words:
             index = data['text'].index(words[0])
-            top_uin = data['top'][index]
+            top_iin = data['top'][index]
         else:
             continue
 
@@ -145,7 +145,7 @@ def rotate_until_correct_orientation(image, doc_char):
     return temp_image
 
 def rotate_until_correct_orientation_parallel(angle, image, doc_char):
-    uin = re.compile(doc_char['uid']['characteristics']
+    iin = re.compile(doc_char['uid']['characteristics']
                      ['front']['markers'][2]['regex'])
     kaz = re.compile(doc_char['uid']['characteristics']
                      ['front']['markers'][0]['regex'])
@@ -163,11 +163,11 @@ def rotate_until_correct_orientation_parallel(angle, image, doc_char):
             output_type=pytesseract.Output.DICT,
             # config='-c tessedit_char_whitelist=0123456789'
         )
-        top_uin, top_kaz, top_rus = 0, 0, 0
-        words = list(filter(uin.match, data['text']))
+        top_iin, top_kaz, top_rus = 0, 0, 0
+        words = list(filter(iin.match, data['text']))
         if words:
             index = data['text'].index(words[0])
-            top_uin = data['top'][index]
+            top_iin = data['top'][index]
         else:
             continue
 
@@ -321,14 +321,14 @@ def find_uid_borders(image, doc_char, marker_datas):
     return np.array(uid_points).reshape((4, 2))
 
 path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'document_characteristics.json')
-def prepare_uid(uin_image, path_to_json=path):
+def prepare_uid(iin_image, path_to_json=path):
     # prepare all required data and enhance dpi
     _logger.warning(path)
     doc_char = _import_document_characteristics(path_to_json)
-    file_name = _set_image_dpi(uin_image)
+    file_name = _set_image_dpi(iin_image)
     image = cv2.imread(file_name)
     os.remove(file_name)
-    # rotate image until uin can be seen, because uin is the most difficult data to find
+    # rotate image until iin can be seen, because iin is the most difficult data to find
     # image = rotate_until_correct_orientation(image, doc_char)
     angles = [j if j >= 0 else 360 + j for i in range(0, 271, 90) for j in range(i - 8, i + 8 + 1)]
     _logger.warning(angles)
@@ -342,8 +342,8 @@ def prepare_uid(uin_image, path_to_json=path):
     # image = best_results[0][1]
     # _logger.warning(image)
     results = []
-    with ProcessPool(max_workers=2) as pool:
-        future = pool.map(partial(rotate_until_correct_orientation_parallel, image=image, doc_char=doc_char), angles, timeout=10)
+    with ProcessPool(max_workers=4) as pool:
+        future = pool.map(partial(rotate_until_correct_orientation_parallel, image=image, doc_char=doc_char), angles, timeout=20)
         iterator = future.result()
         while True:
             try:
@@ -353,6 +353,7 @@ def prepare_uid(uin_image, path_to_json=path):
                 break
             except TimeoutError as error:
                 print("function took longer than %d seconds" % error.args[1])
+                break
 
     markers = find_uid_markers(image, doc_char)
     points = find_uid_borders(image, doc_char, markers)

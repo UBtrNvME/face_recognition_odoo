@@ -182,16 +182,16 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
                 let self = this;
                 console.log('send request')
                 this._rpc({
-                    route: '/api/v1/processUinImage',
+                    route: '/api/v1/processFrontIinImage',
                     params: {
-                        'unknown_uin': image,
-                        'face_model_id': window.location.pathname.split('/').pop()
+                        'unknown_iin': image,
+                        // 'face_model_id': window.location.pathname.split('/').pop()
                     }
                 }).then(result => {
                     if (result.length === 1) {
                         window.location.href = `${window.location.origin}/`
                     } else {
-                        let tryAgain = window.confirm("Sorry, could not recognize your uin, try again.")
+                        let tryAgain = window.confirm("Sorry, could not recognize your iin, try again.")
                         self._tryAgain(tryAgain)
                     }
                 })
