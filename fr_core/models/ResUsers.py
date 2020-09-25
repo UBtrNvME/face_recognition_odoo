@@ -16,15 +16,19 @@ class ResUsers(models.Model):
             [hashed] = self.env.cr.fetchone()
             user.has_password = True if hashed != '' else False
 
-    def _update_last_login(self):
-        user = self
-        groups_id = user.env['res.users'].search_read([
-            ['id', '=', user.id],
-        ], ['groups_id'])[0]['groups_id']
-        employee = user.employee_id
-        is_internal_user = 1 in groups_id
-        is_checked_out = self.env['hr.attendance'].search([['employee_id', '=', employee.id]],
-                                                                        limit=1).check_out
-        if user and is_internal_user and employee and is_checked_out:
-            employee.attendance_manual('hr_attendance.hr_attendance_action_my_attendances')['action']
-        return super()._update_last_login()
+    @classmethod
+    def authenticate(cls, db, login, password, user_agent_env):
+        user_id = super().authenticate(db, login, password, user_agent_env)
+        with cls.pool.cursor() as cr:
+            env = api.Environment(cr, user_id, {})
+
+            employee = env.user['employee_id']
+            groups_id = [group.id for group in env.user.groups_id]
+            is_internal_user = 1 in groups_id
+
+            is_checked_out = env['hr.attendance'].search([['employee_id', '=', employee.id]],
+                                                                            limit=1)
+            is_checked_out = is_checked_out.check_out if is_checked_out else True
+            if user_id and is_internal_user and employee and is_checked_out:
+                employee.attendance_manual('hr_attendance.hr_attendance_action_my_attendances')
+        return user_id

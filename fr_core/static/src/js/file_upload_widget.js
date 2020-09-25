@@ -9,6 +9,7 @@ odoo.define('fr_core.test_script', function (require) {
 
             let fileReader = new FileReader();
             fileReader.onload = function () {
+                document.getElementById('overlay').style.display = 'flex';
                 let data = fileReader.result;
                 rpc.query({
                     route: '/api/processFrontIinImage',
@@ -22,7 +23,9 @@ odoo.define('fr_core.test_script', function (require) {
                     }else{
                         $('#iin').val(result);
                     }
+                    document.getElementById('overlay').style.display = 'none';
                 })
+
             };
             fileReader.readAsDataURL($(id).prop('files')[0]);
         });

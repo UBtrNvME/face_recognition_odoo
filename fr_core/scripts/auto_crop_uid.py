@@ -93,7 +93,7 @@ def _rotate_image(image, angle):
     return cv2.warpAffine(image, M, (nW, nH))
 
 
-def rotate_until_correct_orientation(image, doc_char):
+def rotate_until_correct_orientation(image, doc_char, angles):
     iin = re.compile(doc_char['uid']['characteristics']
                      ['front']['markers'][2]['regex'])
     kaz = re.compile(doc_char['uid']['characteristics']
@@ -102,7 +102,7 @@ def rotate_until_correct_orientation(image, doc_char):
                      ['front']['markers'][1]['regex'])
     temp_image = None
     temp_diff = 1e9
-    for i in range(0, 360, 1):
+    for i in angles:
         image_copy = image.copy()
         image_copy = _rotate_image(image_copy, i)
         _logger.warning(i)
@@ -329,31 +329,22 @@ def prepare_uid(iin_image, path_to_json=path):
     image = cv2.imread(file_name)
     os.remove(file_name)
     # rotate image until iin can be seen, because iin is the most difficult data to find
-    # image = rotate_until_correct_orientation(image, doc_char)
+
     angles = [j if j >= 0 else 360 + j for i in range(0, 271, 90) for j in range(i - 8, i + 8 + 1)]
-    _logger.warning(angles)
-    # pool = Pool(processes=int(cpu_count()//3))
-    # _logger.warning("cpu_count: %d" % (cpu_count()))
-    # best_results = pool.map(partial(rotate_until_correct_orientation_parallel, image=image, doc_char=doc_char), angles)
-    # pool.close()
-    # pool.join()
-    # _logger.warning(best_results)
-    # best_results = sorted(best_results, key=lambda x: x[0])
-    # image = best_results[0][1]
-    # _logger.warning(image)
-    results = []
-    with ProcessPool(max_workers=4) as pool:
-        future = pool.map(partial(rotate_until_correct_orientation_parallel, image=image, doc_char=doc_char), angles, timeout=20)
-        iterator = future.result()
-        while True:
-            try:
-                result = next(iterator)
-                results.append(result)
-            except StopIteration:
-                break
-            except TimeoutError as error:
-                print("function took longer than %d seconds" % error.args[1])
-                break
+    image = rotate_until_correct_orientation(image, doc_char, angles)
+    # results = []
+    # with ProcessPool(max_workers=2) as pool:
+    #     future = pool.map(partial(rotate_until_correct_orientation_parallel, image=image, doc_char=doc_char), angles, timeout=20)
+    #     iterator = future.result()
+    #     while True:
+    #         try:
+    #             result = next(iterator)
+    #             results.append(result)
+    #         except StopIteration:
+    #             break
+    #         except TimeoutError as error:
+    #             print("function took longer than %d seconds" % error.args[1])
+    #             break
 
     markers = find_uid_markers(image, doc_char)
     points = find_uid_borders(image, doc_char, markers)

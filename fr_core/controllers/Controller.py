@@ -6,13 +6,15 @@ from io import BytesIO
 import pytesseract
 from odoo.addons.web.controllers.main import Home
 from odoo.addons.auth_signup.controllers.main import AuthSignupHome
+from odoo.addons.auth_signup.models.res_users import SignupError
+from odoo.exceptions import UserError
 import werkzeug
 import numpy as np
 from odoo import http
 from odoo.exceptions import UserError
 from odoo.http import request
 from odoo.tools import logging
-from odoo.tools.translate import _
+from odoo import http, _
 from ..scripts import auto_crop_uid as uid_rec
 
 _logger = logging.getLogger(__name__)
@@ -69,10 +71,6 @@ class FaceRecognitionController(http.Controller):
             except:
                 return http.Response("No Terms Found", status=412)
 
-    @http.route('/web/login/face_recognition', type='http', auth="public", website=True)
-    def web_login_face_recognition(self, **kw):
-        # from here you can call
-        return request.render('fr_core.face_recognition_page')
 
     @http.route(['/api/v1/processImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
@@ -193,7 +191,7 @@ class FaceRecognitionController(http.Controller):
         print("hello bitch")
         return http.Response('OK', status=200)
 
-    @http.route('/web/signup/<int:model_id>', type='http', auth='public', website=True, csrf=False)
+    @http.route('/web/signup/<int:model_id>', type='http', auth='public', website=True)
     def web_auth_signup(self, model_id, *args, **kw):
         qcontext = request.params.copy()
         is_error = False
@@ -212,16 +210,18 @@ class FaceRecognitionController(http.Controller):
                 qcontext['error_iin'] = _("Please enter correct IIN")
                 is_error = True
             if not is_error:
+                print("User Creation")
+                partner = request.env['res.partner'].sudo(True).create({
+                    'name'         : data['name'],
+                    'face_model_id': model_id
+                })
                 user = request.env['res.users'].sudo(True).create({
                     'login'     : data['login'],
                     'groups_id' : [(6, 0, [8])],
-                    'partner_id': request.env['res.partner'].sudo(True).create({
-                        'name'         : data['name'],
-                        'face_model_id': model_id
-                    }).id
+                    'partner_id': partner.id
                 })
                 user.password = data['password']
-                user.partner_id.iin = data['iin']
+                partner.iin = data['iin']
             return http.redirect_with_hash('/api/v1/face_model/%d/fill' % (model_id)) if not is_error else request.render('fr_core.signup', qcontext)
 
     @http.route(['/api/v1/face_model/checkImageType'], type='json', auth='public', website=True)
@@ -298,7 +298,7 @@ class FaceRecognitionController(http.Controller):
                 [['id', '=', model_id]])
             try:
                 for key in images_to_attach:
-                    face_model.add_new_face_image_attachment(
+                    face_model.sudo(True).add_new_face_image_attachment(
                         image_datas=self.process_image_datas_to_base64(images_to_attach[key]),
                         image_name='new',
                         with_encoding=True)
@@ -309,16 +309,37 @@ class FaceRecognitionController(http.Controller):
             return request.render('fr_core.face_model_fill')
 
 
-class HomeInheritedController(Home):
+class AuthSignupHome(Home):
+    def do_signup(self, qcontext):
+        """ Shared helper that creates a res.partner out of a token """
+        print(qcontext)
+        values = {key: qcontext.get(key) for key in ('login', 'name', 'password', 'iin', 'face_model_id')}
+        # values.update({'country_id': int(qcontext.get('country_id'))})
+        for key in values:
+            if values[key] == '':
+                values.pop(key)
+            elif '_id' in key:
+                values[key] = int(values[key])
+        if not values:
+            raise UserError(_("The form was not properly filled in."))
+        if values.get('password') != qcontext.get('confirm_password'):
+            raise UserError(_("Passwords do not match; please retype them."))
+        supported_lang_codes = [code for code, _ in request.env['res.lang'].get_installed()]
+        lang = request.context.get('lang', '').split('_')[0]
+        if lang in supported_lang_codes:
+            values['lang'] = lang
+        self._signup_with_values(qcontext.get('token'), values)
+        request.env.cr.commit()
+
+
     @http.route()
     def web_login(self, redirect=None, **kw):
         if request.httprequest.method == 'POST':
-            return super(HomeInheritedController, self).web_login(redirect=redirect, **kw)
+            return super(AuthSignupHome, self).web_login(redirect=redirect, **kw)
 
         if 'login' in request.params or 'isRecognised' in request.params:
-            return super(HomeInheritedController, self).web_login(redirect=redirect, **kw)
-
-        return http.redirect_with_hash('/web/login/face_recognition')
+            return super(AuthSignupHome, self).web_login(redirect=redirect, **kw)
+        return http.redirect_with_hash("/web/login/face_recognition")
 
     @http.route("/web/login/<string:login>", type="http", auth="none")
     def web_login_user(self, login, redirect=None, **kw):
@@ -331,3 +352,49 @@ class HomeInheritedController(Home):
             s = f'?login={login}&hasPassword=true&name={user.name}&isRecognised=true&id={user.id}'
             return http.redirect_with_hash('/web/login%s' % s)
         return http.redirect_with_hash('/web/login/face_recognition')
+
+    @http.route('/web/login/face_recognition', type='http', auth="public", website=True)
+    def web_login_face_recognition(self, **kw):
+        # from here you can call
+        return request.render('fr_core.face_recognition_page')
+
+    @http.route('/web/signup', type='http', auth='public', website=True, sitemap=False)
+    def web_auth_signup(self, *args, **kw):
+        qcontext = self.get_auth_signup_qcontext()
+        qcontext['states'] = request.env['res.country.state'].sudo().search([])
+        qcontext['countries'] = request.env['res.country'].sudo().search([])
+
+
+        if not qcontext.get('token') and not qcontext.get('signup_enabled'):
+            raise werkzeug.exceptions.NotFound()
+
+        is_error = 'error_iin' in qcontext or 'error_password' in qcontext or 'error_email' in qcontext
+        if not is_error and request.httprequest.method == 'POST':
+            try:
+                self.do_signup(qcontext)
+                # Send an account creation confirmation email
+                if qcontext.get('token'):
+                    user_sudo = request.env['res.users'].sudo().search([('login', '=', qcontext.get('login'))])
+                    template = request.env.ref('auth_signup.mail_template_user_signup_account_created',
+                                               raise_if_not_found=False)
+                    if user_sudo and template:
+                        template.sudo().with_context(
+                            lang=user_sudo.lang,
+                            auth_login=werkzeug.url_encode({'auth_login': user_sudo.email}),
+                        ).send_mail(user_sudo.id, force_send=True)
+
+                if qcontext and 'face_model_id' in qcontext:
+                    return http.redirect_with_hash('/api/v1/face_model/%s/fill' % (qcontext['face_model_id']))
+                return self.web_login(*args, **kw)
+            except UserError as e:
+                qcontext['error'] = e.name or e.value
+            except (SignupError, AssertionError) as e:
+                if request.env["res.users"].sudo().search([("login", "=", qcontext.get("login"))]):
+                    qcontext["error_email"] = _("Another user is already registered using this email address.")
+                else:
+                    _logger.error("%s", e)
+                    qcontext['error'] = _("Could not create a new account.")
+
+        response = request.render('auth_signup.signup', qcontext)
+        response.headers['X-Frame-Options'] = 'DENY'
+        return response
