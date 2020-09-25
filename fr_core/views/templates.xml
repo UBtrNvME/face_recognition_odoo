@@ -213,16 +213,16 @@
                 <input type="hidden" name="redirect" t-att-value="redirect"/>
                 <input type="hidden" name="token" t-att-value="token"/>
 
-                <label for="uin_attachment_front">Front of your ID</label>
-                <input type="file" id="uin_attachment_front" name="uin_attachment_front" class="file"
+                <label for="iin_attachment_front">Front of your ID</label>
+                <input type="file" id="iin_attachment_front" name="iin_attachment_front" class="file"
                        data-show-upload="true"
                        data-show-caption="true"
                        data-show-preview="true"
                        accept=".png,.jpeg,.jpg"
                        lass="file"/>
 
-                <label for="uin_attachment_back">Back of your ID</label>
-                <input type="file" id="uin_attachment_back" name="uin_attachment_back" class="file"
+                <label for="iin_attachment_back">Back of your ID</label>
+                <input type="file" id="iin_attachment_back" name="iin_attachment_back" class="file"
                        data-show-upload="true"
                        data-show-caption="true"
                        data-show-preview="true"
@@ -230,11 +230,11 @@
                        lass="file"/>
 
                 <div class="form-group field-login">
-                    <label for="login">Your UIN</label>
-                    <input type="text" name="uin" id="uin" class="form-control form-control-sm" autofocus="autofocus"/>
+                    <label for="login">Your IIN</label>
+                    <input type="text" name="iin" id="iin" class="form-control form-control-sm" autofocus="autofocus"/>
                 </div>
-                <p class="alert alert-danger" t-if="error_uin" role="alert">
-                    <t t-esc="error_uin"/>
+                <p class="alert alert-danger" t-if="error_iin" role="alert">
+                    <t t-esc="error_iin"/>
                 </p>
                 <div class="text-center oe_login_buttons pt-3">
                     <button type="submit" class="btn btn-primary btn-block">Sign up</button>
