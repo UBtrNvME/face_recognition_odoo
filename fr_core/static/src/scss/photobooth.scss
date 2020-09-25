@@ -28,6 +28,10 @@
         width: 400px;
         height: 300px;
         transform: rotateY(180deg);
+        mask-image: url(/fr_core/static/src/img/ellipse.png);
+        mask-size: 400px 300px;
+        -webkit-mask-image: url(/fr_core/static/src/img/ellipse.png);
+        -webkit-mask-size: 400px 300px
       }
     }
   }
