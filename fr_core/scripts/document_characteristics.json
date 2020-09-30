@@ -4,6 +4,32 @@
       {
         "name": "first_name",
         "type": "string",
+        "lang": "eng",
+        "regex": "(?<=<<)([A-z]+)(?=<+K+|<+)",
+        "location": "back",
+        "position": {
+          "x": 0.0,
+          "y": 31.3374,
+          "w": 85.72,
+          "h": 21.612000000000002
+        }
+      },
+      {
+        "name": "last_name",
+        "type": "string",
+        "lang": "eng",
+        "regex": "(?<=<\\d|K\\d)([A-z]+)(?=<+K+|<+)",
+        "location": "back",
+        "position": {
+          "x": 0.0,
+          "y": 31.3374,
+          "w": 85.72,
+          "h": 21.612000000000002
+        }
+      },
+      {
+        "name": "first_name_kaz",
+        "type": "string",
         "lang": "kaz",
         "location": "front",
         "position": {
@@ -14,7 +40,7 @@
         }
       },
       {
-        "name": "last_name",
+        "name": "last_name_kaz",
         "type": "string",
         "lang": "kaz",
         "location": "front",
@@ -26,7 +52,7 @@
         }
       },
       {
-        "name": "father_name",
+        "name": "father_name_kaz",
         "type": "string",
         "lang": "kaz",
         "location": "front",
@@ -80,6 +106,19 @@
         "type": "string",
         "lang": "eng",
         "regex": "(?<=[0-9])([A-z]{3})(?=<+)",
+        "location": "back",
+        "position": {
+          "x": 0.0,
+          "y": 31.3374,
+          "w": 85.72,
+          "h": 21.612000000000002
+        }
+      },
+      {
+        "name": "gender",
+        "type": "string",
+        "lang": "eng",
+        "regex": "(?<=\\d|\\w)(M|F)(?=\\d)",
         "location": "back",
         "position": {
           "x": 0.0,

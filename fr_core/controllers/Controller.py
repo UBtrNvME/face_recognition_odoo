@@ -173,11 +173,11 @@ class FaceRecognitionController(http.Controller):
         try:
             data = uid_rec.prepare_uid('front', np.array(img))
             data['iin'] = data.pop('individual_identification_number')
-            data[
-                'name'] = f"{data.pop('last_name')} {data.pop('first_name')} " \
-                          f"{data.pop('father_name')}".title()
+            data['name'] = f"{data.pop('last_name_kaz')} {data.pop('first_name_kaz')} " \
+                           f"{data.pop('father_name_kaz')}".title()
             data['dob'] = '-'.join(list(map(lambda x: x.strip(), data.pop('date_of_birth').split('.')))[::-1])
             response['results'] = data
+            print(response)
         except UnrecognizableDocument:
             response['error'] = True
         finally:
@@ -186,12 +186,20 @@ class FaceRecognitionController(http.Controller):
     @http.route(['/api/processBackIinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
     def process_image_iin_back(self):
+        genders = {
+            'F': 'female',
+            'M': 'male'
+        }
         image_data = self.process_image_datas_to_base64(request.params.get('unknown_iin_image'))
         img = Image.open(BytesIO(base64.b64decode(image_data)))
         response = dict(error=False, results=None)
         try:
             data = uid_rec.prepare_uid('back', np.array(img))
-            print(data)
+            data['city'] = data.pop('place_of_birth').title()
+            data['login'] = f"{data.pop('first_name')}.{data.pop('last_name')}@gmail.com".lower()
+            data['gender'] = genders[data.pop('gender')]
+            for key in ['issuing_authority', 'date_of_expiring', 'document_number', 'date_of_issuing']:
+                data.pop(key)
             response['results'] = data
         except UnrecognizableDocument:
             response['error'] = True

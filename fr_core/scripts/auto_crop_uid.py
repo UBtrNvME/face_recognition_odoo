@@ -496,6 +496,7 @@ def prepare_uid(type,image,path_to_json=path):
         else:
             image = crop_uid_back(image, doc_char)
         data = get_data_from_the_uid(image, type, doc_char=doc_char)
+        print(data)
     except:
         pass
     finally:
