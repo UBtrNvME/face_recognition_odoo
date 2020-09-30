@@ -66,7 +66,7 @@ odoo.define('fr_core.test_script', function (require) {
                     }
                 }).then(response => {
                     if (!response.results || response.error) {
-                        window.alert("Sorry, could not recognize iin from image. Please try again, use web camera or enter it yourself.")
+                        window.alert("Sorry, could not recognize iin from image. Please try again, or enter your self")
                     } else {
                         unpackDataFromController(response.results)
                         document.getElementsByClassName('field-back_id')[0].style.display = 'none'

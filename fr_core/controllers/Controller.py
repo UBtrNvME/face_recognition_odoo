@@ -195,7 +195,7 @@ class FaceRecognitionController(http.Controller):
         response = dict(error=False, results=None)
         try:
             data = uid_rec.prepare_uid('back', np.array(img))
-            data['city'] = data.pop('place_of_birth').title()
+            data.pop('place_of_birth')
             data['login'] = f"{data.pop('first_name')}.{data.pop('last_name')}@gmail.com".lower()
             data['gender'] = genders[data.pop('gender')]
             for key in ['issuing_authority', 'date_of_expiring', 'document_number', 'date_of_issuing']:
