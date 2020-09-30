@@ -1,197 +1,199 @@
 {
-    "uid": {
-        "data": [
-            {
-                "name": "first_name",
-                "type": "string",
-                "lang": "kaz",
-                "location": "front",
-                "position": {
-                    "x": 29.587225806451613,
-                    "y": 25.55472972972973,
-                    "w": 42.21479569892473,
-                    "h": 4.745878378378379
-                }
-            },
-            {
-                "name": "last_name",
-                "type": "string",
-                "lang": "kaz",
-                "location": "front",
-                "position": {
-                    "x": 29.587225806451613,
-                    "y": 18.435912162162165,
-                    "w": 42.21479569892473,
-                    "h": 4.745878378378379
-                }
-            },
-            {
-                "name": "father_name",
-                "type": "string",
-                "lang": "kaz",
-                "location": "front",
-                "position": {
-                    "x": 29.587225806451613,
-                    "y": 32.85608108108108,
-                    "w": 42.21479569892473,
-                    "h": 4.745878378378379
-                }
-            },
-            {
-                "name": "date_of_birth",
-                "type": "date",
-                "lang": "eng",
-                "reg_exp": "",
-                "location": "front",
-                "position": {
-                    "x": 30.416774193548388,
-                    "y": 39.50869932432433,
-                    "w": 18.710924731182796,
-                    "h": 4.745878378378379
-                }
-            },
-            {
-                "name": "individual_identification_number",
-                "type": "unique",
-                "lang": "eng",
-                "reg_exp": "",
-                "location": "front",
-                "position": {
-                    "x": 11.705849462365592,
-                    "y": 47.093716216216215,
-                    "w": 29.310709677419354,
-                    "h": 6.504881756756756
-                }
-            },
-            {
-                "name": "place_of_birth",
-                "type": "string",
-                "lang": "kaz",
-                "location": "back",
-                "position": {
-                    "x": 0,
-                    "y": 0,
-                    "w": 0,
-                    "h": 0
-                }
-            },
-            {
-                "name": "nationality",
-                "type": "string",
-                "lang": "kaz",
-                "location": "back",
-                "position": {
-                    "x": 0,
-                    "y": 0,
-                    "w": 0,
-                    "h": 0
-                }
-            },
-            {
-                "name": "issuing_authority",
-                "type": "string",
-                "lang": "kaz",
-                "location": "back",
-                "position": {
-                    "x": 0,
-                    "y": 0,
-                    "w": 0,
-                    "h": 0
-                }
-            },
-            {
-                "name": "date_of_issuing",
-                "type": "date",
-                "lang": "eng",
-                "reg_exp": "",
-                "location": "back",
-                "position": {
-                    "x": 0,
-                    "y": 0,
-                    "w": 0,
-                    "h": 0
-                }
-            },
-            {
-                "name": "date_of_expiring",
-                "type": "date",
-                "reg_exp": "",
-                "location": "back",
-                "position": {
-                    "x": 0,
-                    "y": 0,
-                    "w": 0,
-                    "h": 0
-                }
-            },
-            {
-                "name": "document_number",
-                "type": "code",
-                "reg_exp": "",
-                "location": "back",
-                "position": {
-                    "x": 0,
-                    "y": 0,
-                    "w": 0,
-                    "h": 0
-                }
-            }
-        ],
-        "characteristics": {
-            "dimensions": {
-                "width": 85.72,
-                "height": 54.03,
-                "unit": "mm"
-            },
-            "front": {
-                "name": {
-                    "kaz": "жеке куәлік",
-                    "rus": "удостоверение личности"
-                },
-                "state": {
-                    "kaz": "қазақстан республикасы",
-                    "rus": "республика казахстан"
-                },
-                "markers": [
-                    {
-                        "regex": "(?i)(\u049b\u0430\u0437\u0430\u049b\u0441\u0442\u0430\u043d)",
-                        "position": {
-                            "x": 2.119956989247312,
-                            "y": 4.928412162162163,
-                            "w": 15.024043010752688,
-                            "h": 2.2816722972972974
-                        },
-                        "name": "top_left"
-                    },
-                    {
-                        "regex": "(?i)(\u043a\u0430\u0437\u0430\u0445\u0441\u0442\u0430\u043d)",
-                        "position": {
-                            "x": 67.28559139784946,
-                            "y": 4.928412162162163,
-                            "w": 14.74752688172043,
-                            "h": 2.2816722972972974
-                        },
-                        "name": "top_right"
-                    },
-                    {
-                        "regex": "^(\\d{12})$",
-                        "position": {
-                            "x": 13.08843010752688,
-                            "y": 49.10158783783784,
-                            "w": 24.241247311827955,
-                            "h": 3.194341216216216
-                        },
-                        "name": "bottom_left"
-                    }
-                ],
-                "kazakstan_kaz": {
-                    "x": 2.488645161290323,
-                    "y": 4.928412162162163,
-                    "w": 14.563182795698925,
-                    "h": 2.2816722972972974
-                }
-            },
-            "back": {}
+  "uid": {
+    "data": [
+      {
+        "name": "first_name",
+        "type": "string",
+        "lang": "kaz",
+        "location": "front",
+        "position": {
+          "x": 29.587225806451613,
+          "y": 25.55472972972973,
+          "w": 42.21479569892473,
+          "h": 4.745878378378379
         }
+      },
+      {
+        "name": "last_name",
+        "type": "string",
+        "lang": "kaz",
+        "location": "front",
+        "position": {
+          "x": 29.587225806451613,
+          "y": 18.435912162162165,
+          "w": 42.21479569892473,
+          "h": 4.745878378378379
+        }
+      },
+      {
+        "name": "father_name",
+        "type": "string",
+        "lang": "kaz",
+        "location": "front",
+        "position": {
+          "x": 29.587225806451613,
+          "y": 32.85608108108108,
+          "w": 42.21479569892473,
+          "h": 4.745878378378379
+        }
+      },
+      {
+        "name": "date_of_birth",
+        "type": "date",
+        "lang": "eng",
+        "reg_exp": "",
+        "location": "front",
+        "position": {
+          "x": 30.416774193548388,
+          "y": 39.50869932432433,
+          "w": 18.710924731182796,
+          "h": 4.745878378378379
+        }
+      },
+      {
+        "name": "individual_identification_number",
+        "type": "unique",
+        "lang": "eng",
+        "reg_exp": "",
+        "location": "front",
+        "position": {
+          "x": 11.705849462365592,
+          "y": 47.093716216216215,
+          "w": 29.310709677419354,
+          "h": 6.504881756756756
+        }
+      },
+      {
+        "name": "place_of_birth",
+        "type": "string",
+        "lang": "kaz",
+        "location": "back",
+        "position": {
+          "x": 21.648673469387752,
+          "y": 9.83346,
+          "w": 38.92387755102041,
+          "h": 3.59822
+        }
+      },
+      {
+        "name": "nationality",
+        "type": "string",
+        "lang": "eng",
+        "regex": "(?<=[0-9])([A-z]{3})(?=<+)",
+        "location": "back",
+        "position": {
+          "x": 0.0,
+          "y": 31.3374,
+          "w": 85.72,
+          "h": 21.612000000000002
+        }
+      },
+      {
+        "name": "issuing_authority",
+        "type": "string",
+        "lang": "kaz",
+        "location": "back",
+        "position": {
+          "x": 22.648673469387752,
+          "y": 21.0717,
+          "w": 50.51357142857143,
+          "h": 3.45792
+        }
+      },
+      {
+        "name": "date_of_issuing",
+        "type": "date",
+        "lang": "eng",
+        "regex": "",
+        "location": "back",
+        "position": {
+          "x": 22.97668367346939,
+          "y": 26.4747,
+          "w": 17.493877551020407,
+          "h": 5.61912
+        }
+      },
+      {
+        "name": "date_of_expiring",
+        "type": "date",
+        "lang": "eng",
+        "regex": "(?<=M|F)([0-9]+)(?=(?:[0-9])[A-z]{3})",
+        "location": "back",
+        "position": {
+          "x": 0.0,
+          "y": 31.3374,
+          "w": 85.72,
+          "h": 21.612000000000002
+        }
+      },
+      {
+        "name": "document_number",
+        "type": "code",
+        "lang": "eng",
+        "regex": "(?<=IDKAZ|1DKAZ)([0-9]{9})",
+        "location": "back",
+        "position": {
+          "x": 0.0,
+          "y": 31.3374,
+          "w": 85.72,
+          "h": 21.612000000000002
+        }
+      }
+    ],
+    "characteristics": {
+      "dimensions": {
+        "width": 85.72,
+        "height": 54.03,
+        "unit": "mm"
+      },
+      "front": {
+        "markers": [
+          {
+            "regex": "(?i)(\u049b\u0430\u0437\u0430\u049b\u0441\u0442\u0430\u043d)",
+            "position": {
+              "x": 2.119956989247312,
+              "y": 4.928412162162163,
+              "w": 15.024043010752688,
+              "h": 2.2816722972972974
+            },
+            "name": "top_left"
+          },
+          {
+            "regex": "(?i)(\u043a\u0430\u0437\u0430\u0445\u0441\u0442\u0430\u043d)",
+            "position": {
+              "x": 67.28559139784946,
+              "y": 4.928412162162163,
+              "w": 14.74752688172043,
+              "h": 2.2816722972972974
+            },
+            "name": "top_right"
+          },
+          {
+            "regex": "^(\\d{12})$",
+            "position": {
+              "x": 13.08843010752688,
+              "y": 49.10158783783784,
+              "w": 24.241247311827955,
+              "h": 3.194341216216216
+            },
+            "name": "bottom_left"
+          }
+        ],
+        "kazakstan_kaz": {
+          "x": 2.488645161290323,
+          "y": 4.928412162162163,
+          "w": 14.563182795698925,
+          "h": 2.2816722972972974
+        }
+      },
+      "back": {
+        "marker": {
+          "x": 8.7629081632653065,
+          "y": 17.64124,
+          "w": 12.21377551020408,
+          "h": 10.9672
+        }
+      }
     }
+  }
 }

@@ -16,6 +16,8 @@ from odoo.http import request
 from odoo.tools import logging
 from odoo import http, _
 from ..scripts import auto_crop_uid as uid_rec
+from ..scripts.CustomErrors import UnrecognizableDocument
+
 
 _logger = logging.getLogger(__name__)
 
@@ -70,7 +72,6 @@ class FaceRecognitionController(http.Controller):
                 return http.Response("Ok", status=200)
             except:
                 return http.Response("No Terms Found", status=412)
-
 
     @http.route(['/api/v1/processImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
@@ -130,7 +131,7 @@ class FaceRecognitionController(http.Controller):
                     'login'       : user.login,
                     'name'        : user.name,
                     'hasPassword' : user.has_password,
-                    'id': user.id
+                    'id'          : user.id
                 }
                 response['route'] = "/web/login"
         else:
@@ -168,18 +169,34 @@ class FaceRecognitionController(http.Controller):
     def process_image_iin_front(self):
         image_data = self.process_image_datas_to_base64(request.params.get('unknown_iin_image'))
         img = Image.open(BytesIO(base64.b64decode(image_data)))
-        data = uid_rec.prepare_uid(np.array(img))
-        return data['individual_identification_number'] if len(data) and len(data['individual_identification_number']) else -1
+        response = dict(error=False, results=None)
+        try:
+            data = uid_rec.prepare_uid('front', np.array(img))
+            data['iin'] = data.pop('individual_identification_number')
+            data[
+                'name'] = f"{data.pop('last_name')} {data.pop('first_name')} " \
+                          f"{data.pop('father_name')}".title()
+            data['dob'] = '-'.join(list(map(lambda x: x.strip(), data.pop('date_of_birth').split('.')))[::-1])
+            response['results'] = data
+        except UnrecognizableDocument:
+            response['error'] = True
+        finally:
+            return response
 
     @http.route(['/api/processBackIinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
     def process_image_iin_back(self):
         image_data = self.process_image_datas_to_base64(request.params.get('unknown_iin_image'))
         img = Image.open(BytesIO(base64.b64decode(image_data)))
-        text = pytesseract.image_to_string(img)
-        iin = [int(s) for s in text.split() if s.isdigit() and len(s) == 12]
-
-        return iin[0] if len(iin) else -1
+        response = dict(error=False, results=None)
+        try:
+            data = uid_rec.prepare_uid('back', np.array(img))
+            print(data)
+            response['results'] = data
+        except UnrecognizableDocument:
+            response['error'] = True
+        finally:
+            return response
 
     @staticmethod
     def process_image_datas_to_base64(image_datas):
@@ -222,7 +239,9 @@ class FaceRecognitionController(http.Controller):
                 })
                 user.password = data['password']
                 partner.iin = data['iin']
-            return http.redirect_with_hash('/api/v1/face_model/%d/fill' % (model_id)) if not is_error else request.render('fr_core.signup', qcontext)
+            return http.redirect_with_hash(
+                '/api/v1/face_model/%d/fill' % (model_id)) if not is_error else request.render('fr_core.signup',
+                                                                                               qcontext)
 
     @http.route(['/api/v1/face_model/checkImageType'], type='json', auth='public', website=True)
     def face_model_check_image_type(self):
@@ -313,7 +332,8 @@ class AuthSignupHome(Home):
     def do_signup(self, qcontext):
         """ Shared helper that creates a res.partner out of a token """
         print(qcontext)
-        values = {key: qcontext.get(key) for key in ('login', 'name', 'password', 'iin', 'face_model_id')}
+        values = {key: qcontext.get(key) for key in
+                  ('login', 'name', 'password', 'iin', 'face_model_id', 'city', 'dob')}
         # values.update({'country_id': int(qcontext.get('country_id'))})
         for key in values:
             if values[key] == '':
@@ -330,7 +350,6 @@ class AuthSignupHome(Home):
             values['lang'] = lang
         self._signup_with_values(qcontext.get('token'), values)
         request.env.cr.commit()
-
 
     @http.route()
     def web_login(self, redirect=None, **kw):
@@ -363,7 +382,6 @@ class AuthSignupHome(Home):
         qcontext = self.get_auth_signup_qcontext()
         qcontext['states'] = request.env['res.country.state'].sudo().search([])
         qcontext['countries'] = request.env['res.country'].sudo().search([])
-
 
         if not qcontext.get('token') and not qcontext.get('signup_enabled'):
             raise werkzeug.exceptions.NotFound()
