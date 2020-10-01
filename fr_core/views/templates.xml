@@ -188,83 +188,86 @@
         </xpath>
     </template>
 
-    <template id="auth_signup_fields_extend" inherit_id="auth_signup.fields">
-        <xpath expr="//div[@class='form-group field-login']" position="after">
-            <p class="alert alert-danger" t-if="error_email" role="alert">
-                <t t-esc="error_email"/>
-            </p>
-        </xpath>
-        <xpath expr="//div[@class='form-group field-confirm_password']" position="after">
-            <p class="alert alert-danger" t-if="error_password" role="alert">
-                <t t-esc="error_password"/>
-            </p>
-        </xpath>
-        <xpath expr="//div[hasclass('field-confirm_password')]" position="after">
-            <div class="form-group field-nationality">
-                <label for="nationality">Nationality</label>
-                <input type="text" id="nationality" name="nationality" class="form-control"
-                       t-att-readonly="'readonly' if only_passwords else None"/>
-            </div>
-            <div class="form-group field-gender">
-                <label for="gender">Gender</label>
-                <select id="gender" name="gender" class="form-control"
-                        t-att-readonly="'readonly' if only_passwords else None">
-                    <option value="un_chosen">Un Chosen</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                </select>
-            </div>
-            <div class="form-group field-dob">
-                <label for="dob">Date of Birth</label>
-                <input type="date" id="dob" name="dob" class="form-control"
-                       t-att-readonly="'readonly' if only_passwords else None"
-                       min="1920-01-01" max="2040-01-01"/>
-            </div>
-            <div class="form-group field-city">
-                <label for="city">City</label>
-                <input type="text" id="city" name="city" class="form-control"
-                       t-att-readonly="'readonly' if only_passwords else None"/>
-            </div>
-            <div class="form-group field-iin">
-                <label for="iin">IIN</label>
-                <input type="text" id="iin" name="iin" class="form-control"
-                       t-att-readonly="'readonly' if only_passwords else None"/>
-                <p class="alert alert-danger" t-if="error_iin" role="alert">
-                    <t t-esc="error_iin"/>
-                </p>
-            </div>
-        </xpath>
-    </template>
+<!--    <template id="auth_signup_fields_extend" inherit_id="auth_signup.fields">-->
+<!--        <xpath expr="//div[@class='form-group field-login']" position="after">-->
+<!--            <p class="alert alert-danger" t-if="error_email" role="alert">-->
+<!--                <t t-esc="error_email"/>-->
+<!--            </p>-->
+<!--        </xpath>-->
+<!--        <xpath expr="//div[@class='form-group field-confirm_password']" position="after">-->
+<!--            <p class="alert alert-danger" t-if="error_password" role="alert">-->
+<!--                <t t-esc="error_password"/>-->
+<!--            </p>-->
+<!--        </xpath>-->
+<!--        <xpath expr="//div[hasclass('field-confirm_password')]" position="after">-->
+<!--            <div class="form-group field-nationality">-->
+<!--                <label for="nationality">Nationality</label>-->
+<!--                <select id="nationality" name="nationality" class="form-control"-->
+<!--                       t-att-readonly="'readonly' if only_passwords else None">-->
+<!--                    <option value="kaz">Kazakh</option>-->
+<!--                    <option value="rus">Russian</option>-->
+<!--                </select>/-->
+<!--            </div>-->
+<!--            <div class="form-group field-gender">-->
+<!--                <label for="gender">Gender</label>-->
+<!--                <select id="gender" name="gender" class="form-control"-->
+<!--                        t-att-readonly="'readonly' if only_passwords else None">-->
+<!--                    <option value="un_chosen">Un Chosen</option>-->
+<!--                    <option value="male">Male</option>-->
+<!--                    <option value="female">Female</option>-->
+<!--                </select>-->
+<!--            </div>-->
+<!--            <div class="form-group field-dob">-->
+<!--                <label for="dob">Date of Birth</label>-->
+<!--                <input type="date" id="dob" name="dob" class="form-control"-->
+<!--                       t-att-readonly="'readonly' if only_passwords else None"-->
+<!--                       min="1920-01-01" max="2040-01-01"/>-->
+<!--            </div>-->
+<!--&lt;!&ndash;            <div class="form-group field-city">&ndash;&gt;-->
+<!--&lt;!&ndash;                <label for="city">City</label>&ndash;&gt;-->
+<!--&lt;!&ndash;                <input type="text" id="city" name="city" class="form-control"&ndash;&gt;-->
+<!--&lt;!&ndash;                       t-att-readonly="'readonly' if only_passwords else None"/>&ndash;&gt;-->
+<!--&lt;!&ndash;            </div>&ndash;&gt;-->
+<!--            <div class="form-group field-iin">-->
+<!--                <label for="iin">IIN</label>-->
+<!--                <input type="text" id="iin" name="iin" class="form-control"-->
+<!--                       t-att-readonly="'readonly' if only_passwords else None"/>-->
+<!--                <p class="alert alert-danger" t-if="error_iin" role="alert">-->
+<!--                    <t t-esc="error_iin"/>-->
+<!--                </p>-->
+<!--            </div>-->
+<!--        </xpath>-->
+<!--    </template>-->
 
     <!--TODO: modify template through xpath inherit-->
     <template id="fr_core.signup" name="Web Signup Layout" inherit_id="auth_signup.signup">
         <xpath expr="//form[@class='oe_signup_form']/t" position="before">
             <div class="id-accepting-zone">
-                <div class="message">
-                    <h3>
-                        Hello dear guest!
+<!--                <div class="message">-->
+<!--                    <h3>-->
+<!--                        Hello dear guest!-->
 
-                        Upload front and back side of your ID for further registration.
-                    </h3>
-                </div>
-                <div class="field-front_id">
-                    <label for="iin_attachment_front">Front of your ID</label>
-                    <input type="file" id="iin_attachment_front" name="iin_attachment_front" class="file"
-                           data-show-upload="true"
-                           data-show-caption="true"
-                           data-show-preview="true"
-                           accept=".png,.jpeg,.jpg"
-                           lass="file"/>
-                </div>
-                <div class="field-back_id">
-                    <label for="iin_attachment_back">Back of your ID</label>
-                    <input type="file" id="iin_attachment_back" name="iin_attachment_back" class="file"
-                           data-show-upload="true"
-                           data-show-caption="true"
-                           data-show-preview="true"
-                           accept=".png,.jpeg,.jpg"
-                           lass="file"/>
-                </div>
+<!--                        Upload front and back side of your ID for further registration.-->
+<!--                    </h3>-->
+<!--                </div>-->
+<!--                <div class="field-front_id">-->
+<!--                    <label for="iin_attachment_front">Front of your ID</label>-->
+<!--                    <input type="file" id="iin_attachment_front" name="iin_attachment_front" class="file"-->
+<!--                           data-show-upload="true"-->
+<!--                           data-show-caption="true"-->
+<!--                           data-show-preview="true"-->
+<!--                           accept=".png,.jpeg,.jpg"-->
+<!--                           lass="file"/>-->
+<!--                </div>-->
+<!--                <div class="field-back_id">-->
+<!--                    <label for="iin_attachment_back">Back of your ID</label>-->
+<!--                    <input type="file" id="iin_attachment_back" name="iin_attachment_back" class="file"-->
+<!--                           data-show-upload="true"-->
+<!--                           data-show-caption="true"-->
+<!--                           data-show-preview="true"-->
+<!--                           accept=".png,.jpeg,.jpg"-->
+<!--                           lass="file"/>-->
+<!--                </div>-->
             </div>
         </xpath>
 
