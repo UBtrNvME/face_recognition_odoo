@@ -135,11 +135,18 @@ class FaceRecognitionController(http.Controller):
                 }
                 response['route'] = "/web/login"
         else:
-            response['status'] = {
-                'success': False,
-                'code'   : 401,
-                'message': "Too Many Faces On The Image"
-            }
+            if len(face_locations):
+                response['status'] = {
+                    'success': False,
+                    'code'   : 401,
+                    'message': "Too Many Faces On The Image"
+                }
+            else:
+                response['status'] = {
+                    'success': False,
+                    'code': 405,
+                    'message': "Face not within the ellipse"
+                }
         return response
 
     @http.route(['/api/v1/processIinImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,

@@ -212,6 +212,7 @@ def rotate_until_correct_orientation(image, doc_char, angles):
             output_type=pytesseract.Output.DICT,
             # config='-c tessedit_char_whitelist=0123456789'
         )
+        print(data)
         top_iin, top_kaz, top_rus = 0, 0, 0
         words = list(filter(iin.match, data['text']))
 
@@ -427,7 +428,8 @@ def crop_uid_front(iin_image, doc_char):
     image = _set_image_dpi(iin_image)
     # rotate image until iin can be seen, because iin is the most difficult data to find
 
-    angles = [j if j >= 0 else 360 + j for i in range(0, 271, 90) for j in range(i - 8, i + 8 + 1)]
+    angles = [j if j >= 0 else 360 + j for i in range(0, 271, 90) for j in range(i - 6, i + 6 + 1)]
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     image = rotate_until_correct_orientation(image, doc_char, angles)
     if not image.any():
         try:
