@@ -154,7 +154,7 @@ class FaceRecognition(models.AbstractModel):
             is_inside = True
             for x, y in rectangles[i]:
                 inside_outer_ellipse = _checkpoint(center_by_x, center_by_y, x, y, radius_y, radius_x) < 1
-                inside_inner_ellipse = _checkpoint(center_by_x, center_by_y, x, y, radius_y / 1.8, radius_x / 1.8) < 1
+                inside_inner_ellipse = _checkpoint(center_by_x, center_by_y, x, y, radius_y / 2, radius_x / 2) < 1
                 if not inside_outer_ellipse or inside_inner_ellipse:
                     is_inside = False
                     break
