@@ -240,6 +240,7 @@ class ResPartnerFaceModel(models.Model):
             min_batch = min(min_batch, 2)
             known_encodings = []
             for face_model in face_models:
+                _logger.warning(face_model)
                 for i in range(min_batch):
                     known_encodings.append(face_model.pop(i))
 
