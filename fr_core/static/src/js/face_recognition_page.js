@@ -111,7 +111,12 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
             this.$('#progress-bar').css('width', '0')
             this.$("#progress-bar").show();
             let payload = {
-                unknown_user_image: this._takeAPhoto(),
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST',
+                body: JSON.stringify({unknown_user_image: this._takeAPhoto(),})
             }
             this.$('#progress-bar').css('width', '50%')
             this.send_data_to_controller('/api/v1/processImage', payload)
@@ -130,9 +135,9 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
                 this.web_login_face_recognition()
             }
         },
-        send_data_to_controller: async function (route, params, type = "json") {
+        send_data_to_controller: async function (route, params, type = "rpc") {
             return new Promise(resolve => {
-                if (type === 'json') {
+                if (type === 'rpc') {
                     resolve(this._rpc({
                         route: route,
                         params: params

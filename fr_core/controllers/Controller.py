@@ -76,7 +76,7 @@ class FaceRecognitionController(http.Controller):
     @http.route(['/api/v1/processImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
     def process_image_of_unknown_user(self):
-        image_datas = request.params.get('unknown_user_image')
+        image_datas = json.loads(request.httprequest.data)['params']['body']['unknown_user_image']
         response = {}
         if not image_datas:
             response['status'] = {

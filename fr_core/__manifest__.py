@@ -24,7 +24,6 @@
     "external_dependencies": {"python": [
         'pytesseract',
         'Pillow',
-        'cv2'
     ], "bin": []},
 
     # always loaded

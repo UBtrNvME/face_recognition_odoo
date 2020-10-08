@@ -13,6 +13,7 @@ from odoo.tools.translate import _
 
 _logger = logging.getLogger(__name__)
 
+
 # from multiprocessing import Process
 #
 #
@@ -133,11 +134,11 @@ class ResPartnerFaceModel(models.Model):
             attachment_name = attachment_name_prefix + f'image_fm_{fm.id}' + attachment_name_postfix
 
             attachment = self.env['ir.attachment'].create({
-                'name'     : attachment_name,
-                'type'     : 'binary',
-                'datas'    : image_datas,
+                'name': attachment_name,
+                'type': 'binary',
+                'datas': image_datas,
                 'res_model': 'res.partner.face.model',
-                'mimetype' : 'image/jpeg'
+                'mimetype': 'image/jpeg'
             })
             fm.attachment_ids = [(4, attachment.id, 0)]
             if with_encoding:
@@ -234,37 +235,44 @@ class ResPartnerFaceModel(models.Model):
     @api.model
     def compare_with_unknown(self, unknown_encoding):
         similar_partners, face_models = self._organize_model_objects_in_dictionary()
-        if len(similar_partners) == 1:
-            encoding_batch = []
-            print(face_models)
+        tolerance = 0.6
+        while True and len(face_models):
+            min_batch = min(len(sorted(face_models, key=len)[0]), 2)
+            known_encodings = []
             for face_model in face_models:
-                encoding_batch.append(face_model[list(face_model.keys())[0]])
+                known_encodings.extend(face_model[:min_batch])
+                # for i in range(min_batch-1, -1, -1):
+                #     known_encodings.append(face_model.pop(i))
 
-            results = face_recognition.compare_faces(encoding_batch, unknown_encoding[0], 0.4)
-            for i in range(len(results)):
-                if not results[i]:
-                    similar_partners.pop(i)
-                    face_models.pop(i)
-        else:
-            while len(similar_partners) > 1:
-                encoding_batch = []
-                for face_model in face_models:
-                    try:
-                        encoding_batch.append(face_model[list(face_model.keys())[0]])
-                    except:
-                        pass
-                results = face_recognition.compare_faces(encoding_batch, unknown_encoding[0], 0.4)
-                deleted = 0
-                for i in range(len(results)):
-                    if not results[i]:
-                        similar_partners.pop(i - deleted)
-                        face_models.pop(i - deleted)
-                        deleted += 1
-        if len(similar_partners) and len(similar_partners) <= 1:
-            user = self.env['res.users'].search([['partner_id', '=', similar_partners[0]]])
-        else:
-            user = False
-        return user
+            results = face_recognition.face_distance(known_encodings, unknown_encoding[0])
+            print("results", results)
+            similar_partners_average_face_distance_rel = []
+            for i in range(len(similar_partners)):
+                average_face_distance = sum(results[i:i + min_batch]) / min_batch
+                if average_face_distance > tolerance:
+                    pass
+                else:
+                    similar_partners_average_face_distance_rel.append((similar_partners[i], average_face_distance))
+            tolerance-=0.1
+            if similar_partners_average_face_distance_rel and len(similar_partners_average_face_distance_rel) > 1:
+                similar_partners_average_face_distance_rel.sort(key=lambda x: x[1], reverse=True)
+                if similar_partners_average_face_distance_rel[0][1] < 0.15:
+                    return self.env['res.users'].search(
+                        [['partner_id', '=', similar_partners_average_face_distance_rel[0][0]]])
+                else:
+                    similar_partners_buf = []
+                    face_models_buff = []
+                    for partner, _ in similar_partners_average_face_distance_rel:
+                        index = similar_partners.index(partner)
+                        models = face_models[index]
+                        if len(models):
+                            similar_partners_buf.append(partner)
+                            face_models_buff.append(models)
+                    similar_partners = similar_partners_buf
+                    face_models = face_models_buff
+            else:
+                return False if not len(similar_partners_average_face_distance_rel) else self.env['res.users'].search(
+                    [['partner_id', '=', similar_partners_average_face_distance_rel[0][0]]])
 
     def _organize_model_objects_in_dictionary(self):
         face_models = []
@@ -277,7 +285,7 @@ class ResPartnerFaceModel(models.Model):
         for record in gotten_face_models_records:
             if record['partner_id']:
                 partners.append(record['partner_id'][0])
-                face_models.append(json.loads(record['face_encodings']))
+                face_models.append([value for value in json.loads(record['face_encodings']).values()])
         return partners, face_models
 
     #  Round about way of making One2one field in odoo
