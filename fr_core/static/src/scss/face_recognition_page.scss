@@ -1,0 +1,34 @@
+.qzhub_signup_form_face_recognition {
+
+  width: 400px;
+  margin: auto;
+
+  .qzhub_container {
+    text-align: center;
+
+    #progress-bar {
+      display: none;
+      background-color: #7C7BAD;
+      width: 0;
+
+    }
+
+    .video_rec {
+      height: 300px;
+      width: 100%;
+      //border: 5px solid #7C7BAD;
+      transform: rotateY(180deg);
+      mask-image: url(/fr_core/static/src/img/ellipse.png);
+      mask-size: 400px 300px;
+      -webkit-mask-image: url(/fr_core/static/src/img/ellipse.png);
+      -webkit-mask-size: 400px 300px;
+    }
+
+    //canvas {
+    //  mask: url(#masking);
+    //}
+  }
+
+}
+
+

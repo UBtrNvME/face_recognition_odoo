@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="res_partner_view_form" model="ir.ui.view">
+            <field name="name">res.partner.form.inherit.faceRec</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="priority" eval="8"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='internal_notes']" position="after">
+                    <page name="photos_encodings" string="Photo Encodings">
+                        <group>
+                            <field name="face_model_id"
+                                   context="{'default_partner_id': active_id}"/>
+                        </group>
+
+<!--                        <kanban>-->
+<!--                            <templates>-->
+<!--                                <t t-name="kanban-box">-->
+<!--                                    <div t-attf-class="oe_kanban_global_click"-->
+<!--                                         style="width: 30%; height:200px; padding: 1px;">-->
+
+<!--                                        <div style="width: 100% ; height: 100%; justify-content: center; display:flex;">-->
+<!--                                            <img class="mx-auto d-block"-->
+<!--                                                 style="height: auto; max-height: 99%; margin: auto; position: relative; width: auto;"-->
+<!--                                                 t-att-src="kanban_image('ir.attachment','datas', 1050)"/>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </t>-->
+<!--                            </templates>-->
+<!--                        </kanban>-->
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="res_parter_face_encoding_view_form" model="ir.ui.view">
+            <field name="name">res_parter_face_encoding_view_form</field>
+            <field name="model">res.partner.face.model</field>
+            <field name="arch" type="xml">
+                <form string="Face Model">
+                    <header>
+                        <field name="type" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="expense_button_box">
+                            <button name="show_face_encodings" type="object" string="Show Face Encodings"
+                                    icon="fa-code" class="oe_stat_button"
+                                    attrs="{'invisible': [['is_encodings_hidden', '=', False]]}">
+                                <field name="is_encodings_hidden" invisible="True"/>
+                            </button>
+                            <button name="hide_face_encodings" type="object" string="Hide Face Encodings"
+                                    icon="fa-code" class="oe_stat_button"
+                                    attrs="{'invisible': [['is_encodings_hidden', '=', True]]}">
+                                <field name="is_encodings_hidden" invisible="True"/>
+                            </button>
+
+                            <button name="fr_core.face_recognition_create_face_model_action" type="action"
+                                    string="Make Face Model"
+                                    icon="fa-smile-o" class="oe_stat_button"/>
+
+                        </div>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only"/>
+                            <h1>
+                                <field name="name" placeholder="......"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="face_encodings" attrs="{'invisible': [['is_encodings_hidden', '=', True]]}"/>
+                        </group>
+                        <notebook>
+                            <page name="photos" string="Photos">
+                                <field name="attachment_ids">
+                                    <kanban>
+                                        <field name="datas"/>
+                                        <field name="id"/>
+                                        <field name="res_id"/>
+                                        <templates>
+                                            <t t-name="kanban-box">
+                                                <div t-attf-class="oe_kanban_global_click"
+                                                     style="width: 30%; height:200px; padding: 1px;">
+                                                    <div style="width: 100% ; height: 100%; justify-content: center; display:flex;">
+                                                        <img class="mx-auto d-block"
+                                                             style="height: auto; max-height: 99%; margin: auto; position: relative; width: auto;"
+                                                             t-att-src="kanban_image('ir.attachment','datas', record.id.raw_value)"/>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </templates>
+                                    </kanban>
+                                </field>
+                            </page>
+
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="res_partner_face_model_tree_view" model="ir.ui.view">
+            <field name="name">res.partner.face.model.view.tree</field>
+            <field name="model">res.partner.face.model</field>
+            <field name="arch" type="xml">
+                <tree string="Face Models">
+                    <field name="name"/>
+                    <field name="type"/>
+                    <field name="partner_id"/>
+                    <field name="number_of_encodings"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="res_partner_face_model_all_models_action" model="ir.actions.act_window">
+            <field name="name">All Models</field>
+            <field name="res_model">res.partner.face.model</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a Face Model
+                </p>
+                <p>
+                    Create a face model which will be used to recognition.
+                </p>
+            </field>
+        </record>
+        <record id="res_partner_face_model_temporary_models_action" model="ir.actions.act_window">
+            <field name="name">Temporary Models</field>
+            <field name="res_model">res.partner.face.model</field>
+            <field name="domain">[["type", "=", "temp"]]</field>
+            <field name="context">{"type": "temp"}</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a Face Model
+                </p>
+                <p>
+                    Create a face model which will be used to recognition.
+                </p>
+            </field>
+        </record>
+        <record id="res_partner_face_model_permanent_models_action" model="ir.actions.act_window">
+            <field name="name">Permanent Models</field>
+            <field name="res_model">res.partner.face.model</field>
+            <field name="domain">[["type", "=", "perm"]]</field>
+            <field name="context">{"type": "perm"}</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a Face Model
+                </p>
+                <p>
+                    Create a face model which will be used to recognition.
+                </p>
+            </field>
+        </record>
+
+        <record id="face_recognition_create_face_model_action" model="ir.actions.client">
+            <field name="name">Photoboth</field>
+            <field name="tag">fr_core.photobooth</field>
+            <field name="target">current</field>
+        </record>
+
+        <menuitem id="menu_face_recognition_face_model"
+                  name="Face Models"
+                  sequence="10"/>
+        <menuitem id="menu_face_recognition_face_model_all_models"
+                  name="Models"
+                  parent="menu_face_recognition_face_model"
+                  sequence="1"
+                  action="res_partner_face_model_all_models_action"/>
+        <menuitem id="menu_face_recognition_face_model_sort_by"
+                  name="Sort by"
+                  parent="menu_face_recognition_face_model"
+                  sequence="1"
+        />
+        <menuitem id="menu_face_recognition_face_model_permanent_models"
+                  name="Permanent models"
+                  parent="menu_face_recognition_face_model_sort_by"
+                  sequence="10"
+                  action="res_partner_face_model_permanent_models_action"/>
+        <menuitem id="menu_face_recognition_face_model_temporary_models"
+                  name="Temporary models"
+                  parent="menu_face_recognition_face_model_sort_by"
+                  sequence="10"
+                  action="res_partner_face_model_temporary_models_action"/>
+    </data>
+</odoo>
