@@ -6,7 +6,6 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
     publicWidget.registry.SignUpFaceRecognition = publicWidget.Widget.extend({
         selector: '.qzhub_signup_form_face_recognition',
         start: function () {
-            console.log('start')
             let self = this;
             this.csrf_token = csrf_token
             self.Data = {};
@@ -38,7 +37,6 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
 
         },
         face_model_fill: async function () {
-            console.log("face_model_fill")
             let self = this;
             let image = null;
             let images_to_upload_data = {
@@ -76,7 +74,6 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
                 })
             }
             let model_id = window.location.pathname.split('/')[4]
-            console.log(model_id)
             $('.message').text(`Wait, we are adding your encoding to the database`)
             this.send_data_to_controller(`/api/v1/face_model/${model_id}/fill?csrf_token=${csrf_token}`, request_params, 'http')
                 .then(response => {
@@ -93,7 +90,6 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
                         if (result.status.success && result.payload.is_correct_type) {
                             self.Data.images_to_upload[payload.image_type] = payload.image_data;
                             $('.message').text(`Successfully added ${images_to_upload_data[payload.image_type][0]}`)
-                            console.log(result)
                             resolve(true)
                         } else {
                             resolve(false)
@@ -107,28 +103,41 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
             callback.apply(this, args);
         },
         web_login_face_recognition: function () {
-            console.log('web_login_face_recognition')
             this.$('#progress-bar').css('width', '0')
             this.$("#progress-bar").show();
+            let image_dimensions = {
+                x: 400,
+                y: 300
+            }
+
+            console.log(image_dimensions)
             let payload = {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
                 method: 'POST',
-                body: JSON.stringify({unknown_user_image: this._takeAPhoto(),})
+                body: JSON.stringify({unknown_user_image: this._takeAPhoto(), image_dimensions: image_dimensions})
             }
             this.$('#progress-bar').css('width', '50%')
-            this.send_data_to_controller('/api/v1/processImage', payload)
-                .then(result => {
-                    console.log(result)
-                    this.$('#progress-bar').css('width', '100%')
-                    this.process_response(result)
-                });
+            this.$('.message').text('Обрабатываем вашу фотографию ...')
+            this.$('.message').removeClass('alert-danger')
+            this.$('.message').toggleClass('alert-primary')
+            setTimeout(() => {
+                this.send_data_to_controller('/api/v1/processImage', payload, 'http')
+                    .then(result => {
+                        if (result.status.success) {
+                            this.$('#progress-bar').css('width', '100%')
+                        } else {
+                            this.$('#progress-bar').css('width', '0%')
+                        }
+                        this.process_response(result)
+                    });
+            }, 800)
+
 
         },
         process_web_page: function () {
-            console.log("process_web_page")
             if (window.location.pathname.includes('fill')) {
                 this.face_model_fill()
             } else {
@@ -144,11 +153,11 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
                     }));
                 } else {
                     fetch(route, params)
+                        .then(response => response.json())
                         .then(response => {
-                            console.log('RESPONSE ', response)
-                            resolve(response)
+                            console.log(response)
+                            resolve(response.result)
                         }).catch(error => {
-                        console.log(error)
                     })
                 }
             })
@@ -164,24 +173,41 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
         },
         process_response: function (result) {
             let self = this;
-            let options = self.ResponseOptions;
             console.log('result', result)
-            if (result['status']['success']) {
-                if (300 <= result['status']['code'] < 400) {
-                    this.$('.message-box .message').text(result.status.message)
-                    setTimeout(() => {
+            let options = self.ResponseOptions;
+            this.$('.message').toggleClass('alert-primary')
+            this.$('.message').toggleClass('alert-success', result.status.success)
+            this.$('.message').toggleClass('alert-warning', result.status.success && result.status.code > 300)
+            this.$('.message').toggleClass('alert-danger', !result.status.success)
+            this.$('.message').text(result.status.message_ru)
+            setTimeout(() => {
+                if (result['status']['success']) {
+                    if (300 <= result['status']['code'] < 400) {
                         this.redirect_with_params(result['route'], result['payload'])
-                    }, 1000)
-
-                }
-            } else {
-                // let tryAgain = window.confirm(`Error, ${result['status']['message']}, want to try again?`)
-                console.log(result.status.message)
-                this.$('.message-box .message').text(result.status.message)
-                setTimeout(() => {
+                    }
+                } else {
+                    // let tryAgain = window.confirm(`Error, ${result['status']['message']}, want to try again?`)
+                    // document.getElementsByClassName('video-container')[0].append(result.status.img)
                     self._tryAgain(true)
-                }, 1000)
-            }
+                    // this.$('.message').empty()
+                }
+            }, 800)
+            // if (result['status']['success']) {
+            //     if (300 <= result['status']['code'] < 400) {
+            //         setTimeout(() => {
+            //             this.redirect_with_params(result['route'], result['payload'])
+            //         }, 800)
+            //     }
+            // } else {
+            //     // let tryAgain = window.confirm(`Error, ${result['status']['message']}, want to try again?`)
+            //     // document.getElementsByClassName('video-container')[0].append(result.status.img)
+            //     setTimeout(() => {
+            //         self._tryAgain(true)
+            //         // this.$('.message').empty()
+            //         this.$('.message').removeClass('alert-danger')
+            //     }, 800)
+            //
+            // }
 
         },
         _takeAPhoto: function () {
