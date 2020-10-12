@@ -10,6 +10,7 @@ from PIL import Image
 from ..scripts import fr_scripts as frs
 import math
 from odoo import api, fields, models
+import cv2
 
 
 class FaceRecognition(models.AbstractModel):
@@ -41,10 +42,8 @@ class FaceRecognition(models.AbstractModel):
         unknown_encoding = face_recognition.face_encodings(
             face_recognition.load_image_file(image_path))
         if not unknown_encoding:
-            print("This picture has no faces")
             return
         if len(unknown_encoding) > 1:
-            print("This picture has more than 1 face")
             return
         known_encodings = []
         for attachment in self.env["hr.employee"].browse(vals["partner_id"]).attachment_ids:
@@ -65,21 +64,17 @@ class FaceRecognition(models.AbstractModel):
     @api.model
     def compare(self, unknown_image, partner_id):
         partner = self.env["res.partner"].browse(partner_id)[0]
-        print(partner.face_model_id.face_encodings)
         if not partner.face_model_id or not partner.face_model_id.face_encodings or \
                 partner.face_model_id.face_encodings == "{}":
             return -3
         unknown_encoding = face_recognition.face_encodings(self.load_image_base64(unknown_image), None, 20, "large")
         if not unknown_encoding:
-            print("This picture has no faces")
             return -1
         if len(unknown_encoding) > 1:
-            print("This picture has more than 1 face")
             return -2
         face_encodings = json.loads(str(partner.face_model_id.face_encodings))
         known_encodings_of_partner = [np.array(face_encodings[attach_id]) for attach_id in face_encodings]
         results = face_recognition.compare_faces(known_encodings_of_partner, unknown_encoding[0], 0.4)
-        print(results)
         percentage = len(list(filter(lambda x: x, results))) / len(results) * 100
         return percentage
 
@@ -91,16 +86,12 @@ class FaceRecognition(models.AbstractModel):
         if result == -2:
             return -2, None
         user = self.env['res.partner.face.model'].sudo(True).compare_with_unknown(encoding)
-        print(3)
         if not user:
-            print(3.2)
             face_model = self.env['res.partner.face.model'].sudo(True).create_temporary_face_model({
                 "image_in_base64": face_image,
-                "face_encoding"  : encoding,
+                "face_encoding": encoding,
             })
-            print(3.3, face_model)
             return -3, face_model
-        print(4)
         return user, None
 
     @staticmethod
@@ -126,7 +117,9 @@ class FaceRecognition(models.AbstractModel):
         else:
             return [], False
 
-    def get_face_locations_within_ellipse(self, image):
+    def get_face_locations_within_ellipse(self, image, image_dimensions=None):
+        if image_dimensions is None:
+            image_dimensions = dict(x=400, y=300)
 
         def _checkpoint(h, k, x, y, a, b):
             # checking the equation of
@@ -138,17 +131,16 @@ class FaceRecognition(models.AbstractModel):
 
         image_arr = self.load_image_base64(image)
         bound_tuples = face_recognition.face_locations(image_arr)
-
         rectangles = []
         for tuple in bound_tuples:
-            rect_points = [(tuple[3], -tuple[0]), (tuple[1], -tuple[0]),
-                           (tuple[1], -tuple[2]), (tuple[3], -tuple[2])]
+            rect_points = [(tuple[3], tuple[0]), (tuple[1], tuple[0]),
+                           (tuple[3], tuple[2]), (tuple[1], tuple[2])]
             rectangles.append(rect_points)
 
-        center_by_x = 400 / 2
-        center_by_y = (-300 / 2) - 25
-        radius_x = 400 * 0.20
-        radius_y = 300 * 0.35
+        center_by_x = image_dimensions['x'] / 2
+        center_by_y = image_dimensions['y'] / 2 + (image_dimensions['y']//10)
+        radius_x = int(image_dimensions['x'] * 0.20)
+        radius_y = int(image_dimensions['y'] * 0.35)
         res = []
         for i in range(len(rectangles)):
             is_inside = True
@@ -164,11 +156,12 @@ class FaceRecognition(models.AbstractModel):
 
     def determine_face_raccourcir(self, face_landmarks):
         if face_landmarks:
-            raccourcirs = {(-5.000, 5.000): 'en_face', (-45.000, -20.000): 'left_profile', (20.000, 45.000): 'right_profile'}
+            raccourcirs = {(-5.000, 5.000): 'en_face', (-45.000, -20.000): 'left_profile',
+                           (20.000, 45.000): 'right_profile'}
             angle = frs.compute_face_angle(face_landmarks=face_landmarks)
             for bleft, bright in raccourcirs:
                 if bright > angle > bleft:
-                    return raccourcirs[(bleft,bright)]
+                    return raccourcirs[(bleft, bright)]
         return False
 
     def get_face_landmarks(self, image):
@@ -180,5 +173,4 @@ class FaceRecognition(models.AbstractModel):
         if len(face_location) > 1 or len(face_location) < 1:
             return False
         for top, right, bottom, left in face_location:
-            print(face_location)
             return frs.are_faces_smiling(image_arr, face_location)

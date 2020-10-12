@@ -4,3 +4,4 @@ from . import ResPartner
 from . import FaceRecognition
 from . import FaceRecognitionResponse
 from . import ResPartnerFaceModel
+from . import HrAttendance

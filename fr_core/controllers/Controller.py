@@ -61,7 +61,7 @@ class FaceRecognitionController(http.Controller):
                 csrf=False)
     def make_attachment(self, face_model_id):
         jsondata = json.loads(request.httprequest.data)
-        face_model = request.env["res.partner.face.model"].search([["id", "=", face_model_id]])
+        face_model = request.env["res.partner.face.model"].sudo(True).search([["id", "=", face_model_id]])
         if face_model:
             # unknown_attachment = partner_id.add_new_face_image_attachment(jsondata["image_in_64encodeDataURL"])
             image_datas = jsondata["image_in_64encodeDataURL"]
@@ -76,7 +76,9 @@ class FaceRecognitionController(http.Controller):
     @http.route(['/api/v1/processImage'], type="json", auth="public", methods=['GET', 'POST'], website=False,
                 csrf=False)
     def process_image_of_unknown_user(self):
-        image_datas = json.loads(request.httprequest.data)['params']['body']['unknown_user_image']
+        image_datas = json.loads(request.httprequest.data)['unknown_user_image']
+        image_dimensions = json.loads(request.httprequest.data)['image_dimensions']
+        print(image_dimensions)
         response = {}
         if not image_datas:
             response['status'] = {
@@ -87,8 +89,7 @@ class FaceRecognitionController(http.Controller):
             return response
         unknown_user_image = self.process_image_datas_to_base64(image_datas)
         face_locations = request.env['face.recognition'].sudo(True).get_face_locations_within_ellipse(
-            unknown_user_image)
-        print(face_locations)
+            unknown_user_image, image_dimensions)
         if len(face_locations) and len(face_locations) <= 1:
             try:
                 user, model = request.env['face.recognition'].sudo(True).find_id_of_the_user_on_the_image(
@@ -107,7 +108,7 @@ class FaceRecognitionController(http.Controller):
                     response['status'] = {
                         'success': True,
                         'code'   : 301,
-                        'message': "No User With Such Encoding In Database"
+                        'message': "No User With Such Encoding In Database",
                     }
                     response['route'] = "/web/login"
                     response['payload'] = {
@@ -145,7 +146,7 @@ class FaceRecognitionController(http.Controller):
                 response['status'] = {
                     'success': False,
                     'code': 405,
-                    'message': "Face not within the ellipse"
+                    'message': "Face not within the ellipse",
                 }
         return response
 
@@ -184,7 +185,6 @@ class FaceRecognitionController(http.Controller):
                            f"{data.pop('father_name_kaz')}".title()
             data['dob'] = '-'.join(list(map(lambda x: x.strip(), data.pop('date_of_birth').split('.')))[::-1])
             response['results'] = data
-            print(response)
         except UnrecognizableDocument:
             response['error'] = True
         finally:
@@ -220,7 +220,6 @@ class FaceRecognitionController(http.Controller):
 
     @http.route('/test1', type='http', auth="public", methods=['GET', 'POST'])
     def test1(self):
-        print("hello bitch")
         return http.Response('OK', status=200)
 
     @http.route('/web/signup/<int:model_id>', type='http', auth='public', website=True)
@@ -242,7 +241,6 @@ class FaceRecognitionController(http.Controller):
                 qcontext['error_iin'] = _("Please enter correct IIN")
                 is_error = True
             if not is_error:
-                print("User Creation")
                 partner = request.env['res.partner'].sudo(True).create({
                     'name'         : data['name'],
                     'face_model_id': model_id
@@ -292,7 +290,6 @@ class FaceRecognitionController(http.Controller):
             else:
                 image_raccourcir = request.env['face.recognition'].determine_face_raccourcir(
                     request.env['face.recognition'].get_face_landmarks(image_data))
-                print(image_raccourcir)
                 if not image_raccourcir:
                     return {
                         'status': {
@@ -328,7 +325,7 @@ class FaceRecognitionController(http.Controller):
         if request.httprequest.method == 'POST':
             data = json.loads(request.httprequest.data)
             images_to_attach = data['images_to_attach']
-            face_model = request.env['res.partner.face.model'].search(
+            face_model = request.env['res.partner.face.model'].sudo(True).search(
                 [['id', '=', model_id]])
             try:
                 for key in images_to_attach:
@@ -346,7 +343,6 @@ class FaceRecognitionController(http.Controller):
 class AuthSignupHome(Home):
     def do_signup(self, qcontext):
         """ Shared helper that creates a res.partner out of a token """
-        print(qcontext)
         values = {key: qcontext.get(key) for key in
                   ('login', 'name', 'password', 'iin', 'face_model_id', 'city', 'dob')}
         # values.update({'country_id': int(qcontext.get('country_id'))})
@@ -381,7 +377,6 @@ class AuthSignupHome(Home):
             s = f'?login=false&hasPassword=true&isRecognised=true'
             return http.redirect_with_hash('/web/login%s' % s)
         user = request.env['res.users'].sudo(True).search([['login', '=', login]])
-        print(user.name)
         if user and user.has_password:
             s = f'?login={login}&hasPassword=true&name={user.name}&isRecognised=true&id={user.id}'
             return http.redirect_with_hash('/web/login%s' % s)
@@ -390,7 +385,10 @@ class AuthSignupHome(Home):
     @http.route('/web/login/face_recognition', type='http', auth="public", website=True)
     def web_login_face_recognition(self, **kw):
         # from here you can call
-        return request.render('fr_core.face_recognition_page')
+        print("HELLO")
+        page = request.render('fr_core.face_recognition_page')
+        print(page)
+        return page
 
     @http.route('/web/signup', type='http', auth='public', website=True, sitemap=False)
     def web_auth_signup(self, *args, **kw):

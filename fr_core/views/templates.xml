@@ -21,6 +21,7 @@
                   type="text/scss"/>
             <link href="/fr_core/static/src/scss/signup_page.scss" rel="stylesheet"
                   type="text/scss"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
             <!--            <script type="text/javascript" src="/fr_core/static/src/js/file_upload_widget.js"/>-->
         </xpath>
     </template>
@@ -296,7 +297,7 @@
                              aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 20%"
                              id="progress-bar"/>
                     </div>
-                    <div class="message-box">
+                    <div class="message-box alert" role="alert">
                         <span class="message"></span>
                     </div>
                 </div>
@@ -324,7 +325,7 @@
                              aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 20%"
                              id="progress-bar"/>
                     </div>
-                    <div class="message-box">
+                    <div class="message-box alert-primary" role="alert">
                         <div class="message"/>
                     </div>
                 </div>

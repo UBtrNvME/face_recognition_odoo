@@ -236,7 +236,7 @@ class ResPartnerFaceModel(models.Model):
     def compare_with_unknown(self, unknown_encoding):
         similar_partners, face_models = self._organize_model_objects_in_dictionary()
         tolerance = 0.6
-        while True and len(face_models):
+        while len(face_models):
             min_batch = min(len(sorted(face_models, key=len)[0]), 2)
             known_encodings = []
             for face_model in face_models:
@@ -245,7 +245,6 @@ class ResPartnerFaceModel(models.Model):
                 #     known_encodings.append(face_model.pop(i))
 
             results = face_recognition.face_distance(known_encodings, unknown_encoding[0])
-            print("results", results)
             similar_partners_average_face_distance_rel = []
             for i in range(len(similar_partners)):
                 average_face_distance = sum(results[i:i + min_batch]) / min_batch
@@ -253,7 +252,7 @@ class ResPartnerFaceModel(models.Model):
                     pass
                 else:
                     similar_partners_average_face_distance_rel.append((similar_partners[i], average_face_distance))
-            tolerance-=0.1
+            tolerance -= 0.1
             if similar_partners_average_face_distance_rel and len(similar_partners_average_face_distance_rel) > 1:
                 similar_partners_average_face_distance_rel.sort(key=lambda x: x[1], reverse=True)
                 if similar_partners_average_face_distance_rel[0][1] < 0.15:
@@ -271,8 +270,11 @@ class ResPartnerFaceModel(models.Model):
                     similar_partners = similar_partners_buf
                     face_models = face_models_buff
             else:
-                return False if not len(similar_partners_average_face_distance_rel) else self.env['res.users'].search(
-                    [['partner_id', '=', similar_partners_average_face_distance_rel[0][0]]])
+                return self.env['res.users'].search(
+                    [['partner_id', '=', similar_partners_average_face_distance_rel[0][0]]]) \
+                    if len(similar_partners_average_face_distance_rel) \
+                       and similar_partners_average_face_distance_rel[0][1] < 0.4 else False
+        return False
 
     def _organize_model_objects_in_dictionary(self):
         face_models = []
