@@ -1,0 +1,60 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+<!--
+    <record model="ir.ui.view" id="cad-automation.list">
+      <field name="name">cad-automation list</field>
+      <field name="model">cad-automation.cad-automation</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="value"/>
+          <field name="value2"/>
+        </tree>
+      </field>
+    </record>
+-->
+
+    <!-- actions opening views on models -->
+<!--
+    <record model="ir.actions.act_window" id="cad-automation.action_window">
+      <field name="name">cad-automation window</field>
+      <field name="res_model">cad-automation.cad-automation</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+-->
+
+    <!-- server action to the one above -->
+<!--
+    <record model="ir.actions.server" id="cad-automation.action_server">
+      <field name="name">cad-automation server</field>
+      <field name="model_id" ref="model_cad-automation_cad-automation"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "tree,form",
+          "res_model": model._name,
+        }
+      </field>
+    </record>
+-->
+
+    <!-- Top menu item -->
+<!--
+    <menuitem name="cad-automation" id="cad-automation.menu_root"/>
+-->
+    <!-- menu categories -->
+<!--
+    <menuitem name="Menu 1" id="cad-automation.menu_1" parent="cad-automation.menu_root"/>
+    <menuitem name="Menu 2" id="cad-automation.menu_2" parent="cad-automation.menu_root"/>
+-->
+    <!-- actions -->
+<!--
+    <menuitem name="List" id="cad-automation.menu_1_list" parent="cad-automation.menu_1"
+              action="cad-automation.action_window"/>
+    <menuitem name="Server to list" id="cad-automation" parent="cad-automation.menu_2"
+              action="cad-automation.action_server"/>
+-->
+  </data>
+</odoo>
