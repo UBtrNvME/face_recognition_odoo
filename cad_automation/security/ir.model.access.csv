@@ -1,2 +1,2 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_cad_automation_cad_automation,cad_automation.cad_automation,model_cad_automation_cad_automation,base.group_user,1,1,1,1
+access_cad_automation_cad_object_template,cad_automation.cad.object.template,cad_automation.model_cad_object_template,base.group_user,1,1,1,1

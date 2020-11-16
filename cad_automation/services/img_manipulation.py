@@ -15,7 +15,23 @@ Todo:
 """
 import cv2
 import numpy as np
+import base64
 
+def base64_to_ndarray(im_b64):
+    im_bytes = base64.b64decode(im_b64)
+    im_arr = np.frombuffer(im_bytes, dtype=np.uint8)  # im_arr is one-dim Numpy array
+    return cv2.imdecode(im_arr, flags=cv2.IMREAD_COLOR)
+
+def ndarray_to_base64(ndarray):
+    _, im_arr = cv2.imencode('.png', ndarray)
+    im_bytes = im_arr.tobytes()
+    return base64.b64encode(im_bytes)
+
+def binary_to_base64(bytes):
+    return base64.b64encode(bytes)
+
+def base64_to_binary(im_b64):
+    return base64.b64decode(im_b64)
 
 def manipulation_helper(image, order, kwargs) -> np.ndarray:
     """Helper for Image Manipulation

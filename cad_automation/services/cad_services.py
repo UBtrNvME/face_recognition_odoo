@@ -17,25 +17,58 @@ Todo:
     * Difficult shape detection and addition of them into workflow
 """
 
+import timeit
 from itertools import groupby
+from typing import Iterator, List, Tuple
 
 import cv2
-from scipy import signal
 import numpy as np
 import pdf2image
+from scipy import signal
 
+from extra.qzhub_deep_learning.cad_automation.services.img_manipulation import (
+    manipulation_helper,
+)
 
-from extra.qzhub_deep_learning.cad_automation.services.img_manipulation import manipulation_helper
-
-
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------
 # CONSTANS
 _LINE_WIDTH = 20
 _BLACK = 0
 _WHITE = 255
+_MAX_FLOAT = 1.7976931348623157e308
+
+HORIZONTAL_AXIS = 1
+VERTICAL_AXIS = 0
+CONNECTION_TEMPLATE = {
+    "start": [],
+    "end": [],
+    "middle": [],
+}
+ARROW_LOCATION = (
+    718,
+    185,
+    81,
+    35,
+)
 
 
-# ------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------
+# WRAPPERS
+def timer(function):
+    def new_function(*args, **kwargs):
+        start_time = timeit.default_timer()
+        function(*args, **kwargs)
+        elapsed = timeit.default_timer() - start_time
+        print(
+            'Function "{name}" took {time} seconds to complete.'.format(
+                name=function.__name__, time=elapsed
+            )
+        )
+
+    return new_function
+
+
+# --------------------------------------------------------------------------------------
 # EXCEPTIONS
 class WrongObjectType(Exception):
     """Exception raised for errors when wrong object type is passed."""
@@ -43,8 +76,9 @@ class WrongObjectType(Exception):
     def __init__(self, possible_objects, message=("Wrong type of the object passed:")):
         self.possible_object_names = [obj.__name__ for obj in possible_objects]
         print(self)
-        self.message = (message + " possible objects are %s."
-                        % ", ".join(self.possible_object_names))
+        self.message = message + " possible objects are %s." % ", ".join(
+            self.possible_object_names
+        )
         super().__init__(self.message)
 
 
@@ -65,7 +99,7 @@ def butter_highpass(cutoff, frequency, order=5):
     """
     nyq = 0.5 * frequency
     normal_cutoff = cutoff / nyq
-    return signal.butter(order, normal_cutoff, btype='high', analog=False)
+    return signal.butter(order, normal_cutoff, btype="high", analog=False)
 
 
 def butter_highpass_filter(data, cutoff, frequency, order=5):
@@ -109,7 +143,9 @@ def find_peaks(data):
         sequence.append((key, start))
         start += sum(1 for _ in group)
 
-    for (b, _), (m, mi), (a, _) in zip(sequence, sequence[1:], sequence[2:]):
+    for (b, _), (m, mi), (a, _) in zip(
+        sequence, sequence[1:], sequence[2:]
+    ):  # pylint: disable=invalid-name
         if b < m and a < m:
             yield mi, m  # type (int, int) Index of the peak and value
 
@@ -124,7 +160,7 @@ def _get_original_index(index):
     Returns:
         int: Index within original list.
     """
-    return (index - (index % 2))//2
+    return (index - (index % 2)) // 2
 
 
 def _flood_search(matrix, pt, overal_direction, target_color):
@@ -145,20 +181,34 @@ def _flood_search(matrix, pt, overal_direction, target_color):
     """
     len_orig_matrix = matrix.shape
     mini_matrix_size = 21
-    mini_matrix = [[0]*mini_matrix_size]*mini_matrix_size
-    x_virtual = mini_matrix_size//2 if overal_direction in [
-        'up', 'down'] else 0 if overal_direction == 'right' else mini_matrix_size-1
-    y_virtual = mini_matrix_size//2 if overal_direction in [
-        'left', 'right'] else 0 if overal_direction == 'down' else mini_matrix_size-1
+    mini_matrix = [[0] * mini_matrix_size] * mini_matrix_size
+    x_virtual = (
+        mini_matrix_size // 2
+        if overal_direction in ["up", "down"]
+        else 0
+        if overal_direction == "right"
+        else mini_matrix_size - 1
+    )
+    y_virtual = (
+        mini_matrix_size // 2
+        if overal_direction in ["left", "right"]
+        else 0
+        if overal_direction == "down"
+        else mini_matrix_size - 1
+    )
     diff_x = pt[0] - x_virtual
     diff_y = pt[1] - y_virtual
 
     for i in range(mini_matrix_size):
         for j in range(mini_matrix_size):
-            if 0 < j+diff_y < len_orig_matrix[0] and 0 < i+diff_x < len_orig_matrix[1]:
+            if (
+                0 < j + diff_y < len_orig_matrix[0]
+                and 0 < i + diff_x < len_orig_matrix[1]
+            ):
 
-                mini_matrix[i][j] = 1 if matrix[j + diff_y,
-                                                i+diff_x] < target_color else 0
+                mini_matrix[i][j] = (
+                    1 if matrix[j + diff_y, i + diff_x] < target_color else 0
+                )
             else:
                 mini_matrix[i][j] = 0
 
@@ -166,11 +216,11 @@ def _flood_search(matrix, pt, overal_direction, target_color):
 
 
 def _print_as_a_table(matrix):
-    buf = '\n===='*len(matrix) + '=\n'
+    buf = "\n====" * len(matrix) + "=\n"
     for i in range(len(matrix)):
         for j in range(len(matrix[0])):
-            buf += f'| {matrix[i][j]} '
-        buf += '|\n' + '===='*len(matrix) + '=\n'
+            buf += f"| {matrix[i][j]} "
+        buf += "|\n" + "====" * len(matrix) + "=\n"
     return buf
 
 
@@ -203,10 +253,10 @@ def calculate_color_frequencies_by_axis(image, target_color=255, axis=0):
     else:
         raise WrongObjectType(possible_types)
 
-    assert 0 <= axis <= 1, \
-        'Argument axis should be in range 0-1'
-    assert isinstance(target_color, int) and 0 <= target_color <= 255, \
-        'Argument target color has to be gray scale in range 0-255'
+    assert 0 <= axis <= 1, "Argument axis should be in range 0-1"
+    assert (
+        isinstance(target_color, int) and 0 <= target_color <= 255
+    ), "Argument target color has to be gray scale in range 0-255"
 
     return np.sum(image == target_color, axis=axis)
 
@@ -243,7 +293,7 @@ def prepare_image_for_analysis(image_obj, mimetype, orders) -> np.ndarray:
     Returns:
         (np.ndarray): Preprocessed image, ready for further analysis.
     """
-    if mimetype in ['PDF', '.pdf']:
+    if mimetype in ["PDF", ".pdf"]:
         image_obj = convert_pdf_to_img(image_obj)
 
     image = read_bytes(image_obj)
@@ -261,7 +311,7 @@ def convert_pdf_to_img(pdf):
         [type]: Output buffer of image like object
     """
     buffer = pdf2image.convert_from_bytes(pdf, dpi=300)[0]
-    return cv2.imencode('.jpg', buffer)
+    return cv2.imencode(".jpg", buffer)
 
 
 def apply_filters_on_image(image, orders: dict):
@@ -276,26 +326,27 @@ def apply_filters_on_image(image, orders: dict):
     Returns:
         image (np.ndarray): Image after all of the filters has been applied.
     """
-    assert len(orders) > 0, 'Orders buffer is empty'
+    assert len(orders) > 0, "Orders buffer is empty"
     working_image = image.copy()
     for order, kwargs in orders.items():
-        working_image = manipulation_helper(
-            working_image, order=order, kwargs=kwargs)
+        working_image = manipulation_helper(working_image, order=order, kwargs=kwargs)
 
     return working_image
 
 
 def find_possible_lines_locations(image, pixel_frequencies, axis, **kwargs):
     kwargs = {
-        'cutoff': 1,
-        'frequency': 25,
-        'order': 5,
+        "cutoff": 1,
+        "frequency": 25,
+        "order": 5,
     }
     kwargs.update(kwargs)
-    noise_free_frequencies = butter_highpass_filter(data=pixel_frequencies,
-                                                    cutoff=kwargs['cutoff'],
-                                                    frequency=kwargs['frequency'],
-                                                    order=kwargs['order'])
+    noise_free_frequencies = butter_highpass_filter(
+        data=pixel_frequencies,
+        cutoff=kwargs["cutoff"],
+        frequency=kwargs["frequency"],
+        order=kwargs["order"],
+    )
     peaks = list(find_peaks(noise_free_frequencies))
     for index, _ in peaks:
         line = [None, None]
@@ -312,7 +363,7 @@ def find_possible_lines_locations(image, pixel_frequencies, axis, **kwargs):
                 continue
 
 
-def axislinenumerate(ndarray: np.ndarray, axis: int, index: int) -> (int, int):
+def axislinenumerate(ndarray: np.ndarray, axis: int, index: int) -> Tuple[int, int]:
     """Enumerate numpy array along one axis and one index.
 
     Example:
@@ -333,7 +384,7 @@ def axislinenumerate(ndarray: np.ndarray, axis: int, index: int) -> (int, int):
     Yield:
         tuple(int, int): Tuple of the index and its value.
     """
-    assert len(ndarray) > 0, 'NDARRAY was not passed!'
+    assert len(ndarray) > 0, "NDARRAY was not passed!"
     size = list(ndarray.shape)[:]
     if axis == 0:
         for i in range(size[axis]):
@@ -342,12 +393,12 @@ def axislinenumerate(ndarray: np.ndarray, axis: int, index: int) -> (int, int):
         for i in range(size[axis]):
             yield i, ndarray[index, i]
 
-def remove_duplicates(lines, dist):
 
+def remove_duplicates(lines, dist):
     memo = {}
     for (axis, index), line in lines:
         is_duplicate = False
-        for j in range(index-dist, index+dist):
+        for j in range(index - dist, index + dist):
             if j in memo:
                 is_duplicate = True
                 break
@@ -356,30 +407,240 @@ def remove_duplicates(lines, dist):
             memo[index] = True
             yield (axis, index), line
 
-def connect_lines(lines):
 
-    for line in lines:
-        pass
+@timer
+def connect_lines(lines, line_characteristics, max_depth=7):
+    def dfs(i, origin, depth, massive):
+        if depth > max_depth:
+            return []
+        length = line_characteristics["length"][i]
+        connections = line_characteristics["connections"][i]
+        axis = line_characteristics["axis"][i]
+        dist_from_origin = line_characteristics["dist_from_origin"][i]
 
-if __name__ == '__main__':
-    bytes_image = cv2.imread(
-        '/home/aitemirkuandyk/Projects/cad-automation/graph.png')
-    _, bytes_image = cv2.imencode('.png', bytes_image)
-    commands = {
-        'change_color_format': {
-            'code': cv2.COLOR_BGR2GRAY
-        },
-        'threshold': {
-            'thresh': 100,
-            'maxval': 255,
-            'type': cv2.THRESH_BINARY
-        }
+        if i in massive and i != origin:
+            return []
+
+        if i == origin and 0 < depth <= 3:
+            return []
+        if i == origin and depth > 3:
+            return [massive + [i]]
+
+        massive.append(i)
+
+        result = []
+
+        for (line_index, intersection) in connections:
+            if lines[line_index]:
+                paths = dfs(line_index, origin, depth + 1, massive)
+                if len(paths):
+                    result.extend(paths)
+        massive.pop()
+
+        return result
+
+    results = []
+
+    for i, line in enumerate(lines):
+        if line:
+            sol = dfs(i, i, 0, [])
+
+            if len(sol):
+                results.extend(sol)
+    return results
+
+
+def compute_length(line):
+    return ((line[0][0] - line[1][0]) ** 2 + (line[0][1] - line[1][1]) ** 2) ** 0.5
+
+
+def _get_line_coeficients(line):
+    a = line[1][1] - line[0][1]
+    b = line[0][0] - line[1][0]
+    c = a * (line[0][0]) + b * (line[0][1])
+    return a, b, c
+
+
+def find_intersection(line1, line2):
+    x, y = _MAX_FLOAT, _MAX_FLOAT
+
+    # Line 1 characteristics
+
+    (a1, b1, c1) = _get_line_coeficients(line1)
+
+    # Line 2 characteristics
+
+    (a2, b2, c2) = _get_line_coeficients(line2)
+
+    determinant = a1 * b2 - a2 * b1
+
+    if determinant != 0:
+        x = (b2 * c1 - b1 * c2) / determinant
+        y = (a1 * c2 - a2 * c1) / determinant
+
+    # Else if determinant is equal 0 then we return max_floats
+
+    return x, y
+
+
+def define_line_connections(
+    all_lines: List[Tuple[Tuple[int, int], List[Tuple[int, int]]]],
+    line_index: int,
+) -> Iterator[Tuple[int, Tuple[float, float]]]:
+    """Defines connection of a line with an index `line_index` with lines from `all_lines`
+
+    Yields connections of the line with other lines from all_lines list,
+    where connection is described as index of connected line and point of intersection.
+
+    Args:
+        all_lines : List of all lines.
+        line_index : Index of the line for which to find connections.
+    """
+
+    _, mline = all_lines[line_index]
+    for i, (_, line) in enumerate(all_lines):
+        intersection = find_intersection(mline, line)
+        if intersection[0] == _MAX_FLOAT:
+            continue
+        yield i, intersection
+
+
+def apply_rules_on_lines(rules=None, **kwargs):
+    if "lines" not in kwargs and "inverted_line_characteristics" not in kwargs:
+        return
+
+    if rules is None:
+        rules = {"length": ("gt", 20)}
+
+    for rule, argument in rules.items():
+        for value, indexes in kwargs["inverted_line_characteristics"][rule].items():
+            # Applies rule operation (rule[0]) on
+            # parameter values (key) and rule value (rule[1]),
+            # if true skips, in other case marks out line indexes.
+            # Example: if 'gt' a > b, if 'lt' a < b
+
+            if not _operation_helper(argument[0], value, argument[1]):
+                for i in indexes:
+                    kwargs["lines"][i] = None
+
+
+def _operation_helper(operator, a, b):
+    result_state = {"gt": a > b, "ge": a >= b, "lt": a < b, "le": a <= b}
+    return result_state[operator]
+
+
+def invert_dict(adict: dict) -> dict:
+    """
+
+    Returns:
+        dict:
+    """
+    reversed_dict = {}
+    for key in adict:
+        if key == "connections":
+            continue
+        reversed_dict[key] = {}
+        for i, obj in enumerate(adict[key]):
+            if obj not in reversed_dict[key]:
+                reversed_dict[key][obj] = [i]
+            else:
+                reversed_dict[key][obj].append(i)
+    return reversed_dict
+
+
+def characterise_lines(lines):
+    n = len(lines)  # pylint: disable=invalid-name
+    mem = {
+        "length": [None] * n,
+        "axis": [None] * n,
+        "dist_from_origin": [None] * n,
+        "connections": [None] * n,
     }
-    im = prepare_image_for_analysis(bytes_image, '.png', commands)
+    for i, ((faxis, findex), fline) in enumerate(lines):
+        mem["length"][i] = compute_length(fline)
+        mem["axis"][i] = faxis
+        mem["dist_from_origin"][i] = findex
+        mem["connections"][i] = list(define_line_connections(lines, i))
+
+    return mem
+
+
+def check_region_of_interest(roi, mask):
+    mask = mask.copy()
+    mask = cv2.resize(mask, roi.shape[::-1])
+    result = np.bitwise_xor(roi, mask)
+    non_zero_sum = np.sum(result != 0)
+    return (
+        non_zero_sum / (result.shape[0] * result.shape[1]) if non_zero_sum != 0 else 0
+    )
+
+
+def get_region_of_interest_from_segment(segments, lines):
+    top, bottom, left, right = 1e15, 0, 1e15, 0
+    for i in segments:
+        for point in lines[i]:
+            if point[0] > right:
+                right = point[0]
+            elif point[0] < left:
+                left = point[0]
+            if point[1] > bottom:
+                point[1] = point[1]
+            elif point[1] < top:
+                top = point[1]
+    return (top, left, right - left, bottom - top)
+
+
+def main():
+    orig_image = cv2.imread(
+        "/home/aitemirkuandyk/Projects/my-scripts/pdf_to_dwg/image1.png"
+    )
+    _, bytes_image = cv2.imencode(".png", orig_image)
+    commands = {
+        "change_color_format": {"code": cv2.COLOR_BGR2GRAY},
+        "threshold": {"thresh": 100, "maxval": 255, "type": cv2.THRESH_BINARY},
+    }
+    (x, y, w, h) = ARROW_LOCATION
+    ARROW_TEMPLATE = orig_image[y : y + h, x : x + w]
+    ARROW_TEMPLATE = cv2.cvtColor(ARROW_TEMPLATE, cv2.COLOR_BGR2GRAY)
+    ARROW_TEMPLATE_INVERSE = cv2.threshold(
+        ARROW_TEMPLATE, 100, 255, cv2.THRESH_BINARY_INV
+    )[1]
+    # cv2.imshow('Arrow', ARROW_TEMPLATE)
+    # cv2.waitKey(0)
+    print(
+        "Result",
+        check_region_of_interest(ARROW_TEMPLATE, ARROW_TEMPLATE_INVERSE),
+    )
+
+    return
+    im = prepare_image_for_analysis(bytes_image, ".png", commands)
 
     sums_by_axis = {
-        'vertical': calculate_color_frequencies_by_axis(im, target_color=_BLACK, axis=0),
-        'horizonatal': calculate_color_frequencies_by_axis(im, target_color=_BLACK, axis=1),
+        VERTICAL_AXIS: calculate_color_frequencies_by_axis(
+            im, target_color=_BLACK, axis=VERTICAL_AXIS
+        ),
+        HORIZONTAL_AXIS: calculate_color_frequencies_by_axis(
+            im, target_color=_BLACK, axis=HORIZONTAL_AXIS
+        ),
     }
-    lines = remove_duplicates(find_possible_lines_locations(im, sums_by_axis['vertical'], 0), 2)
-    print(list(lines))
+    lines = list(
+        remove_duplicates(find_possible_lines_locations(im, sums_by_axis[0], 0), 2)
+    )
+    lines.extend(
+        list(
+            remove_duplicates(find_possible_lines_locations(im, sums_by_axis[1], 1), 2)
+        )
+    )
+    line_characteristics = characterise_lines(lines)
+    inverted_line_characteristics = invert_dict(line_characteristics)
+    apply_rules_on_lines(
+        **{
+            "inverted_line_characteristics": inverted_line_characteristics,
+            "lines": lines,
+        }
+    )
+    connect_lines(lines, line_characteristics)
+
+
+if __name__ == "__main__":
+    main()
