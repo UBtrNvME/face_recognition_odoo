@@ -26,7 +26,7 @@ import numpy as np
 import pdf2image
 from scipy import signal
 
-from extra.qzhub_deep_learning.cad_automation.services.img_manipulation import (
+from ..services.img_manipulation import (
     manipulation_helper,
 )
 
@@ -57,13 +57,14 @@ ARROW_LOCATION = (
 def timer(function):
     def new_function(*args, **kwargs):
         start_time = timeit.default_timer()
-        function(*args, **kwargs)
+        res = function(*args, **kwargs)
         elapsed = timeit.default_timer() - start_time
         print(
             'Function "{name}" took {time} seconds to complete.'.format(
                 name=function.__name__, time=elapsed
             )
         )
+        return res
 
     return new_function
 
@@ -144,7 +145,7 @@ def find_peaks(data):
         start += sum(1 for _ in group)
 
     for (b, _), (m, mi), (a, _) in zip(
-        sequence, sequence[1:], sequence[2:]
+            sequence, sequence[1:], sequence[2:]
     ):  # pylint: disable=invalid-name
         if b < m and a < m:
             yield mi, m  # type (int, int) Index of the peak and value
@@ -202,8 +203,8 @@ def _flood_search(matrix, pt, overal_direction, target_color):
     for i in range(mini_matrix_size):
         for j in range(mini_matrix_size):
             if (
-                0 < j + diff_y < len_orig_matrix[0]
-                and 0 < i + diff_x < len_orig_matrix[1]
+                    0 < j + diff_y < len_orig_matrix[0]
+                    and 0 < i + diff_x < len_orig_matrix[1]
             ):
 
                 mini_matrix[i][j] = (
@@ -255,7 +256,7 @@ def calculate_color_frequencies_by_axis(image, target_color=255, axis=0):
 
     assert 0 <= axis <= 1, "Argument axis should be in range 0-1"
     assert (
-        isinstance(target_color, int) and 0 <= target_color <= 255
+            isinstance(target_color, int) and 0 <= target_color <= 255
     ), "Argument target color has to be gray scale in range 0-255"
 
     return np.sum(image == target_color, axis=axis)
@@ -409,7 +410,7 @@ def remove_duplicates(lines, dist):
 
 
 @timer
-def connect_lines(lines, line_characteristics, max_depth=7):
+def find_possible_objects(lines, line_characteristics, max_depth=7):
     def dfs(i, origin, depth, massive):
         if depth > max_depth:
             return []
@@ -424,7 +425,7 @@ def connect_lines(lines, line_characteristics, max_depth=7):
         if i == origin and 0 < depth <= 3:
             return []
         if i == origin and depth > 3:
-            return [massive + [i]]
+            return [massive]
 
         massive.append(i)
 
@@ -443,11 +444,17 @@ def connect_lines(lines, line_characteristics, max_depth=7):
 
     for i, line in enumerate(lines):
         if line:
-            sol = dfs(i, i, 0, [])
+            res = dfs(i, i, 0, [])
 
-            if len(sol):
-                results.extend(sol)
-    return results
+            if len(res):
+                results.extend(res)
+
+    memo = []
+    for arrays in results:
+        sorted_array = sorted(arrays)
+        if sorted_array not in memo:
+            memo.append(sorted_array)
+    return memo
 
 
 def compute_length(line):
@@ -484,8 +491,8 @@ def find_intersection(line1, line2):
 
 
 def define_line_connections(
-    all_lines: List[Tuple[Tuple[int, int], List[Tuple[int, int]]]],
-    line_index: int,
+        all_lines: List[Tuple[Tuple[int, int], List[Tuple[int, int]]]],
+        line_index: int,
 ) -> Iterator[Tuple[int, Tuple[float, float]]]:
     """Defines connection of a line with an index `line_index` with lines from `all_lines`
 
@@ -592,27 +599,14 @@ def get_region_of_interest_from_segment(segments, lines):
 
 def main():
     orig_image = cv2.imread(
-        "/home/aitemirkuandyk/Projects/my-scripts/pdf_to_dwg/image1.png"
+        "/home/aitemirkuandyk/Projects/my-scripts/pdf_to_dwg/graph.png"
     )
     _, bytes_image = cv2.imencode(".png", orig_image)
     commands = {
         "change_color_format": {"code": cv2.COLOR_BGR2GRAY},
         "threshold": {"thresh": 100, "maxval": 255, "type": cv2.THRESH_BINARY},
     }
-    (x, y, w, h) = ARROW_LOCATION
-    ARROW_TEMPLATE = orig_image[y : y + h, x : x + w]
-    ARROW_TEMPLATE = cv2.cvtColor(ARROW_TEMPLATE, cv2.COLOR_BGR2GRAY)
-    ARROW_TEMPLATE_INVERSE = cv2.threshold(
-        ARROW_TEMPLATE, 100, 255, cv2.THRESH_BINARY_INV
-    )[1]
-    # cv2.imshow('Arrow', ARROW_TEMPLATE)
-    # cv2.waitKey(0)
-    print(
-        "Result",
-        check_region_of_interest(ARROW_TEMPLATE, ARROW_TEMPLATE_INVERSE),
-    )
 
-    return
     im = prepare_image_for_analysis(bytes_image, ".png", commands)
 
     sums_by_axis = {
@@ -639,7 +633,8 @@ def main():
             "lines": lines,
         }
     )
-    connect_lines(lines, line_characteristics)
+    possible_objects = find_possible_objects(lines, line_characteristics)
+    print(sorted(possible_objects, key=len))
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import api, fields, models
-from extra.qzhub_deep_learning.cad_automation.services.img_manipulation import (
+from ..services.img_manipulation import (
     base64_to_ndarray, ndarray_to_base64
 )
 import cv2
