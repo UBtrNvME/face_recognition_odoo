@@ -22,7 +22,7 @@ Developed by QZHUB
 from odoo import http
 from odoo.http import request
 import json
-from extra.qzhub_deep_learning.cad_automation.services.img_manipulation import (
+from ..services.img_manipulation import (
     binary_to_base64
 )
 
