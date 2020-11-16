@@ -454,7 +454,7 @@ def find_possible_objects(lines, line_characteristics, max_depth=7):
         sorted_array = sorted(arrays)
         if sorted_array not in memo:
             memo.append(sorted_array)
-    return memo
+    return sorted(memo, key=len, reverse=True)
 
 
 def compute_length(line):
@@ -572,7 +572,7 @@ def characterise_lines(lines):
     return mem
 
 
-def check_region_of_interest(roi, mask):
+def _compare_roi_with_mask(roi, mask):
     mask = mask.copy()
     mask = cv2.resize(mask, roi.shape[::-1])
     result = np.bitwise_xor(roi, mask)
@@ -581,6 +581,14 @@ def check_region_of_interest(roi, mask):
         non_zero_sum / (result.shape[0] * result.shape[1]) if non_zero_sum != 0 else 0
     )
 
+
+def check_region_of_interest(roi, masks):
+    results = {}
+    for i, mask in enumerate(masks):
+        percent = _compare_roi_with_mask(roi, mask)
+        if percent >= 0.8:
+            results[i] = percent
+    return max(results) if results else None
 
 def get_region_of_interest_from_segment(segments, lines):
     top, bottom, left, right = 1e15, 0, 1e15, 0
@@ -634,7 +642,8 @@ def main():
         }
     )
     possible_objects = find_possible_objects(lines, line_characteristics)
-    print(sorted(possible_objects, key=len))
+    for anobject in possible_objects:
+        roi = get_region_of_interest_from_segment(anobject, lines)
 
 
 if __name__ == "__main__":
