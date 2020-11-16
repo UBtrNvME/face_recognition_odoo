@@ -588,9 +588,10 @@ def check_region_of_interest(roi, masks):
         percent = _compare_roi_with_mask(roi, mask)
         if percent >= 0.8:
             results[i] = percent
-    return max(results) if results else None
+    return max(results, key=results.get) if results else None
 
-def get_region_of_interest_from_segment(segments, lines):
+
+def get_bounding_rect_from_segment(segments, lines):
     top, bottom, left, right = 1e15, 0, 1e15, 0
     for i in segments:
         for point in lines[i]:
@@ -602,7 +603,50 @@ def get_region_of_interest_from_segment(segments, lines):
                 point[1] = point[1]
             elif point[1] < top:
                 top = point[1]
-    return (top, left, right - left, bottom - top)
+    return (left, top, right - left, bottom - top)
+
+
+def convert_from_image(bytes_image, masks):
+    commands = {
+        "change_color_format": {"code": cv2.COLOR_BGR2GRAY},
+        "threshold": {"thresh": 100, "maxval": 255, "type": cv2.THRESH_BINARY},
+    }
+
+    im = prepare_image_for_analysis(bytes_image, ".png", commands)
+
+    sums_by_axis = {
+        VERTICAL_AXIS: calculate_color_frequencies_by_axis(
+            im, target_color=_BLACK, axis=VERTICAL_AXIS
+        ),
+        HORIZONTAL_AXIS: calculate_color_frequencies_by_axis(
+            im, target_color=_BLACK, axis=HORIZONTAL_AXIS
+        ),
+    }
+    lines = list(
+        remove_duplicates(find_possible_lines_locations(im, sums_by_axis[0], 0), 2)
+    )
+    lines.extend(
+        list(
+            remove_duplicates(find_possible_lines_locations(im, sums_by_axis[1], 1), 2)
+        )
+    )
+    line_characteristics = characterise_lines(lines)
+    inverted_line_characteristics = invert_dict(line_characteristics)
+    apply_rules_on_lines(
+        **{
+            "inverted_line_characteristics": inverted_line_characteristics,
+            "lines": lines,
+        }
+    )
+    possible_objects = find_possible_objects(lines, line_characteristics)
+
+    objects = {}
+    for anobject in possible_objects:
+        (x, y, w, h) = get_bounding_rect_from_segment(anobject, lines)
+        roi = im[x:x + w, y:y + h]
+        result = check_region_of_interest(roi, masks)
+        if result:
+            objects[result].append((x, y, w, h))
 
 
 def main():
@@ -642,8 +686,6 @@ def main():
         }
     )
     possible_objects = find_possible_objects(lines, line_characteristics)
-    for anobject in possible_objects:
-        roi = get_region_of_interest_from_segment(anobject, lines)
 
 
 if __name__ == "__main__":
