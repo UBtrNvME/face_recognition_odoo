@@ -1,34 +1,25 @@
 <odoo>
-    <data>
-
-
-
-        <record id="action_cad_object_template" model="ir.actions.act_window">
-            <field name="name">Cad Object Templates</field>
-            <field name="res_model">cad.object.template</field>
-            <field name="view_mode">tree,form</field>
-            <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">
+  <data>
+    <record id="action_cad_object_template" model="ir.actions.act_window">
+      <field name="name">Cad Object Templates</field>
+      <field name="res_model">cad.object.template</field>
+      <field name="view_mode">tree,form</field>
+      <field name="help" type="html">
+        <p class="o_view_nocontent_smiling_face">
                     Create a Cad Object Template
                 </p>
-                <!--<p>
+        <!--<p>
                     Create a cad object template.
                 </p>-->
-            </field>
-        </record>
-
-
-        <menuitem id="menu_cad_automation"
-                  name="Cad"
-                  sequence="10"/>
-
-        <menuitem id="menu_cad_automation_cad_object_template"
-                  name="Cad Object Templates"
-                  parent="cad_automation.menu_cad_automation"
-                  sequence="10"
-                  action="cad_automation.action_cad_object_template"/>
-
-
-
-    </data>
+      </field>
+    </record>
+    <menuitem id="menu_cad_automation" name="Cad" sequence="10" />
+    <menuitem
+      id="menu_cad_automation_cad_object_template"
+      name="Cad Object Templates"
+      parent="cad_automation.menu_cad_automation"
+      sequence="10"
+      action="cad_automation.action_cad_object_template"
+    />
+  </data>
 </odoo>
