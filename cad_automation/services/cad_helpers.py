@@ -58,15 +58,8 @@ def find_matching_objects(orig_image, cad_object):
                 )
                 objects.append(rect)
                 object_connections.extend(connections)
-                cv2.rectangle(image, (x - 1, y - 1), (x + w + 1, y + h + 1), 255, -1)
                 cut_from(image, roi=(x, y, w, h), mask=mask)
-                cv2.rectangle(
-                    orig_image,
-                    (rect[0] - 1, rect[1] - 1),
-                    (rect[0] + rect[2] + 1, rect[1] + rect[3] + 1),
-                    255,
-                    -1,
-                )
+        orig_image, _ = IM.rotate_bound(image, -angle)
     return objects, object_connections
 
 
