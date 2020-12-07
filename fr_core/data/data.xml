@@ -1,0 +1,36 @@
+<odoo>
+    <data noupdate="1">
+        <record id="sequence_face_model_permanent" model="ir.sequence">
+            <field name="name">Sequence For Permanent Face Models</field>
+            <field name="code">seq.face.model.permanent</field>
+            <field name="active">TRUE</field>
+            <field name="prefix">FM</field>
+            <field name="padding">4</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <record id="sequence_face_model_temporary" model="ir.sequence">
+            <field name="name">Sequence For Temporary Face Models</field>
+            <field name="code">seq.face.model.temporary</field>
+            <field name="active">TRUE</field>
+            <field name="prefix">TempFM</field>
+            <field name="padding">6</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <record id="cron_check_out_all_attendances" model="ir.cron">
+            <field name="name">Attendance: Check Out all attendances</field>
+            <field name="model_id" ref="hr_attendance.model_hr_attendance"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_check_out_all_attendances()</field>
+            <field name="nextcall" eval="(datetime.now() + timedelta(days=0)).strftime('%Y-%m-%d 13:00:00')"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+        </record>
+
+    </data>
+</odoo>
