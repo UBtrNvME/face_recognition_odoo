@@ -6,6 +6,7 @@ odoo.define('fr_core.face_recognise_sign_up', function (require) {
     publicWidget.registry.SignUpFaceRecognition = publicWidget.Widget.extend({
         selector: '.qzhub_signup_form_face_recognition',
         start: function () {
+            console.log('start')
             let self = this;
             this.csrf_token = csrf_token
             self.Data = {};

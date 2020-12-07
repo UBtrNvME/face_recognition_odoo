@@ -212,6 +212,7 @@ def rotate_until_correct_orientation(image, doc_char, angles):
             output_type=pytesseract.Output.DICT,
             # config='-c tessedit_char_whitelist=0123456789'
         )
+        print(data)
         top_iin, top_kaz, top_rus = 0, 0, 0
         words = list(filter(iin.match, data['text']))
 
