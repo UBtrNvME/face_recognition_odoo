@@ -17,8 +17,8 @@
     "external_dependencies": {"python": ["cv2", "numpy"], "bin": []},
     # always loaded
     "data": ["security/ir.model.access.csv", "views/views.xml", "views/templates.xml"],
+    "qweb": ["static/src/xml/base.xml",],
     # only loaded in demonstration mode
-    "demo": ["demo/demo.xml"],
     "application": True,
     "installable": True,
 }
