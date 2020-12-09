@@ -7,6 +7,14 @@
       </xpath>
     </template>
 
+    <template id="assets_backend" inherit_id="web.assets_backend" name="Backend Assets">
+      <xpath expr="." position="inside">
+        <script type="text/javascript" src="/cad_automation/static/src/js/field_widget.js"/>
+        <!-- <link href="/cad_automation/static/src/scss/face_recognition_page.scss" rel="stylesheet" type="text/scss"/> -->
+      </xpath>
+    </template>
+
+
     <template id='cad_automation.cad_automation' name="Cad Automation">
 
       <t t-call='web.frontend_layout'>

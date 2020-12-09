@@ -31,6 +31,7 @@ class CadSymbol(models.Model):
     width = fields.Integer(string="Width of the Template")
     height = fields.Integer(string="Height of the Template")
     ignore_regions = fields.Text(string="Region to Mask")
+    active = fields.Boolean(string="Boolean")
 
     @api.onchange("template")
     def onchange_template(self):
@@ -60,7 +61,7 @@ class CadSymbol(models.Model):
                         rec.template_b64, json.loads(rec.ignore_regions)
                     )
                     ndarray = np.array(
-                        np.where(mask == MASK_THROUGH, ndarray, (0, 255, 0)),
+                        np.where(mask == MASK_THROUGH, ndarray, COLOR_BLUE),
                         dtype=np.uint8,
                     )
 
@@ -70,10 +71,10 @@ class CadSymbol(models.Model):
 
                 if rec.connections:
                     connections = json.loads(rec.connections)
-
+                    print(connections)
                     for connection in connections:
                         cv2.circle(
-                            ndarray, tuple(connection["pos"]), 2, COLOR_GREEN, -1
+                            ndarray, (connection["pos"]["x"], connection["pos"]["y"]), 2, COLOR_GREEN, -1
                         )
 
                 rec.preview = ndarray_to_base64(ndarray)
