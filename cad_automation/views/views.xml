@@ -14,12 +14,11 @@
               <field name="preview" widget="image" />
               <field name="mask" widget="image" />
               <group string="Technical" name="technical">
-                <field name="active" />
                 <field name="threshold" />
                 <field name="template" />
                 <field name="origin" />
-                <field name="connections" widget="field_connection_widget" />
-                <field name="ignore_regions" widget="field_region_to_mask_widget" />
+                <field name="connections" widget="field_connection" />
+                <field name="ignore_regions" />
                 <field name="width" />
                 <field name="height" />
               </group>
