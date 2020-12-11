@@ -1,120 +1,175 @@
-odoo.define("cad_automation.ConnectionFieldView", function(require) {
+odoo.define("cad_automation.field_widgets", function(require) {
   "use strict";
 
-  const AbstracFieldOwl = require("web.AbstractFieldOwl");
-  const field_registry = require("web.field_registry_owl");
-  const utils = require("web.utils");
-  const {Component} = owl;
-  const {_lt} = require("web.translation");
+  var BasicFields = require("web.basic_fields");
+  var field_registry = require("web.field_registry");
+  var DebouncedField = BasicFields.DebouncedField;
+  var core = require("web.core");
+  var qweb = core.qweb;
 
-  class Connection extends Component {
-    constructor(...args) {
-      super(...args);
-      this.index = utils.generateID();
-      this._id = `connection-comp-${this.index}`;
-    }
-  }
+  var _lt = core._lt;
 
-  Connection.template = "cad_automation.Connection";
-  Connection.props = ["position", "direction", "mode"];
+  var FieldConnection = DebouncedField.extend({
+    className: "qzhub_field_connection",
+    description: _lt("FieldConnection"),
+    supportedFieldTypes: ["char", "text"],
+    template: "FieldConnection",
+    custom_events: _.extend({}, DebouncedField.prototype.custom_events, {
+      field_changed: "_onFieldChanged",
+    }),
+    events: _.extend({}, DebouncedField.prototype.events, {
+      input: "_onInput",
+      change: "_onChange",
+      blur: "_onBlur",
+      "click button#addConnection": "_addConnection",
+    }),
 
-  class FieldConnection extends AbstracFieldOwl {
-    constructor(...args) {
-      super(...args);
-      if (!this.connections) {
-        this.connections = this.value ? JSON.parse(this.value) : [];
+    init: function() {
+      this._super.apply(this, arguments);
+      this.connections = this.value ? JSON.parse(this.value) : [];
+      this.ids = [];
+      for (let i = 0, len = this.connections.length; i < len; i++) {
+        const _ids = [];
+        for (const j in ["x", "y", "dx", "dy"]) {
+          _ids.push(`input-connection-${i}-${j}`);
+        }
+        this.ids[i] = _ids;
       }
-    }
+      this.isDirty = false;
+      this.lastChangeEvent = undefined;
+      this.lastConnection = undefined;
+    },
 
-    get isSet() {
-      return Boolean(this.value !== "" && Array.isArray(JSON.parse(this.value)));
-    }
-
-    async willUpdateProps(nextProps) {
-      await super.willUpdateProps(nextProps);
-      Object.assign(this.connections, JSON.parse(this.value));
-    }
-
-    addConnection() {
-      const lastConnections = this.connections[this.connections.length - 1];
+    reset: function(record, event) {
+      this._reset(record, event);
+      if (!event || event === this.lastChangeEvent) {
+        this.isDirty = false;
+      }
       if (
-        !(
-          lastConnections.pos.x === "" &&
-          lastConnections.pos.y === "" &&
-          lastConnections.dir.x === "" &&
-          lastConnections.dir.y === ""
-        )
+        this.isDirty ||
+        (event &&
+          event.target === this &&
+          event.data.changes &&
+          event.data.changes[this.name] === this.value)
       ) {
-        this.connections.push({
-          pos: {
-            x: "",
-            y: "",
-          },
-          dir: {
-            x: "",
-            y: "",
-          },
-        });
-
-        // This._setValue(JSON.stringify(this.connections))
-        console.log(this.connections);
-        this.render();
+        if (this.attrs.decorations) {
+          // If a field is modified, then it could have triggered an onchange
+          // which changed some of its decorations. Since we bypass the
+          // render function, we need to apply decorations here to make
+          // sure they are recomputed.
+          this._applyDecorations();
+        }
+        return Promise.resolve();
       }
-    }
+      return this._render();
+    },
 
-    saveConnections() {
-      const connections = this._parseConnections();
-      this._setValue(JSON.stringify(connections));
-    }
+    _setValue: function(value) {
+      return this._super(value);
+    },
 
-    _parseConnections() {
-      console.log("Connections", this.connections);
-      this.connections.forEach((element, index) => {
-        console.log("iteration", element, index);
-        element.pos.x = Number(element.pos.x);
-        element.pos.y = Number(element.pos.y);
-        element.dir.x = Number(element.dir.x);
-        element.dir.y = Number(element.dir.y);
-        this.connections[index] = element;
+    _renderReadonly: function() {
+      this.$el.html(
+        qweb.render("FieldConnectionReadonly", {
+          connections: this.connections,
+          counter: this.connections.length,
+        })
+      );
+      this.$el.on("click", "a", function(ev) {
+        ev.preventDefault();
       });
-      return this.connections;
-    }
-  }
+    },
 
-  FieldConnection.components = {Connection};
-  FieldConnection.description = _lt("Connection");
-  FieldConnection.supportedFieldTypes = ["text", "char"];
-  FieldConnection.template = "cad_automation.FieldConnection";
+    _renderEdit: function() {
+      this.$el.html(
+        qweb.render("FieldConnectionEdit", {
+          connections: this.connections,
+          ids: this.ids,
+        })
+      );
+    },
 
-  field_registry.add("field_connection_widget", FieldConnection);
+    _onFieldChanged: function(event) {
+      this.lastChangeEvent = event;
+    },
 
-  class Point extends Component {}
-  Point.template = "cad_automation.Point";
-  Point.props = ["x", "y"];
+    _onInput: function(event) {
+      this.isDirty = !this._isLastSetValue(event.target.value);
+      this._doDebouncedAction();
+    },
 
-  class Segment extends Component {}
-  Segment.template = "cad_automation.Segment";
-  Segment.props = ["points"];
-  Segment.components = {Point};
+    _doAction: function(target) {
+      if (!this.isDestroyed()) {
+        return this._parseToOriginalValue(target);
+      }
+    },
+    _parseToOriginalValue: function(target) {
+      if (target) {
+        const array = target.id.split("-");
+        const map1 = ["pos", "pos", "dir", "dir"];
+        const map2 = ["x", "y", "x", "y"];
+        const connection_index = Number.parseInt(array[2], 10);
+        const in_connection_index = Number.parseInt(array[3], 10);
+        this.connections[connection_index][map1[in_connection_index]][
+          map2[in_connection_index]
+        ] = Number.parseInt(target.value, 10);
+        return this._setValue(JSON.stringify(this.connections));
+      }
+    },
+    _onChange: function(event) {
+      if (event && event.target) {
+        this._doAction(event.target);
+      }
+    },
+    _onNavigationMove: function(ev) {
+      this._super.apply(this, arguments);
 
-  class FieldRegionToMask extends AbstracFieldOwl {
-    constructor(...args) {
-      super(...args);
-      this.segments = this.value ? JSON.parse(this.value) : [];
+      // The following code only makes sense in edit mode, with an input
+      if (this.mode === "edit" && ev.data.direction !== "cancel") {
+        var input = this.$input[0];
+        var selecting = input.selectionEnd !== input.selectionStart;
+        if (
+          (ev.data.direction === "left" && (selecting || input.selectionStart !== 0)) ||
+          (ev.data.direction === "right" &&
+            (selecting || input.selectionStart !== input.value.length))
+        ) {
+          ev.stopPropagation();
+        }
+        if (
+          ev.data.direction === "next" &&
+          this.attrs.modifiersValue &&
+          this.attrs.modifiersValue.required &&
+          this.viewType !== "list"
+        ) {
+          if (!this.$input.val()) {
+            this.setInvalidClass();
+            ev.stopPropagation();
+          } else {
+            this.removeInvalidClass();
+          }
+        }
+      }
+    },
+    _addConnection: function() {
+      this.connections.push({
+        pos: {
+          x: "",
+          y: "",
+        },
+        dir: {
+          x: "",
+          y: "",
+        },
+      });
+      const _ids = [];
+      for (const j in ["x", "y", "dx", "dy"]) {
+        _ids.push(`input-connection-${this.ids.length}-${j}`);
+      }
+      this.ids.push(_ids);
+      this._render();
+    },
+  });
 
-      console.log(this.segments);
-    }
-  }
-
-  FieldRegionToMask.components = {Segment};
-  FieldRegionToMask.description = _lt("Region to mask");
-  FieldRegionToMask.supportedFieldTypes = ["text", "char"];
-  FieldRegionToMask.template = "cad_automation.FieldRegionToMask";
-
-  field_registry.add("field_region_to_mask_widget", FieldRegionToMask);
-
-  return {
-    FieldConnection,
-    FieldRegionToMask,
-  };
+  field_registry.add("field_connection", FieldConnection);
+  return FieldConnection;
 });

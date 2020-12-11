@@ -72,8 +72,20 @@ class CadSymbol(models.Model):
                     connections = json.loads(rec.connections)
 
                     for connection in connections:
+                        if (
+                            isinstance(connection["pos"]["x"], str)
+                            or isinstance(connection["pos"]["y"], str)
+                            or isinstance(connection["dir"]["x"], str)
+                            or isinstance(connection["dir"]["y"], str)
+                        ):
+                            continue
+
                         cv2.circle(
-                            ndarray, tuple(connection["pos"]), 2, COLOR_GREEN, -1
+                            img=ndarray,
+                            center=(connection["pos"]["x"], connection["pos"]["y"]),
+                            radius=2,
+                            color=COLOR_GREEN,
+                            thickness=-1,
                         )
 
                 rec.preview = ndarray_to_base64(ndarray)
