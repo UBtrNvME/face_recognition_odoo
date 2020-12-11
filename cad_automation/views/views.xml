@@ -1,52 +1,56 @@
 <odoo>
-  <data>
-    <record id="cad_symbol_view_form" model="ir.ui.view">
-      <field name="name">cad.symbol.view.form</field>
-      <field name="model">cad.symbol</field>
-      <field name="arch" type="xml">
-        <form string="Symbol">
-          <sheet>
-            <div class="oe_title">
-              <label for="name" class="oe_edit_only" />
-              <h1>
-                <field name="name" />
-              </h1>
-              <field name="preview" widget="image" />
-              <field name="mask" widget="image" />
-              <group string="Technical" name="technical">
-                <field name="threshold" />
-                <field name="template" />
-                <field name="origin" />
-                <field name="connections" widget="field_connection" />
-                <field name="ignore_regions" />
-                <field name="width" />
-                <field name="height" />
-              </group>
-            </div>
-          </sheet>
-        </form>
-      </field>
-    </record>
-    <record id="action_cad_symbol" model="ir.actions.act_window">
-      <field name="name">Cad Symbols</field>
-      <field name="res_model">cad.symbol</field>
-      <field name="view_mode">tree,form</field>
-      <field name="help" type="html">
-        <p class="o_view_nocontent_smiling_face">
+    <data>
+        <record id="cad_symbol_view_form" model="ir.ui.view">
+            <field name="name">cad.symbol.view.form</field>
+            <field name="model">cad.symbol</field>
+            <field name="arch" type="xml">
+                <form string="Symbol">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only" />
+                            <h1>
+                                <field name="name" />
+                            </h1>
+                            <field
+                                name="preview"
+                                widget="image_large"
+                                class="o_image_large"
+                            />
+                            <field name="mask" widget="image" />
+                            <group string="Technical" name="technical">
+                                <field name="threshold" />
+                                <field name="template" />
+                                <field name="origin" />
+                                <field name="connections" widget="field_connection" />
+                                <field name="ignore_regions" />
+                                <field name="width" />
+                                <field name="height" />
+                            </group>
+                        </div>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record id="action_cad_symbol" model="ir.actions.act_window">
+            <field name="name">Cad Symbols</field>
+            <field name="res_model">cad.symbol</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
                     Create a Cad Symbol
                 </p>
-        <!--<p>
+                <!--<p>
                                     Create a cad object template.
                                 </p>-->
-      </field>
-    </record>
-    <menuitem id="menu_cad_automation" name="Cad" sequence="10" />
-    <menuitem
-      id="menu_cad_automation_cad_symbol"
-      name="Cad Object Templates"
-      parent="cad_automation.menu_cad_automation"
-      sequence="10"
-      action="cad_automation.action_cad_symbol"
-    />
-  </data>
+            </field>
+        </record>
+        <menuitem id="menu_cad_automation" name="Cad" sequence="10" />
+        <menuitem
+            id="menu_cad_automation_cad_symbol"
+            name="Cad Object Templates"
+            parent="cad_automation.menu_cad_automation"
+            sequence="10"
+            action="cad_automation.action_cad_symbol"
+        />
+    </data>
 </odoo>

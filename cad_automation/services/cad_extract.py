@@ -58,3 +58,5 @@ def main(img_b64, data=None):
         )
         if line:
             LINES.append(line)
+
+    return LINES, OBJECTS, TEXT

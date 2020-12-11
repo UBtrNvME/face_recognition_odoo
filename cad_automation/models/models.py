@@ -21,7 +21,7 @@ class CadSymbol(models.Model):
     _name = "cad.symbol"
 
     name = fields.Char(string="Name of the Cad Object Template", required=True)
-    preview = fields.Binary(string="Preview", compute="_compute_preview")
+    preview = fields.Image(string="Preview", compute="_compute_preview")
     template = fields.Binary(string="Image representation of the Cad Object")
     template_b64 = fields.Text(string="base64")
     mask = fields.Binary(string="Mask of the Cad Object Template", readonly=True)

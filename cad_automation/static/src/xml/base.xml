@@ -1,157 +1,170 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!-- id="template" xml:space="preserve"-->
 <templates>
-  <t t-name="cad_automation.Connection" owl="1">
-    <tr t-if="props.mode === 'readonly'">
-      <td t-esc="props.position.x" />
-      <td t-esc="props.position.y" />
-      <td t-esc="props.direction.x" />
-      <td t-esc="props.direction.y" />
-    </tr>
-    <tr t-else="">
-      <td>
-        <input type="text" t-model="props.position.x" />
-      </td>
-      <td>
-        <input type="text" t-model="props.position.y" />
-      </td>
-      <td>
-        <input type="text" t-model="props.direction.x" />
-      </td>
-      <td>
-        <input type="text" t-model="props.direction.y" />
-      </td>
-    </tr>
-  </t>
-  <t t-name="cad_automation.FieldConnectionOwl" owl="1">
-    <t t-if="isSet === true">
-      <table t-if="connections.length" class="table table-sm">
-        <thead>
-          <tr>
-            <th>Position.x</th>
-            <th>Position.y</th>
-            <th>Direction.x</th>
-            <th>Direction.y</th>
-          </tr>
-        </thead>
-        <tbody t-foreach="connections" t-as="connection">
-          <Connection
-            position="connection.pos"
-            direction="connection.dir"
-            mode="mode"
-          />
-        </tbody>
-        <button t-if="mode === 'edit'" t-on-click="addConnection">add line</button>
-        <button
-          t-if="mode === 'edit' and connections.length"
-          t-on-click="saveConnections"
-        >save</button>
-      </table>
-    </t>
-    <t t-else="">
-      <t t-if="mode === 'readonly'">
-        <span>No connections</span>
-      </t>
-      <t t-else="">
-        <button t-on-click="addConnection">add connection</button>
-      </t>
-    </t>
-  </t>
-  <t t-name="cad_automation.Point" owl="1">
-    <span style="margin-right: 6px;">(<t t-esc="props.x" />,<t
-        t-esc="props.y"
-      />)</span>
-  </t>
-  <t t-name="cad_automation.Segment" owl="1">
-    <p>
-      <t t-foreach="props.points" t-as="point">
-        <Point x="point[0]" y="point[1]" />
-      </t>
-    </p>
-  </t>
-  <t t-name="cad_automation.FieldRegionToMask" owl="1">
-    <div t-foreach="segments" t-as="segment">
-      <Segment points="segment" />
-    </div>
-  </t>
-  <t t-name="FieldConnection">
-    <table class="qzhub_field_connection table table-sm">
-      <thead>
-        <tr>
-          <th>Position.x</th>
-          <th>Position.y</th>
-          <th>Direction.x</th>
-          <th>Direction.y</th>
+    <t t-name="cad_automation.Connection" owl="1">
+        <tr t-if="props.mode === 'readonly'">
+            <td t-esc="props.position.x" />
+            <td t-esc="props.position.y" />
+            <td t-esc="props.direction.x" />
+            <td t-esc="props.direction.y" />
         </tr>
-      </thead>
-      <tbody t-foreach="widget.connections" t-as="connection">
-        <tr>
-          <td t-esc="connection.pos.x" />
-          <td t-esc="connection.pos.y" />
-          <td t-esc="connection.dir.x" />
-          <td t-esc="connection.dir.y" />
+        <tr t-else="">
+            <td>
+                <input type="text" t-model="props.position.x" />
+            </td>
+            <td>
+                <input type="text" t-model="props.position.y" />
+            </td>
+            <td>
+                <input type="text" t-model="props.direction.x" />
+            </td>
+            <td>
+                <input type="text" t-model="props.direction.y" />
+            </td>
         </tr>
-      </tbody>
-    </table>
-  </t>
-  <t t-name="FieldConnectionReadonly">
-    <div class="qzhub_field_connections" t-foreach="connections" t-as="connection">
-      <p>
+    </t>
+    <t t-name="cad_automation.FieldConnectionOwl" owl="1">
+        <t t-if="isSet === true">
+            <table t-if="connections.length" class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Position.x</th>
+                        <th>Position.y</th>
+                        <th>Direction.x</th>
+                        <th>Direction.y</th>
+                    </tr>
+                </thead>
+                <tbody t-foreach="connections" t-as="connection">
+                    <Connection
+                        position="connection.pos"
+                        direction="connection.dir"
+                        mode="mode"
+                    />
+                </tbody>
+                <button
+                    t-if="mode === 'edit'"
+                    t-on-click="addConnection"
+                >add line</button>
+                <button
+                    t-if="mode === 'edit' and connections.length"
+                    t-on-click="saveConnections"
+                >save</button>
+            </table>
+        </t>
+        <t t-else="">
+            <t t-if="mode === 'readonly'">
+                <span>No connections</span>
+            </t>
+            <t t-else="">
+                <button t-on-click="addConnection">add connection</button>
+            </t>
+        </t>
+    </t>
+    <t t-name="cad_automation.Point" owl="1">
+        <span style="margin-right: 6px;">(<t t-esc="props.x" />,<t
+                t-esc="props.y"
+            />)</span>
+    </t>
+    <t t-name="cad_automation.Segment" owl="1">
+        <p>
+            <t t-foreach="props.points" t-as="point">
+                <Point x="point[0]" y="point[1]" />
+            </t>
+        </p>
+    </t>
+    <t t-name="cad_automation.FieldRegionToMask" owl="1">
+        <div t-foreach="segments" t-as="segment">
+            <Segment points="segment" />
+        </div>
+    </t>
+    <t t-name="FieldConnection">
+        <table class="qzhub_field_connection table table-sm">
+            <thead>
+                <tr>
+                    <th>Position.x</th>
+                    <th>Position.y</th>
+                    <th>Direction.x</th>
+                    <th>Direction.y</th>
+                </tr>
+            </thead>
+            <tbody t-foreach="widget.connections" t-as="connection">
+                <tr>
+                    <td t-esc="connection.pos.x" />
+                    <td t-esc="connection.pos.y" />
+                    <td t-esc="connection.dir.x" />
+                    <td t-esc="connection.dir.y" />
+                </tr>
+            </tbody>
+        </table>
+    </t>
+    <t t-name="FieldConnectionReadonly">
+        <div class="qzhub_field_connections" t-foreach="connections" t-as="connection">
+            <p>
         <span t-esc="connection_index + 1" />.
         x=<span t-esc="connection.pos.x" />,
         y=<span t-esc="connection.pos.y" />,
         dx=<span t-esc="connection.dir.x" />,
         dy=<span t-esc="connection.dir.y" />
       </p>
-    </div>
-  </t>
-  <t t-name="FieldConnectionEdit">
-    <table class="qzhub_field_connection table table-sm">
-      <thead>
-        <tr>
-          <th>Position.x</th>
-          <th>Position.y</th>
-          <th>Direction.x</th>
-          <th>Direction.y</th>
-        </tr>
-      </thead>
-      <tbody
-        t-foreach="connections"
-        t-as="connection"
-        t-key="'connection-' + connection_index"
-      >
-        <tr>
-          <td>
-            <input
-              type="text"
-              t-att-id="ids[connection_index][0]"
-              t-att-value="connection.pos.x"
-            />
-          </td>
-          <td>
-            <input
-              type="text"
-              t-att-id="ids[connection_index][1]"
-              t-att-value="connection.pos.y"
-            />
-          </td>
-          <td>
-            <input
-              type="text"
-              t-att-id="ids[connection_index][2]"
-              t-att-value="connection.dir.x"
-            />
-          </td>
-          <td>
-            <input
-              type="text"
-              t-att-id="ids[connection_index][3]"
-              t-att-value="connection.dir.y"
-            />
-          </td>
-        </tr>
-      </tbody>
-      <button id="addConnection">Add connection</button>
-    </table>
-  </t>
+        </div>
+    </t>
+    <t t-name="FieldConnectionEdit">
+        <table class="qzhub_field_connection table table-sm">
+            <thead>
+                <tr>
+                    <th>Position.x</th>
+                    <th>Position.y</th>
+                    <th>Direction.x</th>
+                    <th>Direction.y</th>
+                    <th />
+                </tr>
+            </thead>
+            <tbody
+                t-foreach="connections"
+                t-as="connection"
+                t-key="'connection-' + connection_index"
+            >
+                <tr>
+                    <td>
+                        <input
+                            type="text"
+                            t-att-id="ids[connection_index][0]"
+                            t-att-value="connection.pos.x"
+                        />
+                    </td>
+                    <td>
+                        <input
+                            type="text"
+                            t-att-id="ids[connection_index][1]"
+                            t-att-value="connection.pos.y"
+                        />
+                    </td>
+                    <td>
+                        <input
+                            type="text"
+                            t-att-id="ids[connection_index][2]"
+                            t-att-value="connection.dir.x"
+                        />
+                    </td>
+                    <td>
+                        <input
+                            type="text"
+                            t-att-id="ids[connection_index][3]"
+                            t-att-value="connection.dir.y"
+                        />
+                    </td>
+                    <td class="align-middle">
+                        <a
+                            class="delete-button"
+                            t-att-id="'delete-connection-' + connection_index"
+                        >
+                            <i class="fa fa-times fa-lg" aria-hidden="false" />
+                        </a>
+                    </td>
+                </tr>
+                <!--        <img t-att-id="'delete-connection' + connection_index" src="/assets/img/bootstrap.svg" alt="" width="32" height="32" title="Bootstrap"/>-->
+            </tbody>
+            <button id="addConnection">Add connection</button>
+        </table>
+    </t>
 </templates>
