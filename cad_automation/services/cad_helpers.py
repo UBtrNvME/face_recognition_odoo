@@ -1,8 +1,12 @@
+import sys
+
 import cv2
 import imutils
 import numpy as np
 
 from ..services.img_manipulation import ImageManipulation as IM, base64_to_ndarray
+
+GREEN = (0, 255, 0)
 
 
 def template_matching(image, template, thresh, mask=None):
@@ -11,8 +15,8 @@ def template_matching(image, template, thresh, mask=None):
         res = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED, mask=mask)
     else:
         res = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
-    threshold = thresh
-    loc = np.where(res >= threshold)
+
+    loc = np.where(res >= thresh)
     for pt in zip(*loc[::-1]):
         yield pt[0], pt[1], w, h
 
@@ -28,23 +32,22 @@ def find_matching_objects(orig_image, cad_object):
     objects = []
     object_connections = []
     templates = []
+    if "template" in cad_object:
+        templates.append(
+            cv2.cvtColor(base64_to_ndarray(cad_object["template"]), cv2.COLOR_BGR2GRAY)
+        )
+    else:
+        templates.append(cv2.imread(cad_object["path"], 0))
+
+    if "mirror" in cad_object:
+        _mirror_template_if_needed(templates, cad_object["mirror"])
+
+    mask = None
+    if "mask" in cad_object:
+        mask = cv2.cvtColor(base64_to_ndarray(cad_object["mask"]), cv2.COLOR_BGR2GRAY)
+
     for angle in range(0, 360, 90):
         image, inverse_matrix = IM.rotate_bound(orig_image, angle)
-        if "template" in cad_object:
-            templates.append(
-                cv2.cvtColor(
-                    base64_to_ndarray(cad_object["template"]), cv2.COLOR_BGR2GRAY,
-                )
-            )
-        else:
-            templates.append(cv2.imread(cad_object["path"], 0))
-
-        if "mirror" in cad_object:
-            _mirror_template_if_needed(templates, cad_object["mirror"])
-        mask = None
-        if "mask" in cad_object:
-            mask = cv2.imread(cad_object["mask"], 0)
-
         for template in templates:
             for x, y, w, h in template_matching(
                 image, template, cad_object["thresh"], mask=mask
@@ -54,7 +57,7 @@ def find_matching_objects(orig_image, cad_object):
 
                 rect = find_location_on_original_image((x, y, w, h), inverse_matrix)
                 connections = _locate_connections_on_image(
-                    rect, inverse_matrix, cad_object["connections"],
+                    rect, inverse_matrix, cad_object["connections"]
                 )
                 objects.append(rect)
                 object_connections.extend(connections)
@@ -71,22 +74,28 @@ def _locate_connections_on_image(rect, matrix, connections):
     center_point = _int(*_compute_center_point(rect))
     result = []
     for connection in connections:
-        position_vector = _vector_transform(connection["pos"], matrix, flags="-T")
-        direction_vector = _vector_transform(connection["dir"], matrix, flags="-T")
+        position_vector = _vector_transform(connection["pos"], matrix, flags="-T-D")
+        direction_vector = _vector_transform(connection["dir"], matrix, flags="-T-D")
         result.append((np.add(center_point, position_vector), direction_vector))
-    return result
+    return np.array(result, dtype=int)
 
 
 def cut_from(image, *, roi, mask=None):
     (x, y, w, h) = roi
     if mask is None:
-        mask = np.ones((w, h))
+        mask = np.full((w, h), 255)
     image[y : y + h, x : x + w] = cv2.bitwise_and(image[y : y + h, x : x + w], mask)
+
+
+def _convert_from_dict(dictionary):
+    return [item for item in dictionary.values()]
 
 
 def _vector_transform(vector, matrix, *, flags=""):
     if "-T" in flags:
         matrix[0][2] = matrix[1][2] = 0
+    if "-D" in flags:
+        vector = _convert_from_dict(vector)
     return cv2.transform(np.array([[vector]]), matrix)[0][0]
 
 
@@ -202,7 +211,7 @@ def find_line(image, window_size, connection_point, axis, step_size):
         image, window_size, origin, axis, step_size
     )
     for window in sliding_window(roi, window_size, step_size):
-        if np.sum(window[2] == 0) > 14:
+        if np.sum(window[2] == 0) > 10:
             if line[0] is None:
                 line[0] = [window[0] + difference_x, window[1] + difference_y]
             else:
@@ -223,3 +232,35 @@ def find_line(image, window_size, connection_point, axis, step_size):
 def _generate_window_origin(connection_point, window_size, axis):
     connection_point[axis] -= window_size[axis] // 2
     return connection_point
+
+
+def _render_mask_with_points(mask, points):
+
+    number_of_points = len(points)
+    for point in points:
+        cv2.circle(mask, center=tuple(point), radius=2, thickness=-1, color=GREEN)
+
+    if number_of_points > 1:
+        for i in range(1, number_of_points):
+            cv2.line(
+                mask,
+                pt1=tuple(points[i - 1]),
+                pt2=tuple(points[i]),
+                color=GREEN,
+                thickness=1,
+            )
+    if number_of_points > 2:
+        cv2.line(
+            mask, pt1=tuple(points[-1]), pt2=tuple(points[0]), color=GREEN, thickness=1
+        )
+    return mask
+
+
+def calculate_threshold(test_image, template, template_mask):
+    test_image = base64_to_ndarray(test_image)
+    template = base64_to_ndarray(template)
+    template_mask = base64_to_ndarray(template_mask)
+    res = cv2.matchTemplate(
+        test_image, template, cv2.TM_CCOEFF_NORMED, mask=template_mask,
+    )
+    return res

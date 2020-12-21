@@ -1,20 +1,18 @@
-odoo.define('cad_automation.input_widget', function (require) {
+odoo.define("cad_automation.input_widget", function() {
     "use strict";
-    var upload_field = "file_upload"
-    $(document).ready(function () {
-        console.log(`#${upload_field}`)
-        $(`#${upload_field}`).change(function () {
-            console.log('read')
-            let fileReader = new FileReader();
-            let info = document.getElementById(`${upload_field}`).files[0]
-            fileReader.onload = function () {
-                let data = fileReader.result;
-                document.getElementById('file_content').value = data
-                document.getElementById('file_type').value = info.type
-                console.log(info)
+    var upload_field = "file_upload";
+    $(document).ready(function() {
+        console.log(`#${upload_field}`);
+        $(`#${upload_field}`).change(function() {
+            console.log("read");
+            const fileReader = new FileReader();
+            const info = document.getElementById(`${upload_field}`).files[0];
+            fileReader.onload = function() {
+                document.getElementById("file_content").value = fileReader.result;
+                document.getElementById("file_type").value = info.type;
+                console.log(info);
             };
-            fileReader.readAsDataURL($(`#${upload_field}`).prop('files')[0]);
+            fileReader.readAsDataURL($(`#${upload_field}`).prop("files")[0]);
         });
     });
-
 });

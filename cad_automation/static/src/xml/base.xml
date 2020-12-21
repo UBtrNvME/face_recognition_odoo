@@ -158,13 +158,87 @@
                             class="delete-button"
                             t-att-id="'delete-connection-' + connection_index"
                         >
-                            <i class="fa fa-times fa-lg" aria-hidden="false" />
+                            <i class="fa fa-times fa-lg" />
                         </a>
                     </td>
                 </tr>
                 <!--        <img t-att-id="'delete-connection' + connection_index" src="/assets/img/bootstrap.svg" alt="" width="32" height="32" title="Bootstrap"/>-->
             </tbody>
-            <button id="addConnection">Add connection</button>
+            <tr>
+                <td>
+                    <a id="addConnection">
+                        <i class="fa fa-plus-square text-success fa-lg" />
+                    </a>
+                </td>
+            </tr>
         </table>
+    </t>
+    <t t-name="FieldIgnoreRegionReadonly">
+        <table class="qzhub_field_ignore_region table table-sm" style="width: auto;">
+            <thead>
+                <tr>
+                    <th />
+                    <th>Segment</th>
+                </tr>
+            </thead>
+            <tbody t-foreach="segments" t-as="segment">
+                <tr>
+                    <td t-esc="segment_index + 1" />
+                    <td>
+                        <span t-foreach="segment" t-as="point">
+                            ( x =
+                            <t t-esc="point[0]" />
+                            , y =
+                            <t t-esc="point[1]" />
+                            )
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </t>
+    <t t-name="FieldIgnoreRegionEdit">
+        <table class="qzhub_field_ignore_region table table-sm" style="width: auto;">
+            <thead>
+                <tr>
+                    <th />
+                    <th>Segment</th>
+                    <th />
+                </tr>
+            </thead>
+            <tbody t-foreach="segments" t-as="segment">
+                <tr>
+                    <td t-esc="segment_index + 1" />
+                    <td>
+                        <span t-foreach="segment" t-as="point">
+                            ( x =
+                            <t t-esc="point[0]" />
+                            , y =
+                            <t t-esc="point[1]" />
+                            )
+                        </span>
+                    </td>
+                    <td class="align-middle">
+                        <a
+                            class="delete-button"
+                            t-att-id="'delete-segment-' + segment_index"
+                        >
+                            <i class="fa fa-times fa-lg" />
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+            <tr>
+                <td>
+                    <a id="addSegment">
+                        <i class="fa fa-plus-square text-success fa-lg" />
+                    </a>
+                </td>
+            </tr>
+        </table>
+    </t>
+    <t t-name="Popup">
+        <img t-att-src="datas" id="working-pallet" />
+        <button id="save">Save</button>
     </t>
 </templates>

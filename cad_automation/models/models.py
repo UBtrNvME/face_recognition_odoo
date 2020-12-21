@@ -1,7 +1,7 @@
 import json
 import logging
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 
 import cv2
 import numpy as np
@@ -13,7 +13,7 @@ _logger = logging.getLogger(__name__)
 COLOR_RED = (0, 0, 255)
 COLOR_BLUE = (255, 0, 0)
 COLOR_GREEN = (0, 255, 0)
-MASK_THROUGH = 210
+MASK_THROUGH = 255
 MASK_BLOCK = 0
 
 
@@ -39,11 +39,12 @@ class CadSymbol(models.Model):
 
     @api.model
     def create(self, vals):
-        if template := vals.get("template"):
+        template = vals.get("template")
+        if template:
             vals.update(self._initialize_template(template))
 
-        ignore = vals.get("ignore_regions")
-        if ignore and template:
+        ignore = vals.get("ignore_regions") or "[]"
+        if template:
             mask = self._generate_mask(template, json.loads(ignore))
             vals["mask"] = ndarray_to_base64(mask)
 
@@ -112,7 +113,8 @@ class CadSymbol(models.Model):
         return mask
 
     def write(self, vals):
-        if template := vals.get("template"):
+        template = vals.get("template")
+        if template:
             vals.update(self._initialize_template(template))
 
         ignore = vals.get("ignore_regions")
@@ -121,3 +123,40 @@ class CadSymbol(models.Model):
             vals["mask"] = ndarray_to_base64(mask)
 
         return super().write(vals)
+
+    def calculate_threshold(self):
+        return {"model": "ir.action"}
+
+    @api.model
+    def get_template(self, rid=-1):
+        if rid:
+            template = (
+                self.env["ir.attachment"]
+                .sudo(True)
+                .search(
+                    [
+                        ["res_model", "=", "cad.symbol"],
+                        ["res_id", "=", rid],
+                        ["res_field", "=", "template"],
+                    ]
+                )
+            )
+            return template.datas
+        return None
+
+    # ----------------------------------------------------------------------------------
+    # Wizards
+
+    def open_calculate_threshold(self):
+        return {
+            "view_mode": "form",
+            "res_model": "cad.wizard.threshold.calculator",
+            "type": "ir.actions.act_window",
+            "name": _("Calculate Threshold"),
+            "context": {
+                "default_cad_object_id": self.id,
+                "default_template": self.template_b64,
+                "default_template_mask": self.mask,
+            },
+            "target": "new",
+        }

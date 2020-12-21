@@ -30,6 +30,11 @@ def ndarray_to_base64(ndarray):
     return base64.b64encode(im_bytes)
 
 
+def dataimage_to_base64(dataimage):
+    start = dataimage.find(",")
+    return dataimage[start + 1 :]
+
+
 def binary_to_base64(bytes):
     # pylint: disable=redefined-builtin
     return base64.b64encode(bytes)

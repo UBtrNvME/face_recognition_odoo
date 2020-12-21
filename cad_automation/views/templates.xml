@@ -1,42 +1,63 @@
 <odoo>
-  <data>
-    <template
-      id="assets_frontend"
-      inherit_id="web.assets_frontend"
-      name="Frontend Assets"
-    >
-      <xpath expr="." position="inside">
-        <script
-          type="text/javascript"
-          src="/cad_automation/static/src/js/input_widget.js"
-        />
-        <!-- <link href="/cad_automation/static/src/scss/face_recognition_page.scss" rel="stylesheet" type="text/scss"/> -->
-      </xpath>
-    </template>
-    <template id="assets_backend" inherit_id="web.assets_backend" name="Backend Assets">
-      <xpath expr="." position="inside">
-        <script
-          type="text/javascript"
-          src="/cad_automation/static/src/js/field_widget.js"
-        />
-        <!-- <link href="/cad_automation/static/src/scss/face_recognition_page.scss" rel="stylesheet" type="text/scss"/> -->
-      </xpath>
-    </template>
-    <template id='cad_automation.cad_automation' name="Cad Automation">
-      <t t-call='web.frontend_layout'>
-        <form method="post" action="/cad_automation/process_image">
-          <div>
-            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()" />
-            <label for="file">Choose file to upload</label>
-            <input type="file" id="file_upload" name="file_upload" />
-            <input type="hidden" name="file_content" id='file_content' />
-            <input type="hidden" name="file_type" id='file_type' />
-          </div>
-          <div>
-            <button>Submit</button>
-          </div>
-        </form>
-      </t>
-    </template>
-  </data>
+    <data>
+        <template
+            id="assets_frontend"
+            inherit_id="web.assets_frontend"
+            name="Frontend Assets"
+        >
+            <xpath expr="." position="inside">
+                <script
+                    type="text/javascript"
+                    src="/cad_automation/static/src/js/input_widget.js"
+                />
+                <!-- <link href="/cad_automation/static/src/scss/face_recognition_page.scss" rel="stylesheet" type="text/scss"/> -->
+            </xpath>
+        </template>
+        <template
+            id="assets_backend"
+            inherit_id="web.assets_backend"
+            name="Backend Assets"
+        >
+            <xpath expr="." position="inside">
+                <script
+                    type="text/javascript"
+                    src="/cad_automation/static/src/js/field_widget.js"
+                />
+                <!-- <link href="/cad_automation/static/src/scss/face_recognition_page.scss" rel="stylesheet" type="text/scss"/> -->
+            </xpath>
+        </template>
+        <template id='cad_automation.cad_automation' name="Cad Automation">
+            <script type="text/javascript">
+                let fileReader = new FileReader();
+                document.addEventListener("DOMContentLoaded", function(event) {
+                    let input = document.getElementById("file_upload");
+                    input.addEventListener("change", (e) => {
+                        fileReader.onload = function () {
+                            document.getElementById('file_content').value = fileReader.result
+                        };
+                        fileReader.readAsDataURL(input.files[0]);
+                    });
+                });
+
+            </script>
+            <div class="wrap">
+                <form method="POST" action="/cad/extract">
+                    <div>
+                        <input
+                            type="hidden"
+                            name="csrf_token"
+                            t-att-value="request.csrf_token()"
+                        />
+                        <label for="file">Choose file to upload</label>
+                        <input type="file" id="file_upload" name="file_upload" />
+                        <input type="hidden" name="file_content" id='file_content' />
+                        <input type="hidden" name="file_type" id='file_type' />
+                    </div>
+                    <div>
+                        <button>Submit</button>
+                    </div>
+                </form>
+            </div>
+        </template>
+    </data>
 </odoo>

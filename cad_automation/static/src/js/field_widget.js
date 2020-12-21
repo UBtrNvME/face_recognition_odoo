@@ -6,7 +6,6 @@ odoo.define("cad_automation.field_widgets", function(require) {
     var DebouncedField = BasicFields.DebouncedField;
     var core = require("web.core");
     var qweb = core.qweb;
-
     var _lt = core._lt;
 
     var FieldConnection = DebouncedField.extend({
@@ -21,8 +20,8 @@ odoo.define("cad_automation.field_widgets", function(require) {
             input: "_onInput",
             change: "_onChange",
             blur: "_onBlur",
-            "click button#addConnection": "_addConnection",
-            "click .delete-button": "_deleteConnection",
+            "click a#addConnection": "_addConnection",
+            "click a.delete-button": "_deleteConnection",
         }),
 
         init: function() {
@@ -188,6 +187,123 @@ odoo.define("cad_automation.field_widgets", function(require) {
         },
     });
 
+    var FieldIgnoreRegion = DebouncedField.extend({
+        className: "qzhub_field_ignore_region",
+        description: _lt("FieldIgnoreRegion"),
+        supportedFieldTypes: ["char", "text"],
+        events: _.extend({}, DebouncedField.prototype.events, {
+            input: "_onInput",
+            change: "_onChange",
+            blur: "_onBlur",
+            "click a#addSegment": "_onAddSegment",
+            "click a.delete-button": "_onDeleteSegment",
+        }),
+
+        init: function() {
+            this._super.apply(this, arguments);
+            this.ignoreRegions = this.value ? JSON.parse(this.value) : [];
+        },
+
+        _renderReadonly: function() {
+            this.$el.html(
+                qweb.render("FieldIgnoreRegionReadonly", {
+                    segments: this.ignoreRegions,
+                })
+            );
+            this.$el.on("click", "a", function(ev) {
+                ev.preventDefault();
+            });
+        },
+
+        _renderEdit: function() {
+            this.$el.html(
+                qweb.render("FieldIgnoreRegionEdit", {
+                    segments: this.ignoreRegions,
+                })
+            );
+        },
+
+        _onDeleteSegment: function(event) {
+            const target_id = event.currentTarget.id;
+            this.$(`#${target_id}`).toggleClass("text-danger");
+            if (window.confirm(_lt("Do you really want to delete this segment?"))) {
+                const segment_index_to_delete = target_id.split("-")[2];
+                this.ignoreRegions.pop(segment_index_to_delete);
+                this._setValue(JSON.stringify(this.ignoreRegions));
+                this._render();
+            }
+            this.$(`#${target_id}`).toggleClass("text-danger");
+        },
+
+        _onAddSegment: function() {
+            this._rpc({
+                model: "cad.symbol",
+                method: "get_template",
+                kwargs: {rid: this.res_id},
+            }).then(response => {
+                console.log(response);
+                this.template = response;
+                const popup = window.open("", "", "width = 500, height = 500");
+                this._rpc({
+                    route: "/cad/mask/edit",
+                    params: {template: this.template},
+                }).then(response => {
+                    const content = qweb.render("Popup", {datas: response});
+                    popup.document.open();
+                    popup.document.write(content);
+                    popup.document.close();
+                    this.points = [];
+                    const image = popup.document.images[0];
+                    console.log(popup.document.body.children[1]);
+                    popup.document.body.children[1].addEventListener("click", () => {
+                        this.ignoreRegions.push(this.points);
+                        this._setValue(JSON.stringify(this.ignoreRegions));
+                        this.points = [];
+                        popup.close();
+                        this._render();
+                    });
+                    image.setAttribute(
+                        "style",
+                        `mask-image: url(${this.getImageUrl(
+                            "cad.symbol",
+                            "mask",
+                            this.res_id
+                        )})`
+                    );
+                    const self = this;
+
+                    image.addEventListener("click", function(e) {
+                        const elm = e.target;
+                        const xPos = e.pageX - elm.x;
+                        const yPos = e.pageY - elm.y;
+                        self.points.push([xPos, yPos]);
+                        self._rpc({
+                            route: "/cad/mask/edit",
+                            params: {template: self.template, points: self.points},
+                        }).then(response => {
+                            image.src = response;
+                        });
+                    });
+                });
+            });
+        },
+
+        getImageUrl: function(model, field, id) {
+            var session = this.getSession();
+            var params = {
+                model: model,
+                field: field,
+                id: id,
+            };
+
+            return session.url("/web/image", params);
+        },
+    });
+
+    field_registry.add("field_ignore_region", FieldIgnoreRegion);
     field_registry.add("field_connection", FieldConnection);
-    return FieldConnection;
+    return {
+        FieldConnection,
+        FieldIgnoreRegion,
+    };
 });
