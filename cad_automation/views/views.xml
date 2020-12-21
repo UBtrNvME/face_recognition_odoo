@@ -6,6 +6,14 @@
             <field name="arch" type="xml">
                 <form string="Symbol">
                     <sheet>
+                        <div class="oe_button_box" name="button_box" invisible="1">
+                            <button
+                                name="open_calculate_threshold"
+                                type="object"
+                                icon="fa-calculator"
+                                string="Calculate Threshold"
+                            />
+                        </div>
                         <div class="oe_title">
                             <label for="name" class="oe_edit_only" />
                             <h1>
@@ -13,7 +21,7 @@
                             </h1>
                             <field
                                 name="preview"
-                                widget="image_large"
+                                widget="image"
                                 class="o_image_large"
                             />
                             <field name="mask" widget="image" />
@@ -22,7 +30,10 @@
                                 <field name="template" />
                                 <field name="origin" />
                                 <field name="connections" widget="field_connection" />
-                                <field name="ignore_regions" />
+                                <field
+                                    name="ignore_regions"
+                                    widget="field_ignore_region"
+                                />
                                 <field name="width" />
                                 <field name="height" />
                             </group>
