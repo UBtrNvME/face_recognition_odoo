@@ -8,9 +8,9 @@
             <xpath expr="." position="inside">
                 <script
                     type="text/javascript"
-                    src="/cad_automation/static/src/js/input_widget.js"
+                    src="/deep_learning/cad/static/src/js/input_widget.js"
                 />
-                <!-- <link href="/cad_automation/static/src/scss/face_recognition_page.scss" rel="stylesheet" type="text/scss"/> -->
+                <!-- <link href="/cad/static/src/scss/face_recognition_page.scss" rel="stylesheet" type="text/scss"/> -->
             </xpath>
         </template>
         <template
@@ -21,12 +21,12 @@
             <xpath expr="." position="inside">
                 <script
                     type="text/javascript"
-                    src="/cad_automation/static/src/js/field_widget.js"
+                    src="/deep_learning/cad/static/src/js/field_widget.js"
                 />
-                <!-- <link href="/cad_automation/static/src/scss/face_recognition_page.scss" rel="stylesheet" type="text/scss"/> -->
+                <!-- <link href="/cad/static/src/scss/face_recognition_page.scss" rel="stylesheet" type="text/scss"/> -->
             </xpath>
         </template>
-        <template id='cad_automation.cad_automation' name="Cad Automation">
+        <template id='cad.cad_automation' name="Cad Automation">
             <script type="text/javascript">
                 let fileReader = new FileReader();
                 document.addEventListener("DOMContentLoaded", function(event) {

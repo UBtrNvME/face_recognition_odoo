@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!-- id="template" xml:space="preserve"-->
 <templates>
-    <t t-name="cad_automation.Connection" owl="1">
+    <t t-name="cad.Connection" owl="1">
         <tr t-if="props.mode === 'readonly'">
             <td t-esc="props.position.x" />
             <td t-esc="props.position.y" />
@@ -23,7 +23,7 @@
             </td>
         </tr>
     </t>
-    <t t-name="cad_automation.FieldConnectionOwl" owl="1">
+    <t t-name="cad.FieldConnectionOwl" owl="1">
         <t t-if="isSet === true">
             <table t-if="connections.length" class="table table-sm">
                 <thead>
@@ -60,19 +60,19 @@
             </t>
         </t>
     </t>
-    <t t-name="cad_automation.Point" owl="1">
+    <t t-name="cad.Point" owl="1">
         <span style="margin-right: 6px;">(<t t-esc="props.x" />,<t
                 t-esc="props.y"
             />)</span>
     </t>
-    <t t-name="cad_automation.Segment" owl="1">
+    <t t-name="cad.Segment" owl="1">
         <p>
             <t t-foreach="props.points" t-as="point">
                 <Point x="point[0]" y="point[1]" />
             </t>
         </p>
     </t>
-    <t t-name="cad_automation.FieldRegionToMask" owl="1">
+    <t t-name="cad.FieldRegionToMask" owl="1">
         <div t-foreach="segments" t-as="segment">
             <Segment points="segment" />
         </div>

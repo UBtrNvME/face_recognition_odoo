@@ -1,4 +1,4 @@
-odoo.define("cad_automation.input_widget", function() {
+odoo.define("cad.input_widget", function() {
     "use strict";
     var upload_field = "file_upload";
     $(document).ready(function() {

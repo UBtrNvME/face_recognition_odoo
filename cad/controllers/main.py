@@ -23,7 +23,7 @@ from ..services.img_manipulation import (
 class CadObjectTemplate(http.Controller):
     @http.route("/cad_object_template", auth="user")
     def cad_object_template(self):
-        return request.render("cad_automation.cad_automation")
+        return request.render("cad.cad")
 
     @http.route("/cad_object_template/create", auth="public")
     def create(self):

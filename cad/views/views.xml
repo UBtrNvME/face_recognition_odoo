@@ -59,9 +59,9 @@
         <menuitem
             id="menu_cad_automation_cad_symbol"
             name="Cad Object Templates"
-            parent="cad_automation.menu_cad_automation"
+            parent="cad.menu_cad_automation"
             sequence="10"
-            action="cad_automation.action_cad_symbol"
+            action="cad.action_cad_symbol"
         />
     </data>
 </odoo>

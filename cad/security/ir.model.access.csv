@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_cad_cad_symbol,cad.symbol,model_cad_symbol,base.group_user,1,1,1,1
+access_cad_wizard_calculate_threshold,cad.wizard.calculate.threshold,model_cad_wizard_threshold_calculator,base.group_user,1,1,1,1
