@@ -13,7 +13,7 @@ LINES = []
 _logger = logging.getLogger(__name__)
 
 
-def main(img_b64, data=None):
+def extract(img_b64, data=None):
     if data is None:
         _logger.warning(
             "Data parameter has not been parsed, trying to get data locally"
@@ -82,5 +82,6 @@ def serialize(db_data):
             "size": {"width": rec.width, "height": rec.height},
             "mask": rec.mask.decode("utf-8"),
         }
+        _logger.warning(jsonified)
         res.append(jsonified)
     return json.dumps(res)

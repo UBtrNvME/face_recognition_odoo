@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.cad</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="50" />
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath
+                expr="//div[hasclass('settings')]/div[@data-key='nextcloud_api']"
+                position="inside"
+            >
+                <h2>CAD</h2>
+                <div class="row mt16 o_settings_container" id="nextcloud_parse_to">
+                    <div
+                        id="use_collaborative_pad"
+                        class="col-12 col-lg-6 o_setting_box"
+                    >
+                        <div class="o_setting_left_pane">
+
+                            </div>
+                        <div class="o_setting_right_pane" name="pad_project_right_pane">
+                            <label for="cad_parsing_destination_path" />
+                            <div class="text-muted">
+                                    Nextcloud path parse to
+                                </div>
+                            <field name="cad_parsing_destination_path" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt16 o_settings_container" id="nextcloud_parse_from">
+                    <div
+                        id="use_collaborative_pad"
+                        class="col-12 col-lg-6 o_setting_box"
+                    >
+                        <div class="o_setting_left_pane">
+
+                            </div>
+                        <div class="o_setting_right_pane" name="pad_project_right_pane">
+                            <label for="cad_parsing_source_path" />
+                            <div class="text-muted">
+                                    Nextcloud path parse from
+                                </div>
+                            <field name="cad_parsing_source_path" />
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

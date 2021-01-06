@@ -13,11 +13,19 @@
     "category": "Parsing",
     "version": "13.0.1.0.0",
     # any module necessary for this one to work correctly
-    "depends": ["base", "web"],
-    "external_dependencies": {"python": ["cv2", "numpy"], "bin": []},
+    "depends": ["base", "web", "queue_job", "nextcloud_connector"],
+    "external_dependencies": {"python": ["cv2", "numpy", "pytesseract"], "bin": []},
     # always loaded
-    "data": ["security/ir.model.access.csv", "views/templates.xml", "views/views.xml",],
-    "qweb": ["static/src/xml/base.xml",],
+    "data": [
+        "security/cad_security.xml",
+        "security/ir.model.access.csv",
+        "views/templates.xml",
+        "wizards/wizard_views.xml",
+        "views/cad_symbol_views.xml",
+        "views/cad_diagram_views.xml",
+        "views/res_config_settings_views.xml",
+    ],
+    "qweb": ["static/src/xml/base.xml"],
     # only loaded in demonstration mode
     "application": True,
     "installable": True,

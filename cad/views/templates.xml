@@ -8,7 +8,7 @@
             <xpath expr="." position="inside">
                 <script
                     type="text/javascript"
-                    src="/deep_learning/cad/static/src/js/input_widget.js"
+                    src="/cad/static/src/js/input_widget.js"
                 />
                 <!-- <link href="/cad/static/src/scss/face_recognition_page.scss" rel="stylesheet" type="text/scss"/> -->
             </xpath>
@@ -21,7 +21,7 @@
             <xpath expr="." position="inside">
                 <script
                     type="text/javascript"
-                    src="/deep_learning/cad/static/src/js/field_widget.js"
+                    src="/cad/static/src/js/field_widget.js"
                 />
                 <!-- <link href="/cad/static/src/scss/face_recognition_page.scss" rel="stylesheet" type="text/scss"/> -->
             </xpath>

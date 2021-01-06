@@ -16,6 +16,11 @@ import base64
 
 import cv2
 import numpy as np
+import pdf2image
+
+
+def base64_pdf_to_base64_image(pdf):
+    return pdf2image.convert_from_bytes(base64.b64decode(pdf, validate=True))[0]
 
 
 def base64_to_ndarray(im_b64):

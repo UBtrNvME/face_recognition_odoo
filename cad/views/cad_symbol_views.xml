@@ -55,6 +55,19 @@
                                 </p>-->
             </field>
         </record>
+        <record id="action_cad_defaults" model="ir.actions.act_window">
+            <field name="name">Cad Defaults</field>
+            <field name="res_model">ir.config_parameter</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a Cad Default
+                </p>
+                <!--<p>
+                                    Create a cad object template.
+                                </p>-->
+            </field>
+        </record>
         <menuitem id="menu_cad_automation" name="Cad" sequence="10" />
         <menuitem
             id="menu_cad_automation_cad_symbol"
@@ -62,6 +75,13 @@
             parent="cad.menu_cad_automation"
             sequence="10"
             action="cad.action_cad_symbol"
+        />
+        <menuitem
+            id="menu_cad_automation_cad_defaults"
+            name="Cad Defaults"
+            parent="cad.menu_cad_automation"
+            sequence="10"
+            action="cad.action_cad_defaults"
         />
     </data>
 </odoo>

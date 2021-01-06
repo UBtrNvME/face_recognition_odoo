@@ -1,0 +1,47 @@
+<odoo>
+    <record id="cad_diagram_action" model="ir.actions.act_window">
+        <field name="name">Cad Diagram</field>
+        <field name="res_model">cad.diagram</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Yet no diagrams, press create to make new!
+            </p>
+        </field>
+    </record>
+    <record id="cad_diagram_form_view" model="ir.ui.view">
+        <field name="name">cad.diagram.view.form</field>
+        <field name="model">cad.diagram</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                            name="delayed_task"
+                            type="object"
+                            string="Delayed Task"
+                            icon="fa-stack-overflow"
+                            context="{'id': active_id}"
+                        />
+                    </div>
+                    <h1>
+                        <field name="name" />
+                    </h1>
+                    <group>
+                        <field name="diagram_type" />
+                        <field name="attachment" />
+                        <field name="content_data" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <menuitem
+        name="Diagrams"
+        id="menu_project_management"
+        parent="menu_cad_automation"
+        action="cad_diagram_action"
+        sequence="0"
+        groups="cad.group_cad_user,cad.group_cad_user"
+    />
+</odoo>

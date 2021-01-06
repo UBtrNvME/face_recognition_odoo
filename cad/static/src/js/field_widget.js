@@ -1,4 +1,4 @@
-odoo.define("cad.field_widgets", function(require) {
+odoo.define("cad.field_widget", function(require) {
     "use strict";
 
     var BasicFields = require("web.basic_fields");

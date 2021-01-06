@@ -1,0 +1,33 @@
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="view_cad_wizard_threshold_calculator">
+            <field name="name">cad.wizard.threshold.calculator.form</field>
+            <field name="model">cad.wizard.threshold.calculator</field>
+            <field name="arch" type="xml">
+                <form string="Calculate Threshold">
+                    <group>
+                        <field name="cad_object_id" />
+                        <field name="test_image" invisible="1" />
+                        <field name="template" invisible="1" />
+                        <field name="template_mask" invisible="1" />
+                        <field name="occurrence_on_test_image" />
+                    </group>
+                    <footer>
+                        <button
+                            string="Calculate"
+                            name="calculate"
+                            type="object"
+                            default_focus="1"
+                            class="btn-primary"
+                        />
+                        <button
+                            string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"
+                        />
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>
