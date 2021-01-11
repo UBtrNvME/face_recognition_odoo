@@ -171,11 +171,21 @@ class NextcloudAgent(models.TransientModel):
                 user_name = item["owner_display_name"]
                 if user_name in user_related:
                     user_related[user_name].append(
-                        NextcloudFileInfo(item["href"], item["content_type"])
+                        NextcloudFileInfo(
+                            os.path.join(
+                                "/", *item["href"].split("/")[len_root_folder - 1 :]
+                            ),
+                            item["content_type"],
+                        )
                     )
                 else:
                     user_related[user_name] = [
-                        NextcloudFileInfo(item["href"], item["content_type"])
+                        NextcloudFileInfo(
+                            os.path.join(
+                                "/", *item["href"].split("/")[len_root_folder - 1 :]
+                            ),
+                            item["content_type"],
+                        )
                     ]
 
             for user, files in user_related.items():
@@ -184,11 +194,7 @@ class NextcloudAgent(models.TransientModel):
                     if file.mimetype in POSSIBLE_MIMETYPES:
                         file_name = file.path.split("/")[-1]
 
-                        response = _user.download_file(
-                            os.path.join(
-                                "/", *file.path.split("/")[len_root_folder - 1 :]
-                            )
-                        )
+                        response = _user.download_file(file.path)
                         if response.code == SUCCESS:
                             filebytes = response.result.data
                             base64encoded = binary_to_base64(filebytes)

@@ -12,6 +12,7 @@ STANDARD_THICKNESS = 2
 FONTFACE = cv2.FONT_HERSHEY_PLAIN
 FONTSCALE = 2
 LINEBREAKER = "-" * 88
+OPENCV_DATA_TYPE = np.uint8
 
 
 def template_matching(image, template, thresh, mask=None):
@@ -49,9 +50,9 @@ def find_matching_objects(orig_image, cad_object):
     if "mirror" in cad_object:
         _mirror_template_if_needed(templates, cad_object["mirror"])
 
-    mask = None
-    if "mask" in cad_object:
-        mask = cv2.cvtColor(base64_to_ndarray(cad_object["mask"]), cv2.COLOR_BGR2GRAY)
+    mask = cad_object.get("mask", None)
+    if mask:
+        mask = cv2.cvtColor(base64_to_ndarray(mask), cv2.COLOR_BGR2GRAY)
     for angle in range(0, 360, 90):
         image, inverse_matrix = IM.rotate_bound(orig_image, angle)
         for template in templates:
@@ -99,7 +100,7 @@ def _locate_connections_on_image(rect, matrix, connections):
 def cut_from(image, *, roi, mask=None):
     (x, y, w, h) = roi
     if mask is None:
-        mask = np.full((w, h), 255)
+        mask = np.full((h, w), 255, dtype=OPENCV_DATA_TYPE)
     bitwise = cv2.bitwise_and(image[y : y + h, x : x + w], mask)
     image[y : y + h, x : x + w] = np.where((bitwise < 255) & (mask != 0), bitwise, 255)
 

@@ -88,7 +88,7 @@ def serialize(db_data):
             "connections": connections,
             "thresh": rec.threshold,
             "size": {"width": rec.width, "height": rec.height},
-            "mask": rec.mask.decode("utf-8"),
+            "mask": rec.mask.decode("utf-8") if rec.mask else None,
             "mirror": rec.mirror,
         }
         _logger.warning(jsonified)
