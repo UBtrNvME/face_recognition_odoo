@@ -31,6 +31,15 @@ class CadSymbol(models.Model):
     width = fields.Integer(string="Width of the Template")
     height = fields.Integer(string="Height of the Template")
     ignore_regions = fields.Text(string="Region to Mask")
+    mirror = fields.Selection(
+        string="Mirror",
+        selection=[
+            ("none", "None"),
+            ("vertical", "Vertical"),
+            ("horizontal", "Horizontal"),
+        ],
+        default="none",
+    )
 
     @api.onchange("template")
     def onchange_template(self):

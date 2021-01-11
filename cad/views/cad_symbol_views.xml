@@ -24,9 +24,10 @@
                                 widget="image"
                                 class="o_image_large"
                             />
-                            <field name="mask" widget="image" />
+                            <!--                            <field name="mask" widget="image" />-->
                             <group string="Technical" name="technical">
                                 <field name="threshold" />
+                                <field name="mirror" />
                                 <field name="template" />
                                 <field name="origin" />
                                 <field name="connections" widget="field_connection" />

@@ -3,3 +3,4 @@ access_cad_symbol,cad.symbol,model_cad_symbol,cad.group_cad_manager,1,1,1,1
 access_cad_wizard_calculate_threshold,cad.wizard.calculate.threshold,model_cad_wizard_threshold_calculator,cad.group_cad_manager,1,1,1,1
 access_cad_diagram,cad.diagram,model_cad_diagram,cad.group_cad_manager,1,1,1,1
 access_cad_nextcloud_agent,cad.diagram.nextcloud.agent,model_cad_nextcloud_agent,cad.group_cad_user,1,1,1,1
+access_cad_project,cad.project,model_cad_project,cad.group_cad_user,1,1,1,1

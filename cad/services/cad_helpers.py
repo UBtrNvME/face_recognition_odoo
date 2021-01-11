@@ -6,13 +6,18 @@ import numpy as np
 
 from ..services.img_manipulation import ImageManipulation as IM, base64_to_ndarray
 
-GREEN = (0, 255, 0)
+BGR_GREEN = (0, 255, 0)
+BGR_RED = (0, 0, 255)
+STANDARD_THICKNESS = 2
+FONTFACE = cv2.FONT_HERSHEY_PLAIN
+FONTSCALE = 2
+LINEBREAKER = "-" * 88
 
 
 def template_matching(image, template, thresh, mask=None):
     w, h = template.shape[::-1]
     if mask is not None:
-        res = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED, mask=mask)
+        res = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED, mask=mask.copy())
     else:
         res = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
 
@@ -22,16 +27,18 @@ def template_matching(image, template, thresh, mask=None):
 
 
 def _mirror_template_if_needed(templates, value):
-    if value == "":
+    if value == "none":
         return
     a_map = {"vertical": 0, "horizontal": 1}
     templates.append(cv2.flip(templates[0], a_map[value]))
 
 
 def find_matching_objects(orig_image, cad_object):
+    shape = orig_image.shape
     objects = []
     object_connections = []
     templates = []
+    image_map = np.full(shape=shape, fill_value=True, dtype=bool)
     if "template" in cad_object:
         templates.append(
             cv2.cvtColor(base64_to_ndarray(cad_object["template"]), cv2.COLOR_BGR2GRAY)
@@ -45,23 +52,32 @@ def find_matching_objects(orig_image, cad_object):
     mask = None
     if "mask" in cad_object:
         mask = cv2.cvtColor(base64_to_ndarray(cad_object["mask"]), cv2.COLOR_BGR2GRAY)
-
     for angle in range(0, 360, 90):
         image, inverse_matrix = IM.rotate_bound(orig_image, angle)
         for template in templates:
             for x, y, w, h in template_matching(
                 image, template, cad_object["thresh"], mask=mask
             ):
+                rect = (xo, yo, wo, ho) = find_location_on_original_image(
+                    (x, y, w, h), inverse_matrix
+                )
+                if (
+                    yo + ho >= shape[0] - 2
+                    or xo + wo >= shape[1] - 2
+                    or not image_map[yo, xo]
+                    or not image_map[yo + ho, xo + wo]
+                ):
+                    continue
                 if np.sum(image[y : y + h, x : x + w] == 0) < 30:
                     continue
 
-                rect = find_location_on_original_image((x, y, w, h), inverse_matrix)
                 connections = _locate_connections_on_image(
                     rect, inverse_matrix, cad_object["connections"]
                 )
                 objects.append(rect)
                 object_connections.extend(connections)
                 cut_from(image, roi=(x, y, w, h), mask=mask)
+                image_map[yo - 1 : yo + ho + 1, xo - 1 : xo + wo + 1] = False
         orig_image, _ = IM.rotate_bound(image, -angle)
     return objects, object_connections
 
@@ -84,7 +100,8 @@ def cut_from(image, *, roi, mask=None):
     (x, y, w, h) = roi
     if mask is None:
         mask = np.full((w, h), 255)
-    image[y : y + h, x : x + w] = cv2.bitwise_and(image[y : y + h, x : x + w], mask)
+    bitwise = cv2.bitwise_and(image[y : y + h, x : x + w], mask)
+    image[y : y + h, x : x + w] = np.where((bitwise < 255) & (mask != 0), bitwise, 255)
 
 
 def _convert_from_dict(dictionary):
@@ -238,7 +255,7 @@ def _render_mask_with_points(mask, points):
 
     number_of_points = len(points)
     for point in points:
-        cv2.circle(mask, center=tuple(point), radius=2, thickness=-1, color=GREEN)
+        cv2.circle(mask, center=tuple(point), radius=2, thickness=-1, color=BGR_GREEN)
 
     if number_of_points > 1:
         for i in range(1, number_of_points):
@@ -246,12 +263,16 @@ def _render_mask_with_points(mask, points):
                 mask,
                 pt1=tuple(points[i - 1]),
                 pt2=tuple(points[i]),
-                color=GREEN,
+                color=BGR_GREEN,
                 thickness=1,
             )
     if number_of_points > 2:
         cv2.line(
-            mask, pt1=tuple(points[-1]), pt2=tuple(points[0]), color=GREEN, thickness=1
+            mask,
+            pt1=tuple(points[-1]),
+            pt2=tuple(points[0]),
+            color=BGR_GREEN,
+            thickness=1,
         )
     return mask
 
@@ -261,6 +282,20 @@ def calculate_threshold(test_image, template, template_mask):
     template = base64_to_ndarray(template)
     template_mask = base64_to_ndarray(template_mask)
     res = cv2.matchTemplate(
-        test_image, template, cv2.TM_CCOEFF_NORMED, mask=template_mask,
+        test_image, template, cv2.TM_CCOEFF_NORMED, mask=template_mask
     )
     return res
+
+
+def draw_objects_on_image(ndarray: np.ndarray, objects: list):
+    for object in objects:
+        pt1 = (object["location"]["left"], object["location"]["top"])
+        pt2 = (
+            object["location"]["left"] + object["location"]["width"],
+            object["location"]["top"] + object["location"]["height"],
+        )
+        org = (object["location"]["left"], object["location"]["top"] - 6)
+        cv2.rectangle(ndarray, pt1, pt2, BGR_RED, STANDARD_THICKNESS)
+        cv2.putText(ndarray, object["symbol"], org, FONTFACE, FONTSCALE, BGR_RED)
+
+    return ndarray

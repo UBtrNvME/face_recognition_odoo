@@ -1,5 +1,6 @@
 import json
 import logging
+from dataclasses import dataclass
 
 import cv2
 import pytesseract
@@ -11,6 +12,13 @@ CONNECTIONS = []
 LINES = []
 
 _logger = logging.getLogger(__name__)
+
+
+@dataclass
+class CadParseResult:
+    objects: list
+    lines: list
+    text: dict
 
 
 def extract(img_b64, data=None):
@@ -34,17 +42,17 @@ def extract(img_b64, data=None):
     gray_scale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray_scale = cv2.blur(gray_scale, (5, 5))
     gray_scale = cv2.fastNlMeansDenoising(gray_scale, None, 10, 10, 7)
-    json_result = {}
+    json_result = []
     for o in OBJECTS:
         object_name = o["name"]
-        json_result[object_name] = []
         cad_objects, connections = cad_helpers.find_matching_objects(gray_scale, o)
         CONNECTIONS.extend(connections)
         for i, (x, y, w, h) in enumerate(cad_objects):
-            json_result[object_name].append(
+            json_result.append(
                 {
                     "name": f"{object_name.lower().replace(' ', '_')}_{i + 1}",
                     "location": {"left": x, "top": y, "width": w, "height": h},
+                    "symbol": object_name,
                 }
             )
 
@@ -63,7 +71,7 @@ def extract(img_b64, data=None):
     TEXT = pytesseract.image_to_data(
         gray_scale, "rus+eng", output_type=pytesseract.Output.DICT
     )
-    return LINES, json_result, TEXT
+    return CadParseResult(json_result, LINES, TEXT)
 
 
 def serialize(db_data):
@@ -81,6 +89,7 @@ def serialize(db_data):
             "thresh": rec.threshold,
             "size": {"width": rec.width, "height": rec.height},
             "mask": rec.mask.decode("utf-8"),
+            "mirror": rec.mirror,
         }
         _logger.warning(jsonified)
         res.append(jsonified)

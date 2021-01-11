@@ -1,13 +1,23 @@
+import json
+
 from odoo import _, api, fields, models
 
+from ..services import cad_helpers
 from ..services.cad_extract import extract, serialize
-from ..services.img_manipulation import base64_pdf_to_base64_image, base64_to_ndarray
+from ..services.img_manipulation import (
+    base64_pdf_to_base64_image,
+    base64_to_ndarray,
+    ndarray_to_base64,
+)
 
 
 class CadDiagram(models.Model):
     _name = "cad.diagram"
 
     name = fields.Char(string="P&ID name")
+    cad_project_id = fields.Many2one(
+        string="Cad Project ID", comodel_name="cad.project"
+    )
     diagram_type = fields.Selection(
         string="Diagram Type", selection=[("pandid", "P&ID"), ("scheme", "Scheme")]
     )
@@ -16,6 +26,7 @@ class CadDiagram(models.Model):
     is_parsed_to_nextcloud = fields.Boolean(
         string="Is Parsed to Nextcloud", default=False
     )
+    resulting_image = fields.Binary(string="Resulting Image", public=True)
 
     @api.model
     def parse_to_data(self, id):
@@ -32,7 +43,15 @@ class CadDiagram(models.Model):
         if attachment.mimetype == "application/pdf":
             datas = base64_pdf_to_base64_image(datas)
         if attachment:
-            return extract(datas, symbols)
+            result = extract(datas, symbols)
+            ndarray = base64_to_ndarray(datas)
+            diagram = self.env["cad.diagram"].browse(id)
+            resulting_image = cad_helpers.draw_objects_on_image(ndarray, result.objects)
+            diagram.resulting_image = ndarray_to_base64(resulting_image)
+            diagram.content_data = result
+            return "Success"
+        else:
+            return "False"
 
     def delayed_task(self):
         delayed = (

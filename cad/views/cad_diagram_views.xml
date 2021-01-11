@@ -1,12 +1,24 @@
 <odoo>
-    <record id="cad_diagram_action" model="ir.actions.act_window">
-        <field name="name">Cad Diagram</field>
-        <field name="res_model">cad.diagram</field>
-        <field name="view_mode">tree,form</field>
-        <field name="help" type="html">
-            <p class="oe_view_nocontent_create">
-                Yet no diagrams, press create to make new!
-            </p>
+    <record id="view_cad_diagram_filter" model="ir.ui.view">
+        <field name="name">cad.diagram.search</field>
+        <field name="model">cad.diagram</field>
+        <field name="arch" type="xml">
+            <search string="Diagrams">
+                <field name="name" string="Diagram" />
+                <field name="diagram_type" string="Diagram Type" />
+                <field name="create_uid" />
+                <field name="cad_project_id" />
+                <filter
+                    name="group_by_cad_project_id"
+                    string="Group by project"
+                    context="{'group_by': 'cad_project_id'}"
+                />
+                <searchpanel>
+                    <field name="diagram_type" />
+                    <field name="create_uid" />
+                    <field name="cad_project_id" />
+                </searchpanel>
+            </search>
         </field>
     </record>
     <record id="cad_diagram_form_view" model="ir.ui.view">
@@ -28,12 +40,80 @@
                         <field name="name" />
                     </h1>
                     <group>
+                        <field name="cad_project_id" />
                         <field name="diagram_type" />
                         <field name="attachment" />
-                        <field name="content_data" />
+                        <field name="create_uid" />
+                        <field name="write_uid" />
+                        <field name="create_date" />
+                        <field name="write_date" />
                     </group>
+                    <notebook>
+                        <page name="image" string="Image">
+                            <field
+                                name="resulting_image"
+                                widget="image"
+                                options='{"zoom": true}'
+                            />
+                        </page>
+                        <page name="result" string="Result">
+                            <field name="content_data" />
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
+        </field>
+    </record>
+    <record id="cad_diagram_kanban_view" model="ir.ui.view">
+        <field name="name">cad.diagram.kanban</field>
+        <field name="model">cad.diagram</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="name" />
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="font-weight-bold">
+                                <field name="name" />
+                            </div>
+                            <div>
+                                <div>
+                                    <b>Diagram Type: </b>
+                                    <field name="diagram_type" />
+                                </div>
+                                <div>
+                                    <b>Updated by: </b>
+                                    <field name="write_uid" />
+                                </div>
+                                <div>
+                                    <b>Last updated: </b>
+                                    <field name="write_date" />
+                                </div>
+                            </div>
+                            <!--<div>
+                                <a type="open">
+                                    <field name="id" invisible="1"/>
+                                    <img t-att-src="kanban_image('asset.class', 'image', record.id.raw_value)"
+                                         name="Kanban"
+                                         alt="Kanban" width="150" height="150"/>
+                                </a>
+                            </div>-->
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    <record id="cad_diagram_action" model="ir.actions.act_window">
+        <field name="name">Cad Diagram</field>
+        <field name="res_model">cad.diagram</field>
+        <field name="view_mode">tree,form,kanban</field>
+        <field name="context">{"search_default_group_by_cad_project_id": True}</field>
+        <field name="search_view_id" ref="cad.view_cad_diagram_filter" />
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Yet no diagrams, press create to make new!
+            </p>
         </field>
     </record>
     <menuitem
