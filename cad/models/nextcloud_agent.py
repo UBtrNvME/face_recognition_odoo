@@ -1,5 +1,6 @@
 import os
 from collections import namedtuple
+from logging import getLogger
 
 from odoo import api, fields, models
 
@@ -15,6 +16,8 @@ NextcloudAgentResponse = namedtuple(
 NextcloudFileInfo = namedtuple("NextcloudFileInfo", ["path", "mimetype"])
 
 KEY_FOR_NEXTCLOUD_HOST = "nextcloud_connector.nextcloud_host_url"
+
+_logger = getLogger(__name__)
 
 
 class NextcloudAgent(models.TransientModel):
@@ -60,18 +63,23 @@ class NextcloudAgent(models.TransientModel):
 
     @api.model
     def with_user_(self, user, display_name=True):
+        # TODO: In future have to optimize this code, to use less repeating code
         if display_name:
             user_credentials = self.env["nextcloud.user_credential"].search(
                 [("display_name", "=", user)]
             )
-            login, password, uid = user_credentials.decrypt_credentials()
-
+            if user_credentials:
+                login, password, uid = user_credentials.decrypt_credentials()
+            else:
+                return None
         else:
             user_credentials = self.env["nextcloud.user_credential"].search(
-                [("display_name", "=", user)]
+                [("user_id", "=", user)]
             )
-            login, password, uid = user_credentials.decrypt_credentials()
-
+            if user_credentials:
+                login, password, uid = user_credentials.decrypt_credentials()
+            else:
+                return None
         return self.create(
             [
                 {
@@ -100,6 +108,9 @@ class NextcloudAgent(models.TransientModel):
                     "nextcloud_uid": "Aitemir",
                 }
             )
+        # In case that system has not been provided
+        # with super user credentials return None
+        return None
 
     def upload_file(self, filebytes, remote_filepath, timestamp):
         if self.nextcloud_uid:
@@ -158,6 +169,7 @@ class NextcloudAgent(models.TransientModel):
 
     @api.model
     def _cron_job_download(self):
+        _logger.info("Starting Autopull from Nextcloud (CAD) Job")
         sudo_user = self.sudo_()
         IrConfigParameter = self.env["ir.config_parameter"]
         CadDiagram = self.env["cad.diagram"].sudo()
@@ -190,6 +202,16 @@ class NextcloudAgent(models.TransientModel):
 
             for user, files in user_related.items():
                 _user = self.with_user_(user, display_name=True)
+                if not _user:
+                    _logger.warning(
+                        (
+                            "Nextcloud user with display name `%s` "
+                            "cannot be found in the database, "
+                            "thus perform skipping"
+                        )
+                        % user
+                    )
+                    continue
                 for file in files:
                     if file.mimetype in POSSIBLE_MIMETYPES:
                         file_name = file.path.split("/")[-1]
@@ -207,6 +229,7 @@ class NextcloudAgent(models.TransientModel):
                             )
                             diagram.delayed_task()
                             sudo_user.set_favorites(file.path)
+        _logger.info("Autopull from Nextcloud Job has been finished")
 
     @api.model
     def _cron_job_upload(self):
