@@ -15,30 +15,37 @@
                             />
                         </div>
                         <div class="oe_title">
-                            <label for="name" class="oe_edit_only" />
+                            <label for="name" class="oe_edit_only"/>
                             <h1>
-                                <field name="name" />
+                                <field name="name"/>
                             </h1>
                             <field
                                 name="preview"
                                 widget="image"
-                                class="o_image_large"
                             />
-                            <!--                            <field name="mask" widget="image" />-->
+
+                        </div>
+                        <group>
                             <group string="Technical" name="technical">
-                                <field name="threshold" />
-                                <field name="mirror" />
-                                <field name="template" />
-                                <field name="origin" />
-                                <field name="connections" widget="field_connection" />
+                                <label for="width" string="Width"/>
+                                <field name="width" nolabel="1" class="oe_inline" readonly="1"/>
+                                <label for="height" string="Height"/>
+                                <field name="height" nolabel="1" class="oe_inline" readonly="1"/>
+                                <label for="template" string="Template"/>
+                                <field name="template" nolabel="1" class="oe_inline"/>
+                                <label for="origin" string="Origin"/>
+                                <field name="origin" nolabel="1" class="oe_inline" readonly="1"/>
+                            </group>
+                            <group string="Parser Attributes" name="parser_attributes">
+                                <field name="threshold"/>
+                                <field name="mirror"/>
+                                <field name="connections" widget="field_connection"/>
                                 <field
                                     name="ignore_regions"
                                     widget="field_ignore_region"
                                 />
-                                <field name="width" />
-                                <field name="height" />
                             </group>
-                        </div>
+                        </group>
                     </sheet>
                 </form>
             </field>
@@ -69,7 +76,7 @@
                                 </p>-->
             </field>
         </record>
-        <menuitem id="menu_cad_automation" name="Cad" sequence="10" />
+        <menuitem id="menu_cad_automation" name="Cad" sequence="10"/>
         <menuitem
             id="menu_cad_automation_cad_symbol"
             name="Cad Object Templates"

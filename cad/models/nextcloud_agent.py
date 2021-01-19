@@ -1,14 +1,13 @@
 import os
 from collections import namedtuple
 from logging import getLogger
-
+from odoo.tools import date_utils as dateutil
 from odoo import api, fields, models
-
-from ..services.img_manipulation import binary_to_base64
+from ..services.img_manipulation import binary_to_base64, base64_to_binary
 
 SUCCESS = 900
 ERROR = 1000
-POSSIBLE_MIMETYPES = ["application/pdf", "image/jpeg", "image/png"]
+PNID_POSSIBLE_MIMETYPES = ["application/pdf", "image/jpeg", "image/png"]
 
 NextcloudAgentResponse = namedtuple(
     "NextcloudAgentResponse", ["success", "code", "message", "result"]
@@ -69,7 +68,7 @@ class NextcloudAgent(models.TransientModel):
                 [("display_name", "=", user)]
             )
             if user_credentials:
-                login, password, uid = user_credentials.decrypt_credentials()
+                login, password = user_credentials.decrypt_credentials()
             else:
                 return None
         else:
@@ -77,7 +76,7 @@ class NextcloudAgent(models.TransientModel):
                 [("user_id", "=", user)]
             )
             if user_credentials:
-                login, password, uid = user_credentials.decrypt_credentials()
+                login, password = user_credentials.decrypt_credentials()
             else:
                 return None
         return self.create(
@@ -85,7 +84,7 @@ class NextcloudAgent(models.TransientModel):
                 {
                     "login": login,
                     "password": password,
-                    "nextcloud_uid": uid,
+                    "nextcloud_uid": user_credentials.nextcloud_uid,
                     "user_id": user_credentials.user_id,
                 }
             ]
@@ -158,6 +157,20 @@ class NextcloudAgent(models.TransientModel):
                     True, ERROR, "Error listing Folders", False
                 )
 
+    def create_folder(self, folder_path):
+        if self.nextcloud_uid:
+            try:
+                result = self.WRAPPER.create_folder(
+                    uid=self.nextcloud_uid, folder_path=folder_path
+                )
+                return NextcloudAgentResponse(
+                    True, SUCCESS, "Successfully created folder", None
+                )
+            except:
+                return NextcloudAgentResponse(
+                    True, ERROR, "Error creating folder", None
+                )
+
     def set_favorites(self, path):
         if self.nextcloud_uid:
             return self.WRAPPER.set_favorites(self.nextcloud_uid, path)
@@ -165,11 +178,11 @@ class NextcloudAgent(models.TransientModel):
     @api.model
     def create(self, values):
         agent = super().create(values)
+        print(agent.mixin_id)
         return agent
 
     @api.model
     def _cron_job_download(self):
-        _logger.info("Starting Autopull from Nextcloud (CAD) Job")
         sudo_user = self.sudo_()
         IrConfigParameter = self.env["ir.config_parameter"]
         CadDiagram = self.env["cad.diagram"].sudo()
@@ -178,6 +191,7 @@ class NextcloudAgent(models.TransientModel):
         not_visited = [item for i, item in enumerate(tree) if item["favorite"] == "0"]
         len_root_folder = len(not_visited.pop(0)["href"].split("/")) - 1
         if len(not_visited):
+            _logger.info("Starting Job `Autopull from Nextcloud (CAD)`")
             user_related = {}
             for item in not_visited:
                 user_name = item["owner_display_name"]
@@ -213,7 +227,7 @@ class NextcloudAgent(models.TransientModel):
                     )
                     continue
                 for file in files:
-                    if file.mimetype in POSSIBLE_MIMETYPES:
+                    if file.mimetype in PNID_POSSIBLE_MIMETYPES:
                         file_name = file.path.split("/")[-1]
 
                         response = _user.download_file(file.path)
@@ -224,13 +238,42 @@ class NextcloudAgent(models.TransientModel):
                                 {
                                     "name": file_name,
                                     "attachment": base64encoded,
+                                    "nextcloud_path": file.path,
                                     "diagram_type": "pandid",
+                                    "state": "unsync",
                                 }
                             )
                             diagram.delayed_task()
                             sudo_user.set_favorites(file.path)
-        _logger.info("Autopull from Nextcloud Job has been finished")
+            _logger.info("Done Job `Autopull from Nextcloud (CAD)`")
+        else:
+            _logger.info("Skipping Job `Autopull from Nextcloud (CAD)`")
 
     @api.model
     def _cron_job_upload(self):
-        sudo_user = self.sudo_()
+        unsynced_diagrams = self.env["cad.diagram"].search([("state", "=", "unsync")])
+        IrConfigParameter = self.env["ir.config_parameter"]
+        dst = IrConfigParameter.get_param("cad.nextcloud_parse_destination", "")
+        src = IrConfigParameter.get_param("cad.nextcloud_parse_source", "")
+        if unsynced_diagrams:
+            _logger.info("Starting Job `Upload P&IDs to Nextcloud`")
+            for diagram in unsynced_diagrams:
+                json_data_filebytes = diagram.content_data.encode("utf-8")
+                resulting_image_filebytes = base64_to_binary(diagram.image_1920)
+                user_agent = self.with_user_(diagram.create_uid.id, False)
+                new_folder = os.path.join(diagram.nextcloud_path.replace(src, dst))
+                user_agent.create_folder(new_folder)
+                user_agent.upload_file(
+                    json_data_filebytes,
+                    new_folder + "/data.json",
+                    int(dateutil.datetime.now().timestamp()),
+                )
+                user_agent.upload_file(
+                    resulting_image_filebytes,
+                    new_folder + "/p&id.png",
+                    int(dateutil.datetime.now().timestamp()),
+                )
+                diagram.state = "sync"
+            _logger.info("Done Job `Upload P&IDs to Nextcloud`")
+        else:
+            _logger.info("Skipping Job `Upload P&IDs to Nextcloud`")

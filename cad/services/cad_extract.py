@@ -1,6 +1,7 @@
 import json
 import logging
 from dataclasses import dataclass
+from lxml import html
 
 import cv2
 import pytesseract
@@ -13,12 +14,25 @@ LINES = []
 
 _logger = logging.getLogger(__name__)
 
+def _origin_parse_from_html(html_string):
+    tree = html.fromstring(html_string)
+    span_with_class_value = tree.xpath("//span[@class='value']")
+    point = tuple(int(span.text) for span in span_with_class_value)
+    assert (
+        len(point) == 2
+    ), "Length of the tuple is not equal 2, cannot be interpreted as a Point"
+    return point
 
 @dataclass
 class CadParseResult:
     objects: list
     lines: list
     text: dict
+
+    def serialize(self):
+        return json.dumps(
+            {"objects": self.objects, "lines": self.lines, "text": self.text}
+        )
 
 
 def extract(img_b64, data=None):
@@ -77,7 +91,7 @@ def extract(img_b64, data=None):
 def serialize(db_data):
     res = []
     for rec in db_data:
-        origin = json.loads(rec.origin)
+        origin = _origin_parse_from_html(rec.origin)
         connections = json.loads(rec.connections)
         for connection in connections:
             x, y = connection["pos"]["x"], connection["pos"]["y"]

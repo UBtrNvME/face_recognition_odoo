@@ -13,6 +13,9 @@ from ..services.img_manipulation import (
 
 class CadDiagram(models.Model):
     _name = "cad.diagram"
+    _inherit = ["image.mixin", "nextcloud.wrapper.mixin"]
+
+    DIAGRAM_STATES = [("draft", "Draft"), ("unsync", "Unsynced"), ("sync", "Synced")]
 
     name = fields.Char(string="P&ID name")
     cad_project_id = fields.Many2one(
@@ -23,11 +26,11 @@ class CadDiagram(models.Model):
     )
     attachment = fields.Binary(string="File attachment", public=True)
     content_data = fields.Text(string="Content Data")
-    is_parsed_to_nextcloud = fields.Boolean(
-        string="Is Parsed to Nextcloud", default=False
+    state = fields.Selection(
+        string="State of Diagram", selection=DIAGRAM_STATES, default="draft"
     )
-    resulting_image = fields.Binary(string="Resulting Image", public=True)
-
+    image_1920 = fields.Image(string="Resulting Image",max_height=7680, max_width=7680)
+    nextcloud_path = fields.Char(string="Nextcloud path")
     @api.model
     def parse_to_data(self, id):
         symbols = serialize(self.env["cad.symbol"].search([]))
@@ -47,7 +50,7 @@ class CadDiagram(models.Model):
             ndarray = base64_to_ndarray(datas)
             diagram = self.env["cad.diagram"].browse(id)
             resulting_image = cad_helpers.draw_objects_on_image(ndarray, result.objects)
-            diagram.resulting_image = ndarray_to_base64(resulting_image)
+            diagram.image_1920 = ndarray_to_base64(resulting_image)
             diagram.content_data = result
             return "Success"
         else:

@@ -26,6 +26,9 @@
         <field name="model">cad.diagram</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <field name="state" widget="statusbar" nolabel="1" readonly="1"/>
+                </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button
@@ -51,9 +54,9 @@
                     <notebook>
                         <page name="image" string="Image">
                             <field
-                                name="resulting_image"
+                                name="image_1920"
                                 widget="image"
-                                options='{"zoom": true}'
+                                options='{"zoom": true, "preview_image":"image_512"}'
                             />
                         </page>
                         <page name="result" string="Result">
