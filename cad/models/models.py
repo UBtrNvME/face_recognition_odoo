@@ -1,15 +1,17 @@
 import json
 import logging
-from typing import Optional, NewType
-from collections import namedtuple
+from typing import NewType, Optional
+
+from odoo import _, api, fields, models
+
 import cv2
 import numpy as np
 from lxml import html
 
-from odoo import _, api, fields, models
 from ..services.img_manipulation import base64_to_ndarray, ndarray_to_base64
 
 _logger = logging.getLogger(__name__)
+
 
 # --------------------------------------------------------------------------------------
 # Constants
@@ -44,8 +46,10 @@ def _apply_difference_on(point, diff):
         return point
     return (int(diff * point[0]), int(diff * point[1]))
 
+
 def _calculate_dsize(shape, multiplier):
-    return (int(shape[1]*multiplier), int(shape[0]*multiplier))
+    return (int(shape[1] * multiplier), int(shape[0] * multiplier))
+
 
 class CadSymbol(models.Model):
     _name = "cad.symbol"
@@ -147,12 +151,19 @@ class CadSymbol(models.Model):
             mask = self._generate_mask(template_b64, json.loads(ignore_regions))
             resized_mask = cv2.resize(mask, new_size, interpolation=cv2.INTER_NEAREST)
             ndarray = np.array(
-                np.where(resized_mask == MASK_THROUGH, ndarray, COLOR_BLUE), dtype=np.uint8
+                np.where(resized_mask == MASK_THROUGH, ndarray, COLOR_BLUE),
+                dtype=np.uint8,
             )
 
         if origin:
             parsed_origin = _origin_parse_from_html(origin)
-            cv2.circle(ndarray, _apply_difference_on(parsed_origin, scale_ratio), 2, COLOR_RED, -1)
+            cv2.circle(
+                ndarray,
+                _apply_difference_on(parsed_origin, scale_ratio),
+                2,
+                COLOR_RED,
+                -1,
+            )
 
         if connections:
             connections = json.loads(connections)
@@ -167,7 +178,9 @@ class CadSymbol(models.Model):
 
                 cv2.circle(
                     img=ndarray,
-                    center=_apply_difference_on((connection["pos"]["x"], connection["pos"]["y"]), scale_ratio),
+                    center=_apply_difference_on(
+                        (connection["pos"]["x"], connection["pos"]["y"]), scale_ratio
+                    ),
                     radius=2,
                     color=COLOR_GREEN,
                     thickness=-1,

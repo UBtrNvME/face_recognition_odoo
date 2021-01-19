@@ -1,9 +1,11 @@
 import os
 from collections import namedtuple
 from logging import getLogger
-from odoo.tools import date_utils as dateutil
+
 from odoo import api, fields, models
-from ..services.img_manipulation import binary_to_base64, base64_to_binary
+from odoo.tools import date_utils as dateutil
+
+from ..services.img_manipulation import base64_to_binary, binary_to_base64
 
 SUCCESS = 900
 ERROR = 1000
@@ -178,7 +180,6 @@ class NextcloudAgent(models.TransientModel):
     @api.model
     def create(self, values):
         agent = super().create(values)
-        print(agent.mixin_id)
         return agent
 
     @api.model
