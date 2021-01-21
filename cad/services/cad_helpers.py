@@ -16,19 +16,16 @@ OPENCV_DATA_TYPE = np.uint8
 
 
 def template_matching(image, template, thresh, mask=None):
-    max_size = (x // 4 for x in image.shape[::-1])
-    for templ in pyramid(template, 1.5, maxSize=max_size):
-        w, h = template.shape[::-1]
-        if mask is not None:
-            res = cv2.matchTemplate(
-                image, templ, cv2.TM_CCOEFF_NORMED, mask=mask.copy()
-            )
-        else:
-            res = cv2.matchTemplate(image, templ, cv2.TM_CCOEFF_NORMED)
+    # max_size = (x // 4 for x in image.shape[::-1])
+    w, h = template.shape[::-1]
+    if mask is not None:
+        res = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED, mask=mask.copy())
+    else:
+        res = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
 
-        loc = np.where(res >= thresh)
-        for pt in zip(*loc[::-1]):
-            yield pt[0], pt[1], w, h
+    loc = np.where(res >= thresh)
+    for pt in zip(*loc[::-1]):
+        yield pt[0], pt[1], w, h
 
 
 def _mirror_template_if_needed(templates, value):
@@ -162,7 +159,7 @@ def _get_points(rect):
 
 
 def pyramid(image, scale=1.5, minSize=(30, 30), maxSize=None):
-    if maxSize:
+    if maxSize and tuple(image.shape[::-1]) > maxSize:
         w, h = maxSize
         if w < h:
             h = None

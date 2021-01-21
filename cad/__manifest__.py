@@ -11,17 +11,13 @@
     "author": "QZHub",
     "website": "www.qzhub.com",
     "category": "Parsing",
-    "version": "13.0.1.0.0",
+    "version": "14.0.1.0.0",
     # any module necessary for this one to work correctly
-    "depends": [
-        "base",
-        "web",
-        "queue_job",
-        "nextcloud_connector",
-        "encrypter",
-        "website_jitsi",
-    ],
-    "external_dependencies": {"python": ["cv2", "numpy", "pytesseract"], "bin": []},
+    "depends": ["base", "web", "queue_job", "nextcloud_connector",],
+    "external_dependencies": {
+        "python": ["cv2", "numpy", "pytesseract", "imutils"],
+        "bin": [],
+    },
     # always loaded
     "data": [
         "security/cad_security.xml",

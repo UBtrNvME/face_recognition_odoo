@@ -62,11 +62,12 @@ def prod(iterable: Iterable):
 
 class CadSymbol(models.Model):
     _name = "cad.symbol"
-    _inherit = "cipher.mixin"
+    _inherit = "image.mixin"
 
     name = fields.Char(string="Name of the Cad Object Template", required=True)
     preview = fields.Image(string="Preview", compute="_compute_preview")
     template = fields.Binary(string="Image representation of the Cad Object")
+    image_1920 = fields.Image(string="Image 1920", store=False, related="preview")
     template_b64 = fields.Text(string="base64")
     mask = fields.Binary(string="Mask of the Cad Object Template", readonly=True)
     threshold = fields.Float(string="Threshold")

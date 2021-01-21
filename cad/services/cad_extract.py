@@ -58,8 +58,12 @@ def extract(img_b64, data=None):
 
     image = img_manipulation.base64_to_ndarray(img_b64)
     gray_scale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    gray_scale = cv2.blur(gray_scale, (5, 5))
-    gray_scale = cv2.fastNlMeansDenoising(gray_scale, None, 10, 10, 7)
+
+    # Was reducing score of the template matching
+    # TODO: find a way to remove noise but get the same good results
+
+    # gray_scale = cv2.blur(gray_scale, (5, 5))
+    # gray_scale = cv2.fastNlMeansDenoising(gray_scale, None, 10, 10, 7)
     json_result = []
     for o in OBJECTS:
         object_name = o["name"]
@@ -96,7 +100,7 @@ def serialize(db_data):
     res = []
     for rec in db_data:
         origin = _origin_parse_from_html(rec.origin)
-        connections = json.loads(rec.connections)
+        connections = json.loads(rec.connections) if rec.connections else []
         for connection in connections:
             x, y = connection["pos"]["x"], connection["pos"]["y"]
             connection["pos"] = {"x": x - origin[0], "y": y - origin[1]}
