@@ -16,15 +16,19 @@ OPENCV_DATA_TYPE = np.uint8
 
 
 def template_matching(image, template, thresh, mask=None):
-    w, h = template.shape[::-1]
-    if mask is not None:
-        res = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED, mask=mask.copy())
-    else:
-        res = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
+    max_size = (x // 4 for x in image.shape[::-1])
+    for templ in pyramid(template, 1.5, maxSize=max_size):
+        w, h = template.shape[::-1]
+        if mask is not None:
+            res = cv2.matchTemplate(
+                image, templ, cv2.TM_CCOEFF_NORMED, mask=mask.copy()
+            )
+        else:
+            res = cv2.matchTemplate(image, templ, cv2.TM_CCOEFF_NORMED)
 
-    loc = np.where(res >= thresh)
-    for pt in zip(*loc[::-1]):
-        yield pt[0], pt[1], w, h
+        loc = np.where(res >= thresh)
+        for pt in zip(*loc[::-1]):
+            yield pt[0], pt[1], w, h
 
 
 def _mirror_template_if_needed(templates, value):
@@ -157,7 +161,14 @@ def _get_points(rect):
     return [[x, y], [x + w, y], [x + w, y + h], [x, y + h]]
 
 
-def pyramid(image, scale=1.5, minSize=(30, 30)):
+def pyramid(image, scale=1.5, minSize=(30, 30), maxSize=None):
+    if maxSize:
+        w, h = maxSize
+        if w < h:
+            h = None
+        else:
+            w = None
+        image = imutils.resize(image, width=w, height=h)
     # yield the original image
     yield image
     # keep looping over the pyramid

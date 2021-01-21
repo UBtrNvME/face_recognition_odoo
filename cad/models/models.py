@@ -1,6 +1,8 @@
 import json
 import logging
-from typing import NewType, Optional
+import operator
+from functools import reduce
+from typing import Iterable, NewType, Optional
 
 from odoo import _, api, fields, models
 
@@ -27,6 +29,9 @@ ORIGIN_HTML_TEMPLATE = (
     '<p><b>y</b> = <span class="value">%s</span><p/>'
     "</div>"
 )
+THICKNESS_M_CONSTANT = 0.0104854  # Area // Thickness = Thickness Constant
+THICKNESS_C_CONSTANT = 1.24538
+THICKNESS_POWER_CONSTANT = 0.478236
 
 Base64 = NewType("Base64", str)
 
@@ -51,8 +56,13 @@ def _calculate_dsize(shape, multiplier):
     return (int(shape[1] * multiplier), int(shape[0] * multiplier))
 
 
+def prod(iterable: Iterable):
+    return reduce(operator.mul, iterable, 1)
+
+
 class CadSymbol(models.Model):
     _name = "cad.symbol"
+    _inherit = "cipher.mixin"
 
     name = fields.Char(string="Name of the Cad Object Template", required=True)
     preview = fields.Image(string="Preview", compute="_compute_preview")
@@ -74,6 +84,7 @@ class CadSymbol(models.Model):
         ],
         default="none",
     )
+    active = fields.Boolean(default=True)
 
     @api.onchange("template")
     def _onchange_template(self):
@@ -122,7 +133,11 @@ class CadSymbol(models.Model):
         for rec in self:
             if rec.template_b64:
                 rec.preview = self._generate_preview(
-                    rec.template_b64, rec.origin, rec.ignore_regions, rec.connections, 2
+                    rec.template_b64,
+                    rec.origin,
+                    rec.ignore_regions,
+                    rec.connections,
+                    None,
                 )
             else:
                 rec.preview = None
@@ -143,24 +158,30 @@ class CadSymbol(models.Model):
 
         ndarray = base64_to_ndarray(template_b64)
         new_size = ndarray.shape
+        RADIUS = int(
+            THICKNESS_M_CONSTANT * (prod(new_size[:2])) ** THICKNESS_POWER_CONSTANT
+            + THICKNESS_C_CONSTANT
+        )
         if scale_ratio:
             new_size = _calculate_dsize(new_size, scale_ratio)
             ndarray = cv2.resize(ndarray, new_size, interpolation=cv2.INTER_NEAREST)
 
         if ignore_regions:
             mask = self._generate_mask(template_b64, json.loads(ignore_regions))
-            resized_mask = cv2.resize(mask, new_size, interpolation=cv2.INTER_NEAREST)
+            if scale_ratio:
+                mask = cv2.resize(mask, new_size, interpolation=cv2.INTER_NEAREST)
             ndarray = np.array(
-                np.where(resized_mask == MASK_THROUGH, ndarray, COLOR_BLUE),
-                dtype=np.uint8,
+                np.where(mask == MASK_THROUGH, ndarray, COLOR_BLUE), dtype=np.uint8
             )
 
         if origin:
             parsed_origin = _origin_parse_from_html(origin)
             cv2.circle(
                 ndarray,
-                _apply_difference_on(parsed_origin, scale_ratio),
-                2,
+                _apply_difference_on(parsed_origin, scale_ratio)
+                if scale_ratio
+                else parsed_origin,
+                RADIUS,
                 COLOR_RED,
                 -1,
             )
@@ -175,13 +196,15 @@ class CadSymbol(models.Model):
                     or isinstance(connection["dir"]["y"], str)
                 ):
                     continue
-
+                center = (connection["pos"]["x"], connection["pos"]["y"])
                 cv2.circle(
                     img=ndarray,
-                    center=_apply_difference_on(
-                        (connection["pos"]["x"], connection["pos"]["y"]), scale_ratio
+                    center=(
+                        _apply_difference_on(center, scale_ratio)
+                        if scale_ratio
+                        else center
                     ),
-                    radius=2,
+                    radius=RADIUS,
                     color=COLOR_GREEN,
                     thickness=-1,
                 )

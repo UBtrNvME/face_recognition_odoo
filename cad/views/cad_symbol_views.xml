@@ -6,6 +6,13 @@
             <field name="arch" type="xml">
                 <form string="Symbol">
                     <sheet>
+                        <field name="active" invisible="1" />
+                        <widget
+                            name="web_ribbon"
+                            title="Archived"
+                            bg_color="bg-danger"
+                            attrs="{'invisible': [('active', '=', True)]}"
+                        />
                         <div class="oe_button_box" name="button_box" invisible="1">
                             <button
                                 name="open_calculate_threshold"
@@ -15,31 +22,42 @@
                             />
                         </div>
                         <div class="oe_title">
-                            <label for="name" class="oe_edit_only"/>
+                            <label for="name" class="oe_edit_only" />
                             <h1>
-                                <field name="name"/>
+                                <field name="name" />
                             </h1>
-                            <field
-                                name="preview"
-                                widget="image"
-                            />
-
+                            <field name="preview" widget="image" />
                         </div>
                         <group>
                             <group string="Technical" name="technical">
-                                <label for="width" string="Width"/>
-                                <field name="width" nolabel="1" class="oe_inline" readonly="1"/>
-                                <label for="height" string="Height"/>
-                                <field name="height" nolabel="1" class="oe_inline" readonly="1"/>
-                                <label for="template" string="Template"/>
-                                <field name="template" nolabel="1" class="oe_inline"/>
-                                <label for="origin" string="Origin"/>
-                                <field name="origin" nolabel="1" class="oe_inline" readonly="1"/>
+                                <label for="width" string="Width" />
+                                <field
+                                    name="width"
+                                    nolabel="1"
+                                    class="oe_inline"
+                                    readonly="1"
+                                />
+                                <label for="height" string="Height" />
+                                <field
+                                    name="height"
+                                    nolabel="1"
+                                    class="oe_inline"
+                                    readonly="1"
+                                />
+                                <label for="template" string="Template" />
+                                <field name="template" nolabel="1" class="oe_inline" />
+                                <label for="origin" string="Origin" />
+                                <field
+                                    name="origin"
+                                    nolabel="1"
+                                    class="oe_inline"
+                                    readonly="1"
+                                />
                             </group>
                             <group string="Parser Attributes" name="parser_attributes">
-                                <field name="threshold"/>
-                                <field name="mirror"/>
-                                <field name="connections" widget="field_connection"/>
+                                <field name="threshold" />
+                                <field name="mirror" />
+                                <field name="connections" widget="field_connection" />
                                 <field
                                     name="ignore_regions"
                                     widget="field_ignore_region"
@@ -76,7 +94,7 @@
                                 </p>-->
             </field>
         </record>
-        <menuitem id="menu_cad_automation" name="Cad" sequence="10"/>
+        <menuitem id="menu_cad_automation" name="Cad" sequence="10" />
         <menuitem
             id="menu_cad_automation_cad_symbol"
             name="Cad Object Templates"

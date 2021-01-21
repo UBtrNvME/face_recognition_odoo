@@ -29,11 +29,12 @@ class CadDiagram(models.Model):
     state = fields.Selection(
         string="State of Diagram", selection=DIAGRAM_STATES, default="draft"
     )
-    image_1920 = fields.Image(string="Resulting Image",max_height=7680, max_width=7680)
+    image_1920 = fields.Image(string="Resulting Image", max_height=7680, max_width=7680)
     nextcloud_path = fields.Char(string="Nextcloud path")
+
     @api.model
     def parse_to_data(self, id):
-        symbols = serialize(self.env["cad.symbol"].search([]))
+        symbols = serialize(self.env["cad.symbol"].search([("active", "=", True)]))
         Attachment = self.env["ir.attachment"].sudo(True)
         attachment = Attachment.search(
             [
@@ -47,12 +48,17 @@ class CadDiagram(models.Model):
             datas = base64_pdf_to_base64_image(datas)
         if attachment:
             result = extract(datas, symbols)
-            ndarray = base64_to_ndarray(datas)
-            diagram = self.env["cad.diagram"].browse(id)
-            resulting_image = cad_helpers.draw_objects_on_image(ndarray, result.objects)
-            diagram.image_1920 = ndarray_to_base64(resulting_image)
-            diagram.content_data = result
-            return "Success"
+            if result:
+                ndarray = base64_to_ndarray(datas)
+                diagram = self.env["cad.diagram"].browse(id)
+                resulting_image = cad_helpers.draw_objects_on_image(
+                    ndarray, result.objects
+                )
+                diagram.image_1920 = ndarray_to_base64(resulting_image)
+                diagram.content_data = result
+                return "Success"
+            else:
+                return "No Active Templates"
         else:
             return "False"
 

@@ -1,10 +1,10 @@
 import json
 import logging
 from dataclasses import dataclass
-from lxml import html
 
 import cv2
 import pytesseract
+from lxml import html
 
 from ..services import cad_helpers, img_manipulation
 
@@ -14,6 +14,7 @@ LINES = []
 
 _logger = logging.getLogger(__name__)
 
+
 def _origin_parse_from_html(html_string):
     tree = html.fromstring(html_string)
     span_with_class_value = tree.xpath("//span[@class='value']")
@@ -22,6 +23,7 @@ def _origin_parse_from_html(html_string):
         len(point) == 2
     ), "Length of the tuple is not equal 2, cannot be interpreted as a Point"
     return point
+
 
 @dataclass
 class CadParseResult:
@@ -45,6 +47,8 @@ def extract(img_b64, data=None):
                 OBJECTS = json.load(f)
         except IOError:
             _logger.error("No objects.json in the current working directory.")
+        finally:
+            return
     else:
         _logger.info("Getting objects from the parsed data.")
         try:

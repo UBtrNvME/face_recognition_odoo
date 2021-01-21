@@ -13,7 +13,14 @@
     "category": "Parsing",
     "version": "13.0.1.0.0",
     # any module necessary for this one to work correctly
-    "depends": ["base", "web", "queue_job", "nextcloud_connector"],
+    "depends": [
+        "base",
+        "web",
+        "queue_job",
+        "nextcloud_connector",
+        "encrypter",
+        "website_jitsi",
+    ],
     "external_dependencies": {"python": ["cv2", "numpy", "pytesseract"], "bin": []},
     # always loaded
     "data": [
