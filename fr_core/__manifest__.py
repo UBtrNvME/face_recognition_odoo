@@ -18,7 +18,7 @@
     # always loaded
     "data": [
         "security/ir.model.access.csv",
-        "views/templates.xml",
+        # "views/templates.xml",
         "views/employee_photobooth.xml",
         "views/res_partner_view.xml",
         # "views/face_recognition_response_view.xml",
