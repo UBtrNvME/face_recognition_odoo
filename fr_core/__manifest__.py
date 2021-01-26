@@ -21,13 +21,15 @@
         "views/templates.xml",
         "views/employee_photobooth.xml",
         "views/res_partner_view.xml",
-        "views/face_recognition_response_view.xml",
-        "views/face_recognition_view.xml",
+        # "views/face_recognition_response_view.xml",
+        # "views/face_recognition_view.xml",
         "views/res_partner_face_encoding_view.xml",
         "data/data.xml"
         # 'views/face_recognition_page.xml',
     ],
-    "qweb": ["static/src/xml/face_recognition_templates.xml",],
+    "qweb": [
+        # "static/src/xml/face_recognition_templates.xml",
+    ],
     "sequence": -1,
     "application": True,
     "installable": True,
